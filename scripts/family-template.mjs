@@ -509,7 +509,8 @@ export function familyEmbedBuilder(config) {
         const option = list.find((one) => one.names[spec.element] === name);
         if (value === "") return name;
         if (value === "false" && option?.kind === "boolean") return `${name}={false}`;
-        return /^-?\d+(\.\d+)?$/.test(value) && option?.kind === "number" ? `${name}={${value}}` : `${name}={${quote(value)}}`;
+        if (/^-?\d+(\.\d+)?$/.test(value) && option?.kind === "number") return `${name}={${value}}`;
+        return /["\\<&>\r\n\t]/.test(value) ? `${name}={${quote(value)}}` : `${name}=${quote(value)}`;
       });
       const line = `<${spec.tag} ${props.join(" ")} />`;
       const body = line.length > 64 ? `(\n    <${spec.tag}\n${props.map((one) => `      ${one}`).join("\n")}\n    />\n  )` : line;
@@ -597,7 +598,7 @@ export function familyEmbedBuilder(config) {
     function drawPreview() {
       const stage = $("bld-stage");
       const state = api.liveFor(maker, optionList, settings);
-      const key = JSON.stringify([maker, state.call, state.attrs]);
+      const key = JSON.stringify([maker, state.call.map(({ name, value }) => [name, value]), state.attrs]);
       if (key === previewKey) return;
       previewKey = key;
       preview?.destroy?.();
@@ -643,8 +644,13 @@ export function familyEmbedBuilder(config) {
           return tab;
         }),
       );
+      refreshCode();
+    }
+
+    function refreshCode() {
       $("bld-panel").setAttribute("aria-labelledby", `bld-tab-${format}`);
       $("bld-code").textContent = codeFor(maker, format, optionList, settings) ?? "";
+      $("bld-copy").disabled = $("bld-code").textContent === "";
       $("bld-code").dataset.format = format;
       $("bld-code").dataset.language = formatList[format].language;
     }
@@ -739,9 +745,24 @@ export function familyEmbedBuilder(config) {
         box.append(main, helpFor(option));
         return box;
       }
+      if (option.kind === "choice" && option.control === "select") {
+        main = globalThis.document.createElement("select");
+        main.className = "fam-field";
+        main.id = `opt-${option.id}`;
+        for (const value of option.choices) {
+          const item = globalThis.document.createElement("option");
+          item.value = value;
+          item.textContent = option.choiceLabels?.[page.lang]?.[value] ?? value;
+          main.append(item);
+        }
+        main.value = String(valueOf(option) ?? "");
+        main.addEventListener("change", () => setValue(option, main.value));
+        box.append(labelFor(option, main), main, helpFor(option));
+        return box;
+      }
       if (option.kind === "choice") {
         const values = [...(option.default === undefined ? [""] : []), ...option.choices];
-        main = segmented(option, values, (value) => (value === "" ? say("notSet") : value));
+        main = segmented(option, values, (value) => (value === "" ? say("notSet") : option.choiceLabels?.[page.lang]?.[value] ?? value));
         const heading = globalThis.document.createElement("span");
         heading.className = "fam-label";
         heading.id = `opt-${option.id}-label`;
@@ -899,7 +920,7 @@ export function familyEmbedBuilder(config) {
     globalThis.document.documentElement.dataset.ready = "true";
 
     return { get maker() { return maker; }, get settings() { return { ...settings }; },
-      draw, destroy() { globalThis.clearTimeout(typing); preview?.destroy?.(); },
+      draw, refreshCode, destroy() { globalThis.clearTimeout(typing); preview?.destroy?.(); },
     };
 
   }
