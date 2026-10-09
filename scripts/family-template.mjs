@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-09";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-09-embed-builder";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -251,7 +251,7 @@ export const FAMILY_SCRIPT = `var familyHelp = (function familyHelpSwitch() {
   style.textContent = STYLE;
   document.head.appendChild(style);
   var root = document.documentElement;
-  var asked = new URLSearchParams(location.search).get("help");
+  var asked = new globalThis.URLSearchParams(location.search).get("help");
   var kept = null;
   try { kept = localStorage.getItem(KEY); } catch (error) { /* A browser that keeps nothing starts with Help off. */ }
   var state = { on: asked === "on" || asked === "1" ? true : asked === "off" || asked === "0" ? false : kept === "on" };
@@ -321,7 +321,7 @@ export const FAMILY_SCRIPT = `var familyHelp = (function familyHelpSwitch() {
 (function familyCloth() {
   var CLOTHS = ${JSON.stringify(FAMILY_CLOTHS)};
   var KEY = "johnmorrisdotca.cloth";
-  var asked = new URLSearchParams(location.search).get("cloth");
+  var asked = new globalThis.URLSearchParams(location.search).get("cloth");
   var kept = null;
   try { kept = localStorage.getItem(KEY); } catch (error) { /* A browser that keeps nothing starts on green. */ }
   var wear = function (name, keep) {
@@ -342,10 +342,10 @@ export const FAMILY_SCRIPT = `var familyHelp = (function familyHelpSwitch() {
     });
     if (keep) {
       try { localStorage.setItem(KEY, name); } catch (error) { /* Not remembered; still worn. */ }
-      var query = new URLSearchParams(location.search);
+      var query = new globalThis.URLSearchParams(location.search);
       if (name === "green") query.delete("cloth"); else query.set("cloth", name);
       var search = query.toString();
-      history.replaceState(history.state, "", location.pathname + (search ? "?" + search : "") + location.hash);
+      globalThis.history.replaceState(history.state, "", location.pathname + (search ? "?" + search : "") + location.hash);
     }
     document.dispatchEvent(new CustomEvent("family-cloth", { detail: { cloth: name, colours: cloth } }));
   };
@@ -357,7 +357,7 @@ export const FAMILY_SCRIPT = `var familyHelp = (function familyHelpSwitch() {
 function familyLanguage(options) {
   var SHARED = ${JSON.stringify(FAMILY_WORDS)};
   var KEY = options.id + ".page.lang";
-  var asked = new URLSearchParams(location.search).get("lang");
+  var asked = new globalThis.URLSearchParams(location.search).get("lang");
   if (asked !== "ja" && asked !== "en") asked = null;
   var kept = null;
   try { kept = localStorage.getItem(KEY); } catch (error) { /* A browser that keeps nothing follows its own language. */ }
@@ -391,3 +391,518 @@ function familyLanguage(options) {
   state.say();
   return state;
 }`;
+
+/**
+ * The shared embed builder. A package supplies its option list, groups, makers,
+ * version and words; rendering a live preview remains the package's job.
+ * This function is self-contained so a site can emit it as a browser module.
+ */
+export function familyEmbedBuilder(config) {
+  const { packageName, major, site, makers, options = [], groups = {}, leftOut = {} } = config;
+  if (!packageName || !/^\d+$/.test(String(major))) throw new Error("An embed builder needs a package name and npm major");
+  const cdn = `https://cdn.jsdelivr.net/npm/${packageName}@${major}/dist/element-define.js`;
+  const formats = config.formats ?? {
+    element: { label: { en: "Custom element", ja: "カスタム要素" }, language: "html" },
+    image: { label: { en: "Image", ja: "画像" }, language: "html" },
+    iframe: { label: { en: "iframe", ja: "iframe" }, language: "html" },
+    module: { label: { en: "ES module", ja: "ESモジュール" }, language: "js" },
+    react: { label: { en: "React 19", ja: "React 19" }, language: "tsx" },
+    vue: { label: { en: "Vue", ja: "Vue" }, language: "vue" },
+    svelte: { label: { en: "Svelte", ja: "Svelte" }, language: "svelte" },
+    angular: { label: { en: "Angular", ja: "Angular" }, language: "ts" },
+    html: { label: { en: "Plain HTML", ja: "HTML" }, language: "html" },
+    url: { label: { en: "iframe URL", ja: "iframe URL" }, language: "text" },
+  };
+  const quote = (text) => JSON.stringify(String(text)).replaceAll("<", "\\u003c");
+  const plain = (value) => typeof value === "string" ? quote(value) : String(value);
+  const escape = (value) => String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  const specFor = (maker) => {
+    if (!Object.hasOwn(makers, maker)) throw new Error(`Unknown embed maker: ${maker}`);
+    return makers[maker];
+  };
+  const required = (maker, id) => (specFor(maker).required ?? []).includes(id);
+  const standing = (option, value) => {
+    if (value === undefined || value === null || value === "") return true;
+    if (option.default === undefined) return false;
+    if (option.kind === "number") return Number(value) === Number(option.default);
+    if (option.kind === "boolean") return Boolean(value) === Boolean(option.default);
+    return String(value).toLowerCase() === String(option.default).toLowerCase();
+  };
+  const converted = (option, raw, maker) => {
+    if (option.kind === "number") return Number((Number(raw) * (option.factor?.[maker] ?? 1)).toFixed(6));
+    if (option.kind === "boolean") return Boolean(raw);
+    if (option.choices?.every((choice) => /^[0-9.]+$/.test(choice))) return Number(raw);
+    return raw;
+  };
+  function entriesFor(list, settings, maker) {
+    const spec = specFor(maker);
+    const out = [];
+    for (const option of list) {
+      const name = option.names[spec.names];
+      if (name === undefined || standing(option, settings[option.id]) && !required(maker, option.id)) continue;
+      const raw = settings[option.id] === undefined || settings[option.id] === "" ? option.default : settings[option.id];
+      if (raw !== undefined) out.push({ id: option.id, name, value: converted(option, raw, maker), option });
+    }
+    return out;
+  }
+  function attributesFor(list, settings, maker) {
+    const spec = specFor(maker);
+    const out = [];
+    for (const option of list) {
+      const name = option.names[spec.element];
+      if (name === undefined || standing(option, settings[option.id]) && !required(maker, option.id)) continue;
+      const raw = settings[option.id] === undefined || settings[option.id] === "" ? option.default : settings[option.id];
+      if (raw !== undefined) out.push([name, option.kind === "boolean" ? raw ? "" : "false" : String(raw)]);
+    }
+    return out;
+  }
+  const attr = ([name, value]) => value === "" ? ` ${name}` : ` ${name}="${escape(value)}"`;
+  const tagOf = (spec, attributes, indent = "") => {
+    const text = `<${spec.tag}${attributes.map(attr).join("")}></${spec.tag}>`;
+    if (text.length + indent.length <= 80 || attributes.length < 3) return text;
+    return `<${spec.tag}\n${attributes.map((one) => `${indent}  ${attr(one).trim()}`).join("\n")}\n${indent}></${spec.tag}>`;
+  };
+  const literal = (lines, indent = "") => {
+    const one = `{ ${lines.join(", ")} }`;
+    return one.length + indent.length <= 78 ? one : `{\n${lines.map((line) => `${indent}  ${line},`).join("\n")}\n${indent}}`;
+  };
+  function embedAddress(list, settings, maker) {
+    const spec = specFor(maker);
+    if (!spec.embed) return null;
+    const pairs = attributesFor(list, settings, maker).map(([name, value]) => {
+      const option = list.find((one) => one.names[spec.element] === name);
+      return [name, option?.kind === "boolean" ? value === "" ? "1" : "0" : value];
+    });
+    const query = pairs.map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value).replaceAll("%20", "+").replaceAll("%27", "'")}`).join("&");
+    return `${spec.embed}${query ? `${spec.parameters === "hash" ? "#" : "?"}${query}` : ""}`;
+  }
+  function frameSide(maker, settings) {
+    const spec = specFor(maker);
+    return typeof spec.width === "function" ? spec.width(settings) : spec.width ?? 360;
+  }
+  function codeFor(maker, format, list, settings) {
+    const spec = specFor(maker);
+    if (!spec.formats.includes(format)) return null;
+    const call = entriesFor(list, settings, maker);
+    const attrs = spec.element === undefined ? [] : attributesFor(list, settings, maker);
+    const context = { maker, format, list, settings, call, attrs, spec, packageName, cdn, site, quote, plain, literal, tagOf, embedAddress, frameSide };
+    const custom = config.code?.(context);
+    if (custom !== undefined) return custom;
+    const tag = tagOf(spec, attrs);
+    const define = `import "${packageName}/element/define";`;
+    if (format === "element" || format === "html") return `<script type="module" src="${cdn}"></script>\n${tag}`;
+    if (format === "image") {
+      const src = spec.image?.(settings);
+      return src ? `<img src="${escape(src)}" alt="${escape(settings.label ?? config.title ?? "")}" />` : null;
+    }
+    if (format === "iframe" || format === "url") {
+      const address = embedAddress(list, settings, maker);
+      if (address === null) return null;
+      const src = new globalThis.URL(address, site).href;
+      if (format === "url") return src;
+      const width = frameSide(maker, settings);
+      const height = typeof spec.height === "function" ? spec.height(settings) : spec.height ?? width;
+      return `<iframe src="${escape(src)}" title="${escape(config.title ?? spec.tag)}" width="${width}" height="${height}" style="border:0;max-width:100%" loading="lazy"></iframe>`;
+    }
+    if (format === "react") {
+      const props = attrs.map(([name, value]) => {
+        const option = list.find((one) => one.names[spec.element] === name);
+        if (value === "") return name;
+        if (value === "false" && option?.kind === "boolean") return `${name}={false}`;
+        return /^-?\d+(\.\d+)?$/.test(value) && option?.kind === "number" ? `${name}={${value}}` : `${name}={${quote(value)}}`;
+      });
+      const line = `<${spec.tag} ${props.join(" ")} />`;
+      const body = line.length > 64 ? `(\n    <${spec.tag}\n${props.map((one) => `      ${one}`).join("\n")}\n    />\n  )` : line;
+      return `// React 19 sets a custom element's properties, which write its attributes.\n${define}\n\nexport function ${config.component ?? "Example"}() {\n  return ${body};\n}`;
+    }
+    if (format === "vue") return `<script setup>\n${define}\n// In vite.config: vue({ template: { compilerOptions: { isCustomElement: (tag) => tag.startsWith(${quote(spec.prefix ?? `${spec.tag.split("-")[0]}-`)}) } } })\n</script>\n\n<template>\n  ${tagOf(spec, attrs, "  ")}\n</template>`;
+    if (format === "svelte") return `<script>\n  ${define}\n</script>\n\n${tagOf(spec, attrs)}`;
+    if (format === "angular") return `import { CUSTOM_ELEMENTS_SCHEMA, Component } from "@angular/core";\n${define}\n\n@Component({\n  selector: ${quote(config.selector ?? "app-example")},\n  schemas: [CUSTOM_ELEMENTS_SCHEMA],\n  template: \`${tagOf(spec, attrs, "    ").replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")}\`,\n})\nexport class ${config.component ?? "Example"}Component {}`;
+    if (format === "module") return `${define}\n\nconst element = globalThis.document.createElement(${quote(spec.tag)});\n${attrs.map(([name, value]) => `element.setAttribute(${quote(name)}, ${quote(value)});`).join("\n")}\ndocument.body.append(element);`;
+    return null;
+  }
+  function toAddress(maker, list, settings) {
+    const pairs = [["make", maker]];
+    for (const option of list) {
+      const value = settings[option.id];
+      if (standing(option, value) && !required(maker, option.id) || value === undefined || value === "") continue;
+      pairs.push([option.id, typeof value === "boolean" ? value ? "1" : "0" : String(value)]);
+    }
+    return pairs.map(([name, value]) => `${name}=${encodeURIComponent(value).replaceAll("%20", "+")}`).join("&");
+  }
+  function fromAddress(text, list) {
+    const query = new globalThis.URLSearchParams(text.replace(/^[#?]/, ""));
+    const asked = query.get("make");
+    const maker = Object.hasOwn(makers, asked) ? asked : config.defaultMaker ?? Object.keys(makers)[0];
+    const settings = {};
+    for (const option of list) {
+      if (!query.has(option.id)) continue;
+      const raw = query.get(option.id);
+      if (option.kind === "boolean") settings[option.id] = raw === "1" || raw === "true";
+      else if (option.kind === "number") {
+        const number = Number(raw);
+        if (raw !== "" && Number.isFinite(number)) settings[option.id] = option.range ? Math.max(option.range.min, Math.min(option.range.max, number)) : number;
+      } else if (option.kind === "choice") {
+        if (option.choices.includes(raw)) settings[option.id] = raw;
+      } else settings[option.id] = raw;
+    }
+    return { maker, settings };
+  }
+  function validateCoverage(declared) {
+    const missing = [];
+    for (const [kind, names] of Object.entries(declared)) {
+      const listed = new Set(options.flatMap((option) => option.names[kind] === undefined ? [] : [option.names[kind].split(".")[0]]));
+      for (const name of names) {
+        if (listed.has(name)) continue;
+        const reason = leftOut[`${kind}.${name}`];
+        if (typeof reason !== "string" || reason.trim().length === 0) missing.push(`${kind}.${name}`);
+      }
+    }
+    if (missing.length) throw new Error(`Embed options need rows or reasons: ${missing.join(", ")}`);
+    return true;
+  }
+  const api = { makers, formats, options, groups, leftOut, cdn, entriesFor, attributesFor, embedAddress, frameSide, codeFor, toAddress, fromAddress, validateCoverage,
+    allCode: (maker, list, settings) => Object.fromEntries(specFor(maker).formats.map((format) => [format, codeFor(maker, format, list, settings)])),
+    liveFor: (maker, list, settings) => ({ call: entriesFor(list, settings, maker), attrs: specFor(maker).element === undefined ? [] : attributesFor(list, settings, maker) }),
+  };
+  function mount({ words, language = globalThis.familyLanguage, renderPreview,
+    initial = {}, colourDefault = (option) => option.default ?? "#000000", classPrefix = "family-bld" } = {}) {
+  if (typeof language !== "function" || typeof renderPreview !== "function") throw new Error("A builder needs a language helper and live preview renderer");
+    const $ = (id) => globalThis.document.getElementById(id);
+
+    const WORDS = words;
+    const START = initial;
+    const optionList = api.options;
+    const optionGroups = api.groups;
+    const makerList = api.makers;
+    const formatList = api.formats;
+    const { codeFor, fromAddress, toAddress } = api;
+    const asked = fromAddress(globalThis.location.hash, optionList);
+    let maker = asked.maker;
+    let settings = { ...START[maker], ...asked.settings };
+    let format = new globalThis.URLSearchParams(globalThis.location.hash.replace(/^#/, "")).get("show") ?? "";
+    let preview = null;
+    let previewKey = "";
+    let typing = 0;
+
+    const page = language({ id: config.id, words: WORDS, onChange: () => draw() });
+    const say = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), page.word(key) ?? key);
+
+    const spec = () => makerList[maker];
+    /** Whether a choice is there for the way of making a preview chosen. */
+    const applies = (option) => option.names[spec().names] !== undefined || (spec().element !== undefined && option.names[spec().element] !== undefined);
+    const valueOf = (option) => settings[option.id] ?? option.default;
+    const unit = (option) => config.unit?.(option) ?? option.unit ?? "";
+
+    function drawPreview() {
+      const stage = $("bld-stage");
+      const state = api.liveFor(maker, optionList, settings);
+      const key = JSON.stringify([maker, state.call, state.attrs]);
+      if (key === previewKey) return;
+      previewKey = key;
+      preview?.destroy?.();
+      stage.dataset.maker = maker;
+      stage.replaceChildren();
+      const note = $("bld-note");
+      note.textContent = "";
+      preview = renderPreview({ stage, maker, settings, call: state.call, attrs: state.attrs, note, say });
+    }
+
+    function drawCode() {
+      const formats = spec().formats;
+      if (!formats.includes(format)) format = formats[0];
+      const tabs = $("bld-formats");
+      tabs.replaceChildren(
+        ...formats.map((name) => {
+          const tab = globalThis.document.createElement("button");
+          tab.type = "button";
+          tab.setAttribute("role", "tab");
+          tab.id = `bld-tab-${name}`;
+          tab.dataset.format = name;
+          tab.setAttribute("aria-controls", "bld-panel");
+          tab.setAttribute("aria-selected", String(name === format));
+          tab.tabIndex = name === format ? 0 : -1;
+          tab.textContent = formatList[name].label[page.lang];
+          tab.addEventListener("click", () => {
+            format = name;
+            drawCode();
+            keepAddress();
+            // The tabs were drawn again, so the focus is put back on the one now chosen.
+            $(`bld-tab-${format}`).focus();
+          });
+          tab.addEventListener("keydown", (event) => {
+            const at = formats.indexOf(format);
+            const to = event.key === "ArrowRight" ? Math.min(formats.length - 1, at + 1) : event.key === "ArrowLeft" ? Math.max(0, at - 1) : event.key === "Home" ? 0 : event.key === "End" ? formats.length - 1 : null;
+            if (to === null) return;
+            event.preventDefault();
+            format = formats[to];
+            drawCode();
+            keepAddress();
+            $(`bld-tab-${format}`).focus();
+          });
+          return tab;
+        }),
+      );
+      $("bld-panel").setAttribute("aria-labelledby", `bld-tab-${format}`);
+      $("bld-code").textContent = codeFor(maker, format, optionList, settings) ?? "";
+      $("bld-code").dataset.format = format;
+      $("bld-code").dataset.language = formatList[format].language;
+    }
+
+    function keepAddress() {
+      globalThis.history.replaceState(null, "", `#${toAddress(maker, optionList, settings)}&show=${format}`);
+    }
+
+    /** Something was chosen: the preview, the code and the address follow. Text being typed waits a moment for the next key. */
+    function changed(slowly = false) {
+      const now = () => {
+        drawPreview();
+        drawCode();
+        keepAddress();
+      };
+      globalThis.clearTimeout(typing);
+      if (slowly) typing = globalThis.setTimeout(now, 200);
+      else now();
+    }
+
+    /* ----- the controls, one for each choice the package offers ----- */
+
+    function setValue(option, value, slowly = false) {
+      if (value === undefined || value === "") delete settings[option.id];
+      else settings[option.id] = value;
+      changed(slowly);
+    }
+
+    const labelFor = (option, control) => {
+      const label = globalThis.document.createElement("label");
+      label.textContent = option.say[page.lang].label;
+      label.htmlFor = control.id;
+      return label;
+    };
+    const helpFor = (option) => {
+      const line = globalThis.document.createElement("p");
+      line.className = "fam-fine";
+      line.textContent = option.say[page.lang].help;
+      if (option.default !== undefined && option.kind !== "moves") {
+        const shown = option.kind === "boolean" ? say(option.default ? "on" : "off") : `${option.default}${unit(option)}`;
+        line.textContent += ` ${say("defaultIs", { value: shown })}`;
+      }
+      return line;
+    };
+
+    function segmented(option, values, labelOf) {
+      const group = globalThis.document.createElement("div");
+      group.className = "fam-seg";
+      group.id = `opt-${option.id}`;
+      group.setAttribute("role", "group");
+      group.setAttribute("aria-label", option.say[page.lang].label);
+      const shown = () => String(settings[option.id] ?? "");
+      const made = [];
+      for (const value of values) {
+        const button = globalThis.document.createElement("button");
+        button.type = "button";
+        button.dataset.value = value;
+        button.textContent = labelOf(value);
+        const pressed = () => (value === "" ? settings[option.id] === undefined && option.default === undefined : shown() === value || (settings[option.id] === undefined && String(option.default) === value));
+        button.setAttribute("aria-pressed", String(pressed()));
+        button.addEventListener("click", () => {
+          setValue(option, value === "" ? undefined : option.kind === "number" ? Number(value) : value);
+          for (const other of made) other.setAttribute("aria-pressed", String(other.dataset.value === value));
+        });
+        made.push(button);
+        group.append(button);
+      }
+      return group;
+    }
+
+    function control(option) {
+      const box = globalThis.document.createElement("div");
+      box.className = `${classPrefix}-option`;
+      box.dataset.testid = `opt-${option.id}`;
+      box.dataset.option = option.id;
+      const name = option.say[page.lang].label;
+      let main;
+      if (option.kind === "boolean") {
+        main = globalThis.document.createElement("button");
+        main.type = "button";
+        main.className = "fam-button";
+        main.id = `opt-${option.id}`;
+        const draw = () => {
+          main.setAttribute("aria-pressed", String(Boolean(valueOf(option))));
+          main.textContent = `${name}: ${say(valueOf(option) ? "on" : "off")}`;
+        };
+        draw();
+        main.addEventListener("click", () => {
+          setValue(option, !valueOf(option));
+          draw();
+        });
+        box.append(main, helpFor(option));
+        return box;
+      }
+      if (option.kind === "choice") {
+        const values = [...(option.default === undefined ? [""] : []), ...option.choices];
+        main = segmented(option, values, (value) => (value === "" ? say("notSet") : value));
+        const heading = globalThis.document.createElement("span");
+        heading.className = "fam-label";
+        heading.id = `opt-${option.id}-label`;
+        heading.textContent = name;
+        main.setAttribute("aria-labelledby", heading.id);
+        main.removeAttribute("aria-label");
+        box.append(heading, main, helpFor(option));
+        return box;
+      }
+      if (option.kind === "number") {
+        const { min, max, step } = option.range;
+        if ((max - min) / step <= 6) {
+          main = segmented(option, Array.from({ length: Math.round((max - min) / step) + 1 }, (_, at) => String(min + at * step)), (value) => value);
+          const heading = globalThis.document.createElement("span");
+          heading.className = "fam-label";
+          heading.id = `opt-${option.id}-label`;
+          heading.textContent = name;
+          main.setAttribute("aria-labelledby", heading.id);
+          main.removeAttribute("aria-label");
+          box.append(heading, main, helpFor(option));
+          return box;
+        }
+        const row = globalThis.document.createElement("div");
+        row.className = `${classPrefix}-number`;
+        const number = globalThis.document.createElement("input");
+        number.type = "number";
+        number.className = "fam-field";
+        number.id = `opt-${option.id}`;
+        Object.assign(number, { min, max, step });
+        number.value = settings[option.id] === undefined ? "" : String(settings[option.id]);
+        number.placeholder = option.default === undefined ? say("notSet") : String(option.default);
+        const range = globalThis.document.createElement("input");
+        range.type = "range";
+        Object.assign(range, { min, max, step });
+        range.value = String(valueOf(option) ?? min);
+        range.setAttribute("aria-label", name);
+        range.addEventListener("input", () => {
+          number.value = range.value;
+          setValue(option, Number(range.value));
+        });
+        number.addEventListener("input", () => {
+          const parsed = Number(number.value);
+          if (number.value === "") setValue(option, undefined, true);
+          else if (Number.isFinite(parsed)) {
+            range.value = number.value;
+            setValue(option, Math.max(min, Math.min(max, parsed)), true);
+          }
+        });
+        row.append(number, range);
+        box.append(labelFor(option, number), row, helpFor(option));
+        return box;
+      }
+      if (option.kind === "colour") {
+        const row = globalThis.document.createElement("div");
+        row.className = `${classPrefix}-colour`;
+        const input = globalThis.document.createElement("input");
+        input.type = "color";
+        input.id = `opt-${option.id}`;
+        const fallback = () => colourDefault(option);
+        input.value = settings[option.id] ?? fallback();
+        const clear = globalThis.document.createElement("button");
+        clear.type = "button";
+        clear.className = "fam-button";
+        clear.textContent = say("reset");
+        clear.hidden = settings[option.id] === undefined;
+        input.addEventListener("input", () => {
+          setValue(option, input.value);
+          clear.hidden = false;
+        });
+        clear.addEventListener("click", () => {
+          setValue(option, undefined);
+          input.value = fallback();
+          clear.hidden = true;
+        });
+        row.append(input, clear);
+        box.append(labelFor(option, input), row, helpFor(option));
+        return box;
+      }
+      const field = globalThis.document.createElement(option.kind === "moves" ? "textarea" : "input");
+      field.className = "fam-field";
+      field.id = `opt-${option.id}`;
+      if (option.kind === "moves") {
+        field.rows = 2;
+        field.dataset.mono = "true";
+        field.spellcheck = false;
+        field.autocapitalize = "off";
+      }
+      field.value = settings[option.id] ?? (option.kind === "moves" ? option.default : "");
+      field.addEventListener("input", () => setValue(option, field.value, true));
+      box.append(labelFor(option, field), field, helpFor(option));
+      return box;
+    }
+
+    function drawControls() {
+      const groups = $("bld-groups");
+      const order = Object.keys(optionGroups);
+      const made = [];
+      for (const group of order) {
+        const options = optionList.filter((option) => option.group === group && applies(option));
+        if (options.length === 0) continue;
+        const details = globalThis.document.createElement("details");
+        details.className = `fam-panel ${classPrefix}-group`;
+        details.open = true;
+        details.dataset.group = group;
+        const summary = globalThis.document.createElement("summary");
+        summary.textContent = optionGroups[group][page.lang];
+        const body = globalThis.document.createElement("div");
+        body.className = `${classPrefix}-options`;
+        const faces = options.filter((option) => option.kind === "colour");
+        for (const option of options.filter((one) => one.kind !== "colour")) body.append(control(option));
+        if (faces.length > 0) {
+          const grid = globalThis.document.createElement("div");
+          grid.className = `${classPrefix}-colours`;
+          for (const option of faces) grid.append(control(option));
+          body.append(grid);
+        }
+        details.append(summary, body);
+        made.push(details);
+      }
+      groups.replaceChildren(...made);
+    }
+
+    function draw() {
+      for (const button of $("bld-makers").children) button.setAttribute("aria-pressed", String(button.dataset.maker === maker));
+      $("bld-maker-says").textContent = say(spec().description);
+      drawControls();
+      previewKey = "";
+      changed();
+    }
+
+    for (const button of $("bld-makers").children) {
+      button.addEventListener("click", () => {
+        maker = button.dataset.maker;
+        settings = { ...START[maker], ...settings };
+        draw();
+      });
+    }
+    $("bld-reset").addEventListener("click", () => {
+      settings = { ...START[maker] };
+      draw();
+    });
+
+    const copy = async (text, into, word) => {
+      try {
+        await globalThis.navigator.clipboard.writeText(text);
+        into.textContent = say(word);
+      } catch {
+        into.textContent = "";
+      }
+    };
+    $("bld-copy").addEventListener("click", () => copy($("bld-code").textContent, $("bld-code-copied"), "copied"));
+    $("bld-link").addEventListener("click", () => copy(globalThis.location.href, $("bld-copied"), "linkCopied"));
+
+    draw();
+    globalThis.document.documentElement.dataset.ready = "true";
+
+    return { get maker() { return maker; }, get settings() { return { ...settings }; },
+      draw, destroy() { globalThis.clearTimeout(typing); preview?.destroy?.(); },
+    };
+
+  }
+  api.mount = mount;
+  return api;
+}
