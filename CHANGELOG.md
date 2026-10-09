@@ -4,6 +4,10 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Changed
+
+- Group the package family by kind, alphabetize each group, and include the geography packages and REST in Pieces in the shared footer and README.
+
 ## 1.6.0 - 2026-10-09
 
 ### Added

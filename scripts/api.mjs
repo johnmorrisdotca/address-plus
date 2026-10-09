@@ -9,15 +9,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import ts from "typescript";
 
-import { FAMILY, FAMILY_SCRIPT, familyFooter, familyHead, familyHeader, familyUnreviewed } from "./family-template.mjs";
+import { FAMILY_SCRIPT, familyFooter, familyHead, familyHeader, familyUnreviewed } from "./family-template.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 
-// The family template is shared byte for byte and lists its members; address-plus is not on that list yet,
-// so it is added here, for this build only, rather than by editing the shared file.
 export const MEMBER = { id: "address-plus", name: "Address Plus", kana: "アドレスプラス" };
-if (!FAMILY.some((one) => one.id === MEMBER.id)) FAMILY.push(MEMBER);
 
 /** The data: URI of the page's icon: an envelope on the family's green. */
 export const ICON =

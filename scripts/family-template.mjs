@@ -46,34 +46,49 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-05";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-09";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
-  { id: "korokoro", name: "Korokoro", kana: "コロコロ" },
-  { id: "kyuubu", name: "Kyuubu", kana: "キューブ" },
-  { id: "hitotsu", name: "Hitotsu", kana: "一つ" },
-  { id: "toranpu", name: "Toranpu", kana: "トランプ" },
-  { id: "tane", name: "Tane", kana: "種" },
-  { id: "narabe", name: "Narabe", kana: "並べ" },
-  { id: "tenka", name: "Tenka", kana: "天下" },
-  { id: "kumimoji", name: "Kumimoji", kana: "組み文字" },
-  { id: "tsunagi", name: "Tsunagi", kana: "繋ぎ" },
-  { id: "jarajara", name: "Jarajara", kana: "ジャラジャラ" },
-  { id: "suido", name: "Suido", kana: "水道" },
   { id: "domino", name: "Domino", kana: "ドミノ" },
-  { id: "kotoba", name: "Kotoba", kana: "言葉" },
-  { id: "sugoroku", name: "Sugoroku", kana: "双六" },
-  { id: "kazu", name: "Kazu", kana: "数" },
-  { id: "meikyuu", name: "Meikyuu", kana: "迷宮" },
-  { id: "hikidashi", name: "Hikidashi", kana: "引き出し" },
-  { id: "chizu", name: "Chizu", kana: "地図" },
-  { id: "bushu", name: "Bushu", kana: "部首" },
-  { id: "tobiishi", name: "Tobiishi", kana: "飛び石" },
-  { id: "jirai", name: "Jirai", kana: "地雷" },
   { id: "gunjin", name: "Gunjin", kana: "軍人" },
-  { id: "karakuri", name: "Karakuri", kana: "からくり" },
+  { id: "narabe", name: "Narabe", kana: "並べ" },
+  { id: "sugoroku", name: "Sugoroku", kana: "双六" },
+  { id: "tenka", name: "Tenka", kana: "天下" },
+  { id: "hitotsu", name: "Hitotsu", kana: "一つ" },
+  { id: "jarajara", name: "Jarajara", kana: "ジャラジャラ" },
+  { id: "kumimoji", name: "Kumimoji", kana: "組み文字" },
+  { id: "toranpu", name: "Toranpu", kana: "トランプ" },
   { id: "houseki", name: "Houseki", kana: "宝石" },
+  { id: "jirai", name: "Jirai", kana: "地雷" },
+  { id: "karakuri", name: "Karakuri", kana: "からくり" },
+  { id: "kazu", name: "Kazu", kana: "数" },
+  { id: "kyuubu", name: "Kyuubu", kana: "キューブ" },
+  { id: "meikyuu", name: "Meikyuu", kana: "迷宮" },
+  { id: "suido", name: "Suido", kana: "水道" },
+  { id: "tobiishi", name: "Tobiishi", kana: "飛び石" },
+  { id: "tsunagi", name: "Tsunagi", kana: "繋ぎ" },
+  { id: "korokoro", name: "Korokoro", kana: "コロコロ" },
+  { id: "tane", name: "Tane", kana: "種" },
+  { id: "bushu", name: "Bushu", kana: "部首" },
+  { id: "hikidashi", name: "Hikidashi", kana: "引き出し" },
+  { id: "kotoba", name: "Kotoba", kana: "言葉" },
+  { id: "address-plus", name: "address-plus", kana: "アドレスプラス", repo: "https://github.com/johnmorrisdotca/address-plus", site: "https://johnmorrisdotca.github.io/address-plus/" },
+  { id: "chizu", name: "Chizu", kana: "地図" },
+  { id: "hata", name: "Hata", kana: "旗" },
+  { id: "kuni", name: "Kuni", kana: "国" },
+  { id: "rest-in-pieces", name: "REST in Pieces", kana: "レスト・イン・ピーシズ", repo: "https://github.com/spxis/rest-in-pieces", site: "https://spxis.github.io/rest-in-pieces/" },
+];
+
+/** The kinds, in display order, with members alphabetical within each kind. */
+export const FAMILY_GROUPS = [
+  { id: "board", en: "Games — board", ja: "ゲーム — ボード", members: ["domino", "gunjin", "narabe", "sugoroku", "tenka"] },
+  { id: "cards", en: "Games — cards & tiles", ja: "ゲーム — カードと牌", members: ["hitotsu", "jarajara", "kumimoji", "toranpu"] },
+  { id: "puzzles", en: "Games — puzzles", ja: "ゲーム — パズル", members: ["houseki", "jirai", "karakuri", "kazu", "kyuubu", "meikyuu", "suido", "tobiishi", "tsunagi"] },
+  { id: "random", en: "Games — dice & random", ja: "ゲーム — ダイスと乱数", members: ["korokoro", "tane"] },
+  { id: "language", en: "Language", ja: "言語", members: ["bushu", "hikidashi", "kotoba"] },
+  { id: "geography", en: "Geography & data", ja: "地理とデータ", members: ["address-plus", "chizu", "hata", "kuni"] },
+  { id: "developer", en: "Developer tools", ja: "開発ツール", members: ["rest-in-pieces"] },
 ];
 
 /**
@@ -106,6 +121,18 @@ export const FAMILY_PITCH = {
   gunjin: "five hidden-rank strategy games with pass-the-device play",
   karakuri: "eight hyper-casual puzzle games, some of them physics: draw a shield, pull pins, cut ropes, slide blocks, pour tubes",
   houseki: "gem and stone matching puzzles: falling triplets, stone collapse, colour chains and gem swap",
+  "address-plus": "parse and format addresses in the United States, Canada and Japan",
+  "hata": "country and regional flags as SVG, at their true proportions and keyed by ISO code",
+  "kuni": "countries and their regions, with ISO codes and names in English and Japanese",
+  "rest-in-pieces": "seeded test data and REST APIs for frontend development, with latency and error drills",
+};
+
+/** Japanese pitches for the new geography and developer members; awaiting native review. */
+export const FAMILY_PITCH_JA = {
+  "address-plus": "アメリカ、カナダ、日本の住所を解析し、整形します",
+  "hata": "国と地域の旗を、本来の縦横比の SVG で収録し、ISO コードで引けます",
+  "kuni": "世界の国と行政区画を、ISO コードと英語・日本語の名前で収めています",
+  "rest-in-pieces": "フロントエンド開発向けの、シード付きテストデータと REST API。遅延やエラーも試せます",
 };
 
 /**
@@ -124,8 +151,8 @@ export const FAMILY_CLOTHS = {
 
 /** The words the shared header and footer say themselves, in both languages. A page's own table is laid over these. */
 export const FAMILY_WORDS = {
-  en: { family: "The family:", licence: "MIT", help: "Help", helpTip: "Show a short note under each option, saying what it does", cloth: "Table cloth", cloth_green: "Green", cloth_blue: "Blue", cloth_red: "Red", cloth_black: "Black", cloth_wood: "Wood" },
-  ja: { family: "姉妹パッケージ:", licence: "MIT", help: "説明", helpTip: "各項目の下に、その使い方を短く表示します", cloth: "テーブルの色", cloth_green: "緑", cloth_blue: "青", cloth_red: "赤", cloth_black: "黒", cloth_wood: "木目" },
+  en: { family: "The family:", licence: "MIT", help: "Help", helpTip: "Show a short note under each option, saying what it does", cloth: "Table cloth", cloth_green: "Green", cloth_blue: "Blue", cloth_red: "Red", cloth_black: "Black", cloth_wood: "Wood", ...Object.fromEntries(FAMILY_GROUPS.map((group) => [`family_${group.id}`, group.en])) },
+  ja: { family: "姉妹パッケージ:", licence: "MIT", help: "説明", helpTip: "各項目の下に、その使い方を短く表示します", cloth: "テーブルの色", cloth_green: "緑", cloth_blue: "青", cloth_red: "赤", cloth_black: "黒", cloth_wood: "木目", ...Object.fromEntries(FAMILY_GROUPS.map((group) => [`family_${group.id}`, group.ja])) },
 };
 
 const escape = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -134,8 +161,10 @@ const member = (id) => {
   if (found === undefined) throw new Error(`${id} is not in the family`);
   return found;
 };
-const repo = (id) => `https://github.com/${OWNER}/${id}`;
-const site = (id) => `https://${OWNER}.github.io/${id}/`;
+export const familyRepo = (id) => member(id).repo ?? `https://github.com/${OWNER}/${id}`;
+const repo = familyRepo;
+export const familySite = (id) => member(id).site ?? `https://${OWNER}.github.io/${id}/`;
+const site = familySite;
 const npm = (id) => `https://www.npmjs.com/package/@${OWNER}/${id}`;
 
 /** The lines of <head> every site shares: charset, viewport, title, description, theme colour, Open Graph. The page adds its icon and its stylesheets. */
@@ -190,11 +219,18 @@ export function familyUnreviewed({ id }) {
 /** The footer: the page's own note (data-say="foot"), the install line and the licence, and the family, each by its demo site, this package marked as the one being read. */
 export function familyFooter({ id }) {
   member(id);
-  const links = FAMILY.map((one) => `<a href="${site(one.id)}"${one.id === id ? ` aria-current="page"` : ""}>${one.name}</a>`).join("");
+  const groups = FAMILY_GROUPS.map((group) => {
+    const links = group.members.map((memberId) => {
+      const one = member(memberId);
+      const pitch = FAMILY_PITCH_JA[one.id] === undefined ? "" : ` data-tip-en="${escape(FAMILY_PITCH[one.id])}" data-tip-ja="${escape(FAMILY_PITCH_JA[one.id])}"`;
+      return `<a href="${site(one.id)}"${one.id === id ? ` aria-current="page"` : ""}${pitch}>${escape(one.name)}</a>`;
+    }).join("");
+    return `<span class="family-group" style="display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;flex:1 1 100%;min-width:0"><strong data-say="family_${group.id}">${escape(group.en)}</strong>${links}</span>`;
+  }).join("");
   return `<footer>
         <span data-say="foot"></span>
         <span><code>npm install @${OWNER}/${id}</code> · <a href="${repo(id)}/blob/main/LICENSE" data-say="licence"></a> © John Morris</span>
-        <span class="family"><span data-say="family"></span>${links}<a href="https://itsutsu.com">itsutsu.com</a></span>
+        <span class="family"><span data-say="family"></span>${groups}<a href="https://itsutsu.com">itsutsu.com</a></span>
       </footer>`;
 }
 
