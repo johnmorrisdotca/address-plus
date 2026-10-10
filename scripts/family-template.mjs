@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-09-embed-builder";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-09-embed-builder-words";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -77,16 +77,16 @@ export const FAMILY = [
   { id: "chizu", name: "Chizu", kana: "地図" },
   { id: "hata", name: "Hata", kana: "旗" },
   { id: "kuni", name: "Kuni", kana: "国" },
-  { id: "rest-in-pieces", name: "REST in Pieces", kana: "レスト・イン・ピーシズ", repo: "https://github.com/spxis/rest-in-pieces", site: "https://spxis.github.io/rest-in-pieces/" },
+  { id: "rest-in-pieces", name: "REST in Pieces", kana: "レスト・イン・ピーシーズ", repo: "https://github.com/spxis/rest-in-pieces", site: "https://spxis.github.io/rest-in-pieces/" },
 ];
 
 /** The kinds, in display order, with members alphabetical within each kind. */
 export const FAMILY_GROUPS = [
-  { id: "board", en: "Games — board", ja: "ゲーム — ボード", members: ["domino", "gunjin", "narabe", "sugoroku", "tenka"] },
-  { id: "cards", en: "Games — cards & tiles", ja: "ゲーム — カードと牌", members: ["hitotsu", "jarajara", "kumimoji", "toranpu"] },
-  { id: "puzzles", en: "Games — puzzles", ja: "ゲーム — パズル", members: ["houseki", "jirai", "karakuri", "kazu", "kyuubu", "meikyuu", "suido", "tobiishi", "tsunagi"] },
-  { id: "random", en: "Games — dice & random", ja: "ゲーム — ダイスと乱数", members: ["korokoro", "tane"] },
-  { id: "language", en: "Language", ja: "言語", members: ["bushu", "hikidashi", "kotoba"] },
+  { id: "board", en: "Games — board", ja: "ボードゲーム", members: ["domino", "gunjin", "narabe", "sugoroku", "tenka"] },
+  { id: "cards", en: "Games — cards & tiles", ja: "カードと牌のゲーム", members: ["hitotsu", "jarajara", "kumimoji", "toranpu"] },
+  { id: "puzzles", en: "Games — puzzles", ja: "パズルゲーム", members: ["houseki", "jirai", "karakuri", "kazu", "kyuubu", "meikyuu", "suido", "tobiishi", "tsunagi"] },
+  { id: "random", en: "Games — dice & random", ja: "ダイスと乱数", members: ["korokoro", "tane"] },
+  { id: "language", en: "Language", ja: "ことばと文字", members: ["bushu", "hikidashi", "kotoba"] },
   { id: "geography", en: "Geography & data", ja: "地理とデータ", members: ["address-plus", "chizu", "hata", "kuni"] },
   { id: "developer", en: "Developer tools", ja: "開発ツール", members: ["rest-in-pieces"] },
 ];
@@ -121,7 +121,7 @@ export const FAMILY_PITCH = {
   gunjin: "five hidden-rank strategy games with pass-the-device play",
   karakuri: "eight hyper-casual puzzle games, some of them physics: draw a shield, pull pins, cut ropes, slide blocks, pour tubes",
   houseki: "gem and stone matching puzzles: falling triplets, stone collapse, colour chains and gem swap",
-  "address-plus": "parse and format addresses in the United States, Canada and Japan",
+  "address-plus": "parse and format addresses in the United States, Canada, Japan, Australia and the United Kingdom",
   "hata": "country and regional flags as SVG, at their true proportions and keyed by ISO code",
   "kuni": "countries and their regions, with ISO codes and names in English and Japanese",
   "rest-in-pieces": "seeded test data and REST APIs for frontend development, with latency and error drills",
@@ -129,10 +129,10 @@ export const FAMILY_PITCH = {
 
 /** Japanese pitches for the new geography and developer members; awaiting native review. */
 export const FAMILY_PITCH_JA = {
-  "address-plus": "アメリカ、カナダ、日本の住所を解析し、整形します",
-  "hata": "国と地域の旗を、本来の縦横比の SVG で収録し、ISO コードで引けます",
-  "kuni": "世界の国と行政区画を、ISO コードと英語・日本語の名前で収めています",
-  "rest-in-pieces": "フロントエンド開発向けの、シード付きテストデータと REST API。遅延やエラーも試せます",
+  "address-plus": "アメリカ、カナダ、日本、オーストラリア、イギリスの住所を解析・整形",
+  "hata": "国と行政区画の旗を、実際の縦横比のSVGで収録。ISOコードで引けます",
+  "kuni": "世界の国と行政区画を、ISOコードと英語・日本語の名称つきで収録",
+  "rest-in-pieces": "フロントエンド開発向けの、シード値で固定できるテストデータとREST API（遅延・エラーの再現つき）",
 };
 
 /**
@@ -152,7 +152,7 @@ export const FAMILY_CLOTHS = {
 /** The words the shared header and footer say themselves, in both languages. A page's own table is laid over these. */
 export const FAMILY_WORDS = {
   en: { family: "The family:", licence: "MIT", help: "Help", helpTip: "Show a short note under each option, saying what it does", cloth: "Table cloth", cloth_green: "Green", cloth_blue: "Blue", cloth_red: "Red", cloth_black: "Black", cloth_wood: "Wood", ...Object.fromEntries(FAMILY_GROUPS.map((group) => [`family_${group.id}`, group.en])) },
-  ja: { family: "姉妹パッケージ:", licence: "MIT", help: "説明", helpTip: "各項目の下に、その使い方を短く表示します", cloth: "テーブルの色", cloth_green: "緑", cloth_blue: "青", cloth_red: "赤", cloth_black: "黒", cloth_wood: "木目", ...Object.fromEntries(FAMILY_GROUPS.map((group) => [`family_${group.id}`, group.ja])) },
+  ja: { family: "ファミリー：", licence: "MIT", help: "説明", helpTip: "各項目の下に、その使い方を短く表示します", cloth: "テーブルの色", cloth_green: "緑", cloth_blue: "青", cloth_red: "赤", cloth_black: "黒", cloth_wood: "木目", ...Object.fromEntries(FAMILY_GROUPS.map((group) => [`family_${group.id}`, group.ja])) },
 };
 
 const escape = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -397,7 +397,49 @@ function familyLanguage(options) {
  * version and words; rendering a live preview remains the package's job.
  * This function is self-contained so a site can emit it as a browser module.
  */
+export const FAMILY_EMBED_BUILDER_WORDS = {
+  "en": {
+    "pitch": "Choose settings, preview the embed, and copy the code for your page.",
+    "previewTitle": "Preview",
+    "makerLabel": "What to build",
+    "notSet": "Not set",
+    "on": "On",
+    "off": "Off",
+    "reset": "Reset",
+    "startAgain": "Start again",
+    "copy": "Copy code",
+    "copied": "Copied.",
+    "copyLink": "Copy a link to this setup",
+    "linkCopied": "The link is copied.",
+    "codeTitle": "The code",
+    "codeText": "Choose how to embed this on your page.",
+    "onlyDifferent": "Only choices that differ from the defaults are included in the code.",
+    "defaultIs": "Default: {value}"
+  },
+  "ja": {
+    "pitch": "設定を選んでプレビューを確認し、ページに埋め込むコードをコピーできます。",
+    "previewTitle": "プレビュー",
+    "makerLabel": "作るもの",
+    "notSet": "指定なし",
+    "on": "オン",
+    "off": "オフ",
+    "reset": "元に戻す",
+    "startAgain": "最初からやり直す",
+    "copy": "コードをコピー",
+    "copied": "コピーしました。",
+    "copyLink": "この設定へのリンクをコピー",
+    "linkCopied": "リンクをコピーしました。",
+    "codeTitle": "コード",
+    "codeText": "ページへの埋め込み方法を選びます。",
+    "onlyDifferent": "初期値と異なる選択だけがコードに含まれます。",
+    "defaultIs": "初期値：{value}"
+  }
+};
+
 export function familyEmbedBuilder(config) {
+  const japaneseChoices = {"small": "小", "medium": "中", "large": "大", "auto": "自動", "light": "明るい", "dark": "暗い", "en": "英語", "ja": "日本語", "fr": "フランス語", "on": "オン", "off": "オフ", "none": "なし", "standard": "標準", "paper": "紙", "stickerless": "ステッカーレス", "focus": "フォーカス中", "page": "ページ全体", "fast": "速い", "normal": "標準", "slow": "遅い", "green": "緑", "blue": "青", "red": "赤", "black": "黒", "wood": "木", "own": "本来の縦横比", "round": "丸", "plain": "シンプル", "four-colour": "4色", "english": "イギリス式", "realistic": "写実的", "classic-red": "クラシック（赤）", "classic-blue": "クラシック（青）", "ink-dots": "水玉", "rank": "数字順", "suit": "スート順", "face": "絵札順", "front": "先頭", "end": "末尾", "dealt": "配られた順", "kind": "種類順", "code": "コード順", "one": "1つだけ", "jade": "翡翠", "bamboo": "竹", "ink": "墨", "jarajara": "ジャラジャラ", "riichi": "リーチ麻雀", "riichi-black": "リーチ麻雀（黒）", "marble": "マーブル", "bright": "鮮やか", "colour-blind": "色覚に配慮", "soft": "やわらかい", "classic": "通常", "portals": "ワープ", "colours": "色", "numbers": "数字", "marbles": "玉", "lines": "線", "clockwise": "時計回り", "anticlockwise": "反時計回り", "world": "世界", "water": "水域", "all": "すべて", "place": "答えを入れる", "show": "表示", "count": "数える", "easy": "やさしい", "hard": "むずかしい"};
+  const displayChoice = (option, lang, value) => option.choiceLabels?.[lang]?.[value] ?? (lang === "ja" ? option.id === "level" && value === "medium" ? "ふつう" : japaneseChoices[value] : undefined) ?? value;
+  const titleFor = (settings) => String(globalThis.document?.documentElement?.lang ?? settings.lang ?? "en").startsWith("ja") ? config.titleJa ?? config.title ?? "埋め込み" : config.title ?? "Embed";
   const { packageName, major, site, makers, options = [], groups = {}, leftOut = {} } = config;
   if (!packageName || !/^\d+$/.test(String(major))) throw new Error("An embed builder needs a package name and npm major");
   const cdn = `https://cdn.jsdelivr.net/npm/${packageName}@${major}/dist/element-define.js`;
@@ -493,7 +535,7 @@ export function familyEmbedBuilder(config) {
     if (format === "element" || format === "html") return `<script type="module" src="${cdn}"></script>\n${tag}`;
     if (format === "image") {
       const src = spec.image?.(settings);
-      return src ? `<img src="${escape(src)}" alt="${escape(settings.label ?? config.title ?? "")}" />` : null;
+      return src ? `<img src="${escape(src)}" alt="${escape(settings.label ?? titleFor(settings))}" />` : null;
     }
     if (format === "iframe" || format === "url") {
       const address = embedAddress(list, settings, maker);
@@ -502,7 +544,7 @@ export function familyEmbedBuilder(config) {
       if (format === "url") return src;
       const width = frameSide(maker, settings);
       const height = typeof spec.height === "function" ? spec.height(settings) : spec.height ?? width;
-      return `<iframe src="${escape(src)}" title="${escape(config.title ?? spec.tag)}" width="${width}" height="${height}" style="border:0;max-width:100%" loading="lazy"></iframe>`;
+      return `<iframe src="${escape(src)}" title="${escape(titleFor(settings))}" width="${width}" height="${height}" style="border:0;max-width:100%" loading="lazy"></iframe>`;
     }
     if (format === "react") {
       const props = attrs.map(([name, value]) => {
@@ -562,7 +604,14 @@ export function familyEmbedBuilder(config) {
     if (missing.length) throw new Error(`Embed options need rows or reasons: ${missing.join(", ")}`);
     return true;
   }
-  const api = { makers, formats, options, groups, leftOut, cdn, entriesFor, attributesFor, embedAddress, frameSide, codeFor, toAddress, fromAddress, validateCoverage,
+  /** Restore a copied setup from schema defaults; starter choices apply only on a fresh visit. */
+  function restoreState(address, initial = {}, list = options) {
+    const asked = fromAddress(address, list);
+    const linked = new globalThis.URLSearchParams(String(address ?? "").replace(/^#/, "")).has("make");
+    return { maker: asked.maker, settings: { ...(linked ? {} : initial[asked.maker]), ...asked.settings } };
+  }
+
+  const api = { makers, formats, options, groups, leftOut, cdn, entriesFor, attributesFor, embedAddress, frameSide, codeFor, toAddress, fromAddress, restoreState, validateCoverage,
     allCode: (maker, list, settings) => Object.fromEntries(specFor(maker).formats.map((format) => [format, codeFor(maker, format, list, settings)])),
     liveFor: (maker, list, settings) => ({ call: entriesFor(list, settings, maker), attrs: specFor(maker).element === undefined ? [] : attributesFor(list, settings, maker) }),
   };
@@ -571,23 +620,23 @@ export function familyEmbedBuilder(config) {
   if (typeof language !== "function" || typeof renderPreview !== "function") throw new Error("A builder needs a language helper and live preview renderer");
     const $ = (id) => globalThis.document.getElementById(id);
 
-    const WORDS = words;
+    const WORDS = { en: { ...FAMILY_EMBED_BUILDER_WORDS.en, ...words.en }, ja: { ...FAMILY_EMBED_BUILDER_WORDS.ja, ...words.ja } };
     const START = initial;
     const optionList = api.options;
     const optionGroups = api.groups;
     const makerList = api.makers;
     const formatList = api.formats;
-    const { codeFor, fromAddress, toAddress } = api;
-    const asked = fromAddress(globalThis.location.hash, optionList);
+    const { codeFor, toAddress } = api;
+    const asked = restoreState(globalThis.location.hash, START, optionList);
     let maker = asked.maker;
-    let settings = { ...START[maker], ...asked.settings };
+    let settings = asked.settings;
     let format = new globalThis.URLSearchParams(globalThis.location.hash.replace(/^#/, "")).get("show") ?? "";
     let preview = null;
     let previewKey = "";
     let typing = 0;
 
     const page = language({ id: config.id, words: WORDS, onChange: () => draw() });
-    const say = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), page.word(key) ?? key);
+    const say = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), WORDS[page.lang]?.[key] ?? page.word(key) ?? key);
 
     const spec = () => makerList[maker];
     /** Whether a choice is there for the way of making a preview chosen. */
@@ -676,6 +725,7 @@ export function familyEmbedBuilder(config) {
     function setValue(option, value, slowly = false) {
       if (value === undefined || value === "") delete settings[option.id];
       else settings[option.id] = value;
+      keepAddress();
       changed(slowly);
     }
 
@@ -735,7 +785,7 @@ export function familyEmbedBuilder(config) {
         main.id = `opt-${option.id}`;
         const draw = () => {
           main.setAttribute("aria-pressed", String(Boolean(valueOf(option))));
-          main.textContent = `${name}: ${say(valueOf(option) ? "on" : "off")}`;
+          main.textContent = `${name}${page.lang === "ja" ? "：" : ": "}${say(valueOf(option) ? "on" : "off")}`;
         };
         draw();
         main.addEventListener("click", () => {
@@ -752,7 +802,7 @@ export function familyEmbedBuilder(config) {
         for (const value of option.choices) {
           const item = globalThis.document.createElement("option");
           item.value = value;
-          item.textContent = option.choiceLabels?.[page.lang]?.[value] ?? value;
+          item.textContent = displayChoice(option, page.lang, value);
           main.append(item);
         }
         main.value = String(valueOf(option) ?? "");
@@ -762,7 +812,7 @@ export function familyEmbedBuilder(config) {
       }
       if (option.kind === "choice") {
         const values = [...(option.default === undefined ? [""] : []), ...option.choices];
-        main = segmented(option, values, (value) => (value === "" ? say("notSet") : option.choiceLabels?.[page.lang]?.[value] ?? value));
+        main = segmented(option, values, (value) => (value === "" ? say("notSet") : displayChoice(option, page.lang, value)));
         const heading = globalThis.document.createElement("span");
         heading.className = "fam-label";
         heading.id = `opt-${option.id}-label`;
@@ -913,8 +963,8 @@ export function familyEmbedBuilder(config) {
         into.textContent = "";
       }
     };
-    $("bld-copy").addEventListener("click", () => copy($("bld-code").textContent, $("bld-code-copied"), "copied"));
-    $("bld-link").addEventListener("click", () => copy(globalThis.location.href, $("bld-copied"), "linkCopied"));
+    $("bld-copy").addEventListener("click", () => { changed(); if ($("bld-code").textContent !== "") void copy($("bld-code").textContent, $("bld-code-copied"), "copied"); });
+    $("bld-link").addEventListener("click", () => { keepAddress(); void copy(globalThis.location.href, $("bld-copied"), "linkCopied"); });
 
     draw();
     globalThis.document.documentElement.dataset.ready = "true";
