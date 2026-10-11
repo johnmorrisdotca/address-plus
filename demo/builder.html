@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- family:builderHead -->
+    <link rel="stylesheet" href="family.css" />
+    <link rel="stylesheet" href="builder.css" />
+  </head>
+  <body>
+    <main class="family-page">
+      <!-- family:builderHeader -->
+      <div class="family-layout family-bld-layout">
+        <div class="family-side family-bld-preview">
+          <section class="fam-felt family-felt" aria-labelledby="bld-preview-title">
+            <h2 class="family-watch-title" id="bld-preview-title" data-say="previewTitle"></h2>
+            <div class="family-bld-stage" id="bld-stage" data-testid="bld-stage"></div>
+            <p class="fam-hint" id="bld-note" data-testid="bld-note" aria-live="polite"></p>
+          </section>
+          <div class="fam-actions">
+            <button class="fam-button" id="bld-link" type="button" data-say="copyLink" data-testid="bld-link"></button>
+            <button
+              class="fam-button"
+              id="bld-reset"
+              type="button"
+              data-say="startAgain"
+              data-testid="bld-reset"
+            ></button>
+          </div>
+          <p class="fam-fine" id="bld-copied" data-testid="bld-copied" aria-live="polite"></p>
+        </div>
+
+        <div class="family-bld-controls">
+          <div class="fam-panel">
+            <div class="fam-seg" id="bld-makers" role="group" data-say-label="makerLabel" data-testid="bld-makers">
+              <button type="button" data-maker="field" data-say="makerField"></button>
+            </div>
+            <p class="fam-muted" id="bld-maker-says" data-testid="bld-maker-says"></p>
+          </div>
+          <div id="bld-groups" data-testid="bld-groups"></div>
+        </div>
+      </div>
+
+      <section class="more family-bld-code" aria-labelledby="bld-code-title">
+        <h2 id="bld-code-title" data-say="codeTitle"></h2>
+        <p data-say="codeText"></p>
+        <div class="fam-tabs" role="tablist" id="bld-formats" data-testid="bld-formats"></div>
+        <div id="bld-panel" role="tabpanel" data-testid="bld-panel">
+          <pre><code id="bld-code" data-testid="bld-code"></code></pre>
+          <div class="fam-actions">
+            <button
+              class="fam-button"
+              data-primary="true"
+              id="bld-copy"
+              type="button"
+              data-say="copy"
+              data-testid="bld-copy"
+            ></button>
+          </div>
+          <p class="fam-fine" id="bld-code-copied" data-testid="bld-code-copied" aria-live="polite"></p>
+        </div>
+      </section>
+      <!-- family:unreviewed -->
+      <!-- family:footer -->
+    </main>
+    <!-- family:script -->
+    <script type="module" src="builder.js"></script>
+  </body>
+</html>

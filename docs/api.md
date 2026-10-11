@@ -1,6 +1,6 @@
 # API reference
 
-Every export of every entry point of @johnmorrisdotca/address-plus 1.5.0, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by `pnpm docs:make`, and `pnpm docs:check` holds every example's answer to the built package; the same reference is on the demo site at https://johnmorrisdotca.github.io/address-plus/api.html. Editors show the same TSDoc on hover, from the published type definitions.
+Every export of every entry point of @johnmorrisdotca/address-plus 1.6.0, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by `pnpm docs:make`, and `pnpm docs:check` holds every example's answer to the built package; the same reference is on the demo site at https://johnmorrisdotca.github.io/address-plus/api.html. Editors show the same TSDoc on hover, from the published type definitions.
 
 ## @johnmorrisdotca/address-plus
 
@@ -6548,4 +6548,210 @@ Options for the validators: which parts an address must have, which kinds are al
 ```js
 validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
 // ["MISSING_POSTAL_CODE"]
+```
+
+
+## @johnmorrisdotca/address-plus/element
+
+### ADDRESS_FIELD_COUNTRIES
+
+const
+
+```ts
+ADDRESS_FIELD_COUNTRIES: readonly ["US", "CA", "JP", "AU", "GB", "FR", "DE"]
+```
+
+Seven built-in field countries; auto detects among them.
+
+```js
+ADDRESS_FIELD_COUNTRIES.length
+// 7
+```
+
+### ADDRESS_FIELD_PARSE_KEYS
+
+const
+
+```ts
+ADDRESS_FIELD_PARSE_KEYS: string[]
+```
+
+Native parser options checked by builder coverage.
+
+```js
+ADDRESS_FIELD_PARSE_KEYS.includes("strict")
+// true
+```
+
+### ADDRESS_FIELD_VALIDATION_KEYS
+
+const
+
+```ts
+ADDRESS_FIELD_VALIDATION_KEYS: string[]
+```
+
+Native validator options checked by builder coverage.
+
+```js
+ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode")
+// true
+```
+
+### AddressField
+
+const
+
+```ts
+AddressField: typeof AddressField
+```
+
+A form-associated address input using the seven native country parsers. Import this entry safely on a server; defineField registers it in a browser. The raw value is submitted under name; address and validation are local getters.
+
+```js
+typeof AddressField
+// "function"
+```
+
+### AddressFieldOptions
+
+type
+
+```ts
+interface AddressFieldOptions {
+  parse?: ParseOptions; // All native parser choices, including custom country modules
+  validation?: ValidationOptions; // All native validation requirements
+  strings?: Partial<(typeof FIELD_WORDS)["en"]>; // Field words over English or Japanese
+  onChange?: (field: AddressField) => void; // Trusted local access to value, address and validation
+}
+```
+
+Full native settings and a private callback; raw addresses never enter public events.
+
+```js
+ADDRESS_FIELD_PARSE_KEYS.includes("countries")
+// true
+```
+
+### defineField
+
+function
+
+```ts
+defineField(tagName?: string, registry?: CustomElementRegistry | undefined): void
+```
+
+Register the form field under its default or a custom tag, idempotently; safe on a server.
+
+- `tagName`: The tag name; address-field by default.
+- `registry`: The browser registry, undefined on a server.
+- Returns: Nothing; existing definitions are preserved.
+
+```js
+defineField();
+typeof defineField
+// "function"
+```
+
+
+## @johnmorrisdotca/address-plus/element/define
+
+### ADDRESS_FIELD_COUNTRIES
+
+const
+
+```ts
+ADDRESS_FIELD_COUNTRIES: readonly ["US", "CA", "JP", "AU", "GB", "FR", "DE"]
+```
+
+Seven built-in field countries; auto detects among them.
+
+```js
+ADDRESS_FIELD_COUNTRIES.length
+// 7
+```
+
+### ADDRESS_FIELD_PARSE_KEYS
+
+const
+
+```ts
+ADDRESS_FIELD_PARSE_KEYS: string[]
+```
+
+Native parser options checked by builder coverage.
+
+```js
+ADDRESS_FIELD_PARSE_KEYS.includes("strict")
+// true
+```
+
+### ADDRESS_FIELD_VALIDATION_KEYS
+
+const
+
+```ts
+ADDRESS_FIELD_VALIDATION_KEYS: string[]
+```
+
+Native validator options checked by builder coverage.
+
+```js
+ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode")
+// true
+```
+
+### AddressField
+
+const
+
+```ts
+AddressField: typeof AddressField
+```
+
+A form-associated address input using the seven native country parsers. Import this entry safely on a server; defineField registers it in a browser. The raw value is submitted under name; address and validation are local getters.
+
+```js
+typeof AddressField
+// "function"
+```
+
+### AddressFieldOptions
+
+type
+
+```ts
+interface AddressFieldOptions {
+  parse?: ParseOptions; // All native parser choices, including custom country modules
+  validation?: ValidationOptions; // All native validation requirements
+  strings?: Partial<(typeof FIELD_WORDS)["en"]>; // Field words over English or Japanese
+  onChange?: (field: AddressField) => void; // Trusted local access to value, address and validation
+}
+```
+
+Full native settings and a private callback; raw addresses never enter public events.
+
+```js
+ADDRESS_FIELD_PARSE_KEYS.includes("countries")
+// true
+```
+
+### defineField
+
+function
+
+```ts
+defineField(tagName?: string, registry?: CustomElementRegistry | undefined): void
+```
+
+Register the form field under its default or a custom tag, idempotently; safe on a server.
+
+- `tagName`: The tag name; address-field by default.
+- `registry`: The browser registry, undefined on a server.
+- Returns: Nothing; existing definitions are preserved.
+
+```js
+defineField();
+typeof defineField
+// "function"
 ```

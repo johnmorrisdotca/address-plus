@@ -138,6 +138,9 @@ function checkTypes(project) {
       `import { parseUKAddress, unitedKingdom } from "${PACKAGE_NAME}/gb";`,
       `import { france, parseFrenchAddress } from "${PACKAGE_NAME}/fr";`,
       `import { germany, parseGermanAddress } from "${PACKAGE_NAME}/de";`,
+      `import { AddressField, defineField, type AddressFieldOptions } from "${PACKAGE_NAME}/element";`,
+      "const fieldOptions: AddressFieldOptions = { parse: { strict: true } };",
+      "console.log(typeof AddressField, typeof defineField, fieldOptions.parse?.strict);",
       "",
       "const us: ParsedAddress | null = parseLocation('1600 Pennsylvania Avenue NW, Washington, DC 20500');",
       "const jp = parseJapaneseAddress('東京都千代田区千代田1-1');",
@@ -254,6 +257,8 @@ function main() {
     checkEntry(project, "./gb", "parseUKAddress");
     checkEntry(project, "./fr", "parseFrenchAddress");
     checkEntry(project, "./de", "parseGermanAddress");
+    checkEntry(project, "./element", "defineField");
+    checkEntry(project, "./element/define", "defineField");
     checkTypes(project);
     checkJpBundle(join(project, "node_modules", ...PACKAGE_NAME.split("/")));
     checkCountryBundles(join(project, "node_modules", ...PACKAGE_NAME.split("/")));

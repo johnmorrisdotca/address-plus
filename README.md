@@ -53,6 +53,19 @@ pnpm add @johnmorrisdotca/address-plus
 yarn add @johnmorrisdotca/address-plus
 ```
 
+
+## Address field for a form
+
+Use the [embed builder](https://johnmorrisdotca.github.io/address-plus/builder.html)
+for a live preview and framework/HTML snippets. Import
+`@johnmorrisdotca/address-plus/element/define`, then put
+`<address-field country="CA" name="shipping-address" required></address-field>`
+inside a form. It submits the raw text like a normal field and exposes parsed
+results locally. The optional browser entry includes all seven country parsers;
+the core and individual country imports remain separate. Read the
+[field guide](docs/embeds.md) for host options, form reset/validity and private
+frame messages. Validation checks format, not whether mail can be delivered.
+
 ## Usage
 
 ### JavaScript (ES6+)

@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/test-file.json",
+  "name": "Address field embeds",
+  "description": "Public fixture addresses and boolean aliases for browser form tests",
+  "tests": {
+    "countries": [
+      {
+        "country": "US",
+        "address": "1600 Pennsylvania Ave NW, Washington, DC 20500"
+      },
+      {
+        "country": "CA",
+        "address": "111 Wellington St, Ottawa ON K1A 0A9"
+      },
+      {
+        "country": "JP",
+        "address": "東京都千代田区丸の内1-2-3"
+      },
+      {
+        "country": "AU",
+        "address": "3/12 Smith St, Parramatta NSW 2150"
+      },
+      {
+        "country": "GB",
+        "address": "10 Downing Street, London SW1A 2AA"
+      },
+      {
+        "country": "FR",
+        "address": "12 rue de la Paix, 75002 Paris"
+      },
+      {
+        "country": "DE",
+        "address": "Hauptstraße 12, 10115 Berlin"
+      }
+    ],
+    "off": [
+      {
+        "value": "off"
+      },
+      {
+        "value": "false"
+      },
+      {
+        "value": "no"
+      },
+      {
+        "value": "0"
+      }
+    ]
+  }
+}

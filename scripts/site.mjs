@@ -6,7 +6,14 @@ import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } f
 import { build } from "tsup";
 
 import { API_CSS, apiOf, apiPage, header, ICON, MEMBER, runExamples } from "./api.mjs";
-import { FAMILY_SCRIPT, familyFooter, familyHead, familyUnreviewed } from "./family-template.mjs";
+import {
+  FAMILY_EMBED_BUILDER_WORDS,
+  FAMILY_SCRIPT,
+  familyEmbedBuilder,
+  familyFooter,
+  familyHead,
+  familyUnreviewed,
+} from "./family-template.mjs";
 
 const { id } = MEMBER;
 
@@ -302,7 +309,13 @@ function page(uses) {
   </head>
   <body>
     <main>
-      ${header({ id, links: [{ href: "api.html", say: "pageApi" }] })}
+      ${header({
+        id,
+        links: [
+          { href: "api.html", say: "pageApi" },
+          { href: "builder.html", say: "pageBuilder" },
+        ],
+      })}
       <div class="jobs">
       ${panels.slice(0, 6).join("\n      ")}
       ${bulkSection}
@@ -342,6 +355,8 @@ await build({
   config: false,
   entry: {
     index: "src/index.ts",
+    element: "src/element.ts",
+    "element-define": "src/element-define.ts",
     au: "src/au/index.ts",
     de: "src/de/index.ts",
     fr: "src/fr/index.ts",
@@ -350,7 +365,7 @@ await build({
   format: ["esm"],
   platform: "browser",
   target: "es2022",
-  splitting: false,
+  splitting: true,
   noExternal: [/.*/],
   outDir: "site/lib",
   dts: false,
@@ -393,3 +408,27 @@ writeFileSync("site/corpus.json", JSON.stringify(corpus));
 writeFileSync("site/api.css", API_CSS);
 writeFileSync("site/api.html", apiPage({ api, examples }));
 console.log("site/ is ready: serve it, or let the Pages workflow publish it.");
+
+const packageInfo = JSON.parse(readFileSync("package.json", "utf8"));
+writeFileSync("site/field-version.js", `export const PACKAGE_VERSION = ${JSON.stringify(packageInfo.version)};\n`);
+writeFileSync(
+  "site/family-embed-builder.js",
+  `export const FAMILY_EMBED_BUILDER_WORDS = ${JSON.stringify(FAMILY_EMBED_BUILDER_WORDS)};\nexport ${familyEmbedBuilder.toString()};\n`,
+);
+const builderParts = {
+  builderHead: familyHead({
+    id,
+    title: "Address Plus · build a form field embed",
+    description: "Choose a country and copy a private address input for a form.",
+  }),
+  builderHeader: header({ id, links: [{ href: "./", say: "toGallery" }] }),
+  unreviewed: familyUnreviewed({ id }),
+  footer: familyFooter({ id }),
+  script: `<script>${FAMILY_SCRIPT}</script>`,
+};
+writeFileSync(
+  "site/builder.html",
+  readFileSync("demo/builder.html", "utf8").replace(/<!-- family:([A-Za-z]+) -->/g, (_match, key) => builderParts[key]),
+);
+cpSync("demo/embed", "site/embed", { recursive: true });
+for (const file of ["builder.js", "builder.css"]) cpSync(`demo/${file}`, `site/${file}`);

@@ -166,7 +166,8 @@ export async function exampleScope() {
   const countries = await Promise.all(
     ["au", "gb", "fr", "de"].map((entry) => import(pathToFileURL(join(root, "dist", entry, "index.js")).href)),
   );
-  const scope = { ...Object.assign({}, ...countries), ...named, parser };
+  const elements = await import(pathToFileURL(join(root, "dist", "element.js")).href);
+  const scope = { ...Object.assign({}, ...countries), ...elements, ...named, parser };
   const names = Object.keys(scope).filter((key) => /^[A-Za-z_$][\w$]*$/.test(key));
   return (code) => {
     const lines = code.trim().split("\n");

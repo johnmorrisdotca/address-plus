@@ -1,0 +1,82 @@
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.family-bld-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 24px;
+}
+.family-bld-preview,
+.family-bld-controls {
+  min-width: 0;
+}
+.family-bld-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 24px;
+  overflow: hidden;
+}
+.family-bld-stage address-plus-table {
+  max-width: 100%;
+}
+.family-bld-group {
+  margin: 12px 0;
+}
+.family-bld-options {
+  display: grid;
+  gap: 16px;
+  padding-top: 12px;
+}
+.family-bld-option {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.family-bld-number {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.family-bld-number input[type="number"] {
+  max-width: 100px;
+}
+.family-bld-number input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+.family-bld-option select {
+  width: 100%;
+  max-width: 100%;
+}
+.family-bld-code {
+  margin-top: 24px;
+}
+.family-bld-code pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  main {
+    padding: 16px;
+  }
+  .family-bld-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.family-bld-code .fam-tabs {
+  flex-wrap: wrap;
+}
+.family-bld-code .fam-tabs button {
+  min-width: 90px;
+}
+
+.family-bld-stage address-plus-table {
+  background: Canvas;
+  border-radius: 12px;
+  padding: 12px;
+}

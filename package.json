@@ -36,9 +36,22 @@
       "types": "./dist/fr/index.d.ts",
       "import": "./dist/fr/index.js",
       "require": "./dist/fr/index.cjs"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js",
+      "require": "./dist/element.cjs"
+    },
+    "./element/define": {
+      "types": "./dist/element-define.d.ts",
+      "import": "./dist/element-define.js",
+      "require": "./dist/element-define.cjs"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/element-define.js",
+    "./dist/element-define.cjs"
+  ],
   "files": [
     "dist"
   ],

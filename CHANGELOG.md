@@ -4,6 +4,15 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Added
+
+- Add an optional form-associated `address-field` and `defineField`, with native parsing/validation for seven countries, reflected display/form settings, full parser/validator host options, local structured getters and ordinary form reset/disabled/validity support.
+- Add shared builder and validated iframe; entered addresses stay out of setup links, code and public events. Events compose through shadow roots with country and validation counts only.
+
+### Changed
+
+- Bundle both helper dependencies for browser-loadable field scripts; keep individual parser/country entry points and their table isolation.
+
 
 
 ### Added
