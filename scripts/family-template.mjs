@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-09-embed-builder-words";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-11-seven-country-embeds";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -121,7 +121,7 @@ export const FAMILY_PITCH = {
   gunjin: "five hidden-rank strategy games with pass-the-device play",
   karakuri: "eight hyper-casual puzzle games, some of them physics: draw a shield, pull pins, cut ropes, slide blocks, pour tubes",
   houseki: "gem and stone matching puzzles: falling triplets, stone collapse, colour chains and gem swap",
-  "address-plus": "parse and format addresses in the United States, Canada, Japan, Australia and the United Kingdom",
+  "address-plus": "parse and format addresses in the United States, Canada, Japan, Australia, France, Germany and the United Kingdom",
   "hata": "country and regional flags as SVG, at their true proportions and keyed by ISO code",
   "kuni": "countries and their regions, with ISO codes and names in English and Japanese",
   "rest-in-pieces": "seeded test data and REST APIs for frontend development, with latency and error drills",
@@ -129,7 +129,7 @@ export const FAMILY_PITCH = {
 
 /** Japanese pitches for the new geography and developer members; awaiting native review. */
 export const FAMILY_PITCH_JA = {
-  "address-plus": "アメリカ、カナダ、日本、オーストラリア、イギリスの住所を解析・整形",
+  "address-plus": "アメリカ、カナダ、日本、オーストラリア、フランス、ドイツ、イギリスの住所を解析・整形",
   "hata": "国と行政区画の旗を、実際の縦横比のSVGで収録。ISOコードで引けます",
   "kuni": "世界の国と行政区画を、ISOコードと英語・日本語の名称つきで収録",
   "rest-in-pieces": "フロントエンド開発向けの、シード値で固定できるテストデータとREST API（遅延・エラーの再現つき）",

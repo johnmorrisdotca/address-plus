@@ -3,25 +3,20 @@
 All notable changes to this project are written here, in the style of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The project follows [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
-
 ### Added
 
 - Add an optional form-associated `address-field` and `defineField`, with native parsing/validation for seven countries, reflected display/form settings, full parser/validator host options, local structured getters and ordinary form reset/disabled/validity support.
 - Add shared builder and validated iframe; entered addresses stay out of setup links, code and public events. Events compose through shadow roots with country and validation counts only.
 
-### Changed
-
-- Bundle both helper dependencies for browser-loadable field scripts; keep individual parser/country entry points and their table isolation.
-
-
-
-### Added
-
 - Share a package-independent embed builder for option controls, preview adapters, code tabs and shareable links.
 
 ### Changed
 
+- Bundle both helper dependencies for browser-loadable field scripts; keep individual parser/country entry points and their table isolation.
+
 - Group the package family by kind, alphabetize each group, and include the geography packages and REST in Pieces in the shared footer and README.
+
+- Update the shared family description for addresses in all seven supported countries, including France and Germany.
 
 ## 1.6.0 - 2026-10-09
 
