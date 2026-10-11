@@ -237,8 +237,8 @@ const bulkActionsHelp = [
   "試しに、国が混ざった住所の一覧を入れるか、入力欄を空にします。",
 ];
 const bulkDownloadHelp = [
-  "Save the table: CSV for a spreadsheet, JSON with every field, or TXT with one cleaned address per line.",
-  "表を保存します。表計算ソフト用の CSV、全項目入りの JSON、整えた住所を1行に1件ずつ並べた TXT から選べます。",
+  "Save the table: CSV for a spreadsheet, JSON with every field, TXT with one cleaned address per line, Markdown for a note, or SQL for a database. For MySQL SQL imports, enable ANSI_QUOTES and NO_BACKSLASH_ESCAPES first.",
+  "表を保存します。表計算ソフト用の CSV、全項目入りの JSON、整えた住所を1行に1件ずつ並べた TXT、メモ用のMarkdown、データベース用のSQLから選べます。MySQLにSQLを読み込む場合は、先にANSI_QUOTESとNO_BACKSLASH_ESCAPESを有効にしてください。",
 ];
 
 /** Paste a list: every line parsed, checked and formatted, in a table to save as CSV, JSON or text. */
@@ -250,7 +250,7 @@ const bulkSection = `<section class="fam-panels job wide" id="bulk" aria-labelle
           ${row(bulkActionsHelp, `<span class="fam-label" data-say="bulk_try"></span><div class="tools"><button type="button" class="fam-button" data-testid="bulk-sample" data-say="bulk_sample" data-say-title="bulk_sample_tip"></button><button type="button" class="fam-button" data-testid="bulk-clear" data-say="bulk_clear" data-say-title="bulk_clear_tip"></button></div>`)}
           <div class="bulk-summary" id="bulk-summary" data-testid="bulk-summary" aria-live="polite"></div>
           <div class="bulk-wrap" data-testid="bulk-wrap" tabindex="0" data-say-label="bulk_table"><table class="bulk-table" id="bulk-table" data-testid="bulk-table"></table></div>
-          ${row(bulkDownloadHelp, `<span class="fam-label" data-say="bulk_save"></span><div class="tools"><button type="button" class="fam-button" data-download="csv" data-testid="bulk-csv" data-say-title="bulk_csv_tip">CSV</button><button type="button" class="fam-button" data-download="json" data-testid="bulk-json" data-say-title="bulk_json_tip">JSON</button><button type="button" class="fam-button" data-download="txt" data-testid="bulk-txt" data-say-title="bulk_txt_tip">TXT</button></div>`)}
+          ${row(bulkDownloadHelp, `<span class="fam-label" data-say="bulk_save"></span><div class="tools"><button type="button" class="fam-button" data-download="csv" data-testid="bulk-csv" data-say-title="bulk_csv_tip">CSV</button><button type="button" class="fam-button" data-download="json" data-testid="bulk-json" data-say-title="bulk_json_tip">JSON</button><button type="button" class="fam-button" data-download="txt" data-testid="bulk-txt" data-say-title="bulk_txt_tip">TXT</button><button type="button" class="fam-button" data-download="md" data-testid="bulk-md" data-say-title="bulk_md_tip">Markdown</button><button type="button" class="fam-button" data-download="sql" data-testid="bulk-sql" data-say-title="bulk_sql_tip">SQL</button></div>`)}
           <pre class="call" id="bulk-call" data-testid="bulk-call" aria-label="the call"></pre>
         </div>
       </section>`;

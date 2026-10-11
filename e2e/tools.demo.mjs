@@ -1,6 +1,7 @@
 // The demo's larger tools: a pasted list saved as CSV, JSON and text; a Japanese address part by part; the test corpus
 // run in the browser; links that carry what is typed; copying a call or a link; and cleaning shown step by step.
 import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
 
 import { expect, test } from "@playwright/test";
 
@@ -74,6 +75,24 @@ test("paste a list: the sample is read into a table, counted by country, and sav
   expect(records[14].parsed.careOf).toBe("Weber");
   expect(records[17].parsed.nation).toBe("ENG");
   expect(records[18].parsed).toBeNull();
+
+  const markdown = await saved(page, "bulk-md", testInfo);
+  expect(markdown.name).toBe("addresses.md");
+  expect(markdown.text.split("\n").filter((line) => line.startsWith("| "))).toHaveLength(21);
+  expect(markdown.text).toContain("千代田区");
+  const sql = await saved(page, "bulk-sql", testInfo);
+  expect(sql.name).toBe("addresses.sql");
+  const database = new DatabaseSync(":memory:");
+  try {
+    database.exec(sql.text);
+    expect(database.prepare('SELECT count(*) AS count FROM "addresses"').get().count).toBe(19);
+    expect(
+      database.prepare("SELECT municipality FROM \"addresses\" WHERE country = 'JP' LIMIT 1").get().municipality,
+    ).toContain("千代田区");
+    expect(database.prepare('SELECT "input" FROM "addresses" WHERE country IS NULL').get().input).toBe("see attached");
+  } finally {
+    database.close();
+  }
 
   const txt = await saved(page, "bulk-txt", testInfo);
   expect(txt.name).toBe("addresses.txt");

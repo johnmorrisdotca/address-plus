@@ -1,6 +1,7 @@
-// The demo's larger tools, beside the six panels in demo.js: a list pasted whole and saved as CSV, JSON or text; a
+// The demo's larger tools, beside the six panels in demo.js: a list pasted whole and saved as CSV, JSON, text, Markdown or SQL; a
 // Japanese address taken apart, each part beside its reading and romaji; and the test corpus, fetched only when asked
 // for and run in this browser. Everything typed or returned is set as text, never as HTML.
+import { toMarkdown, toSql } from "./downloads.js";
 import { australia, formatAustraliaPost } from "./lib/au.js";
 import { formatDeutschePost, germany } from "./lib/de.js";
 import { formatLaPoste, france } from "./lib/fr.js";
@@ -513,6 +514,20 @@ export function setUpExtras(kit) {
 
   /** The file a download button saves: its name, its type and its text. */
   function fileOf(kind) {
+    if (kind === "md" || kind === "sql") {
+      const columns = [...COLUMNS.map(([key]) => key), ...JAPAN_COLUMNS];
+      const records = bulkRows.map((row) =>
+        Object.fromEntries([
+          ...COLUMNS.map(([key, read]) => [key, read(row) === "" ? null : read(row)]),
+          ...JAPAN_COLUMNS.map((key) => [key, row.parsed?.[key] ?? null]),
+        ]),
+      );
+      return {
+        name: `addresses.${kind === "md" ? "md" : "sql"}`,
+        type: kind === "md" ? "text/markdown" : "application/sql",
+        text: kind === "md" ? toMarkdown(columns, records) : toSql("addresses", columns, records),
+      };
+    }
     if (kind === "csv") {
       const header = [...COLUMNS.map(([key]) => key), ...JAPAN_COLUMNS].map(csvField).join(",");
       const body = bulkRows.map((row) =>

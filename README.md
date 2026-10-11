@@ -216,6 +216,10 @@ The parser returns structured objects with the following possible fields:
 | `state`   | State/province     | `"NY"`       |
 | `zip`     | ZIP/postal code    | `"10001"`    |
 
+### Record-list downloads
+
+The demo saves bulk address tables as Markdown tables or executable SQL beside CSV and JSON. See [formats and database import](docs/list-downloads.md), including the MySQL settings.
+
 ## Examples
 
 ### US Addresses
