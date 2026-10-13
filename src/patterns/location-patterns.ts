@@ -5,7 +5,9 @@
  *
  * @example
  * ```ts
- * ZIP_CODE_PATTERN.test("98101-1234")
+ * import { ZIP_CODE_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(ZIP_CODE_PATTERN.test("98101-1234"));
  * // → true
  * ```
  */
@@ -16,7 +18,9 @@ const ZIP_CODE_PATTERN = /^(\d{5})(?:[-\s]*(\d{4}))?$/;
  *
  * @example
  * ```ts
- * ZIP_CODE_REGEX_PATTERN.length > 0
+ * import { ZIP_CODE_REGEX_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(ZIP_CODE_REGEX_PATTERN.length > 0);
  * // → true
  * ```
  */
@@ -27,7 +31,9 @@ const ZIP_CODE_REGEX_PATTERN = String.raw`(\d{5}(?:[-\s]*\d{4})?)`;
  *
  * @example
  * ```ts
- * CANADIAN_POSTAL_CODE_PATTERN.test("M5H 2N2")
+ * import { CANADIAN_POSTAL_CODE_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CANADIAN_POSTAL_CODE_PATTERN.test("M5H 2N2"));
  * // → true
  * ```
  */
@@ -38,7 +44,9 @@ const CANADIAN_POSTAL_CODE_PATTERN = /^([A-Z]\d[A-Z])[-\s]*(\d[A-Z]\d)$/i;
  *
  * @example
  * ```ts
- * CANADIAN_POSTAL_LIBERAL_PATTERN.test("m5h2n2")
+ * import { CANADIAN_POSTAL_LIBERAL_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CANADIAN_POSTAL_LIBERAL_PATTERN.test("m5h2n2"));
  * // → true
  * ```
  */
@@ -53,7 +61,9 @@ const CITY_WORD = String.raw`\p{L}[\p{L}'’-]*`;
  *
  * @example
  * ```ts
- * CITY_PATTERNS.SINGLE_WORD_CITY.exec("Pine St Tacoma")?.[1]
+ * import { CITY_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CITY_PATTERNS.SINGLE_WORD_CITY.exec("Pine St Tacoma")?.[1]);
  * // → "Tacoma"
  * ```
  */

@@ -10,7 +10,9 @@
  *
  * @example
  * ```ts
- * DE_STREET_SUFFIXES.slice(0, 4)
+ * import { DE_STREET_SUFFIXES } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_STREET_SUFFIXES.slice(0, 4));
  * // → ["straße","strasse","str","weg"]
  * ```
  */
@@ -51,7 +53,9 @@ const DE_STREET_SUFFIXES: readonly string[] = [
  *
  * @example
  * ```ts
- * DE_STREET_OPENERS.slice(0, 5)
+ * import { DE_STREET_OPENERS } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_STREET_OPENERS.slice(0, 5));
  * // → ["am","an","auf","im","in"]
  * ```
  */
@@ -94,7 +98,9 @@ const DE_STREET_OPENERS: readonly string[] = [
  *
  * @example
  * ```ts
- * DE_UNIT_TYPES.Wohnung
+ * import { DE_UNIT_TYPES } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_UNIT_TYPES.Wohnung);
  * // → ["whg","wohn","wo"]
  * ```
  */
@@ -112,7 +118,9 @@ const DE_UNIT_TYPES: Readonly<Record<string, readonly string[]>> = {
  *
  * @example
  * ```ts
- * DE_BUILDING_WORDS.slice(0, 3)
+ * import { DE_BUILDING_WORDS } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_BUILDING_WORDS.slice(0, 3));
  * // → ["hinterhaus","vorderhaus","seitenflügel"]
  * ```
  */
@@ -141,7 +149,9 @@ const DE_BUILDING_WORDS: readonly string[] = [
  *
  * @example
  * ```ts
- * DE_COUNTRY_NAMES.includes("DEUTSCHLAND")
+ * import { DE_COUNTRY_NAMES } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_COUNTRY_NAMES.includes("DEUTSCHLAND"));
  * // → true
  * ```
  */

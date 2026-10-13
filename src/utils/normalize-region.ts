@@ -15,7 +15,9 @@ import type { Region } from "../types/region.js";
  * @returns Its code and country, or `null` when nothing is close enough.
  * @example
  * ```ts
- * normalizeRegion("Calfornia")
+ * import { normalizeRegion } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(normalizeRegion("Calfornia"));
  * // → {"abbr":"CA","country":"US"}
  * ```
  */

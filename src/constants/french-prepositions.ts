@@ -6,7 +6,9 @@
  *
  * @example
  * ```ts
- * FRENCH_PREPOSITIONS.get("de la ")
+ * import { FRENCH_PREPOSITIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(FRENCH_PREPOSITIONS.get("de la "));
  * // → "De la "
  * ```
  */

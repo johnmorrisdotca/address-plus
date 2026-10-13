@@ -340,7 +340,9 @@ function ordered(result: ParsedAddress): ParsedAddress {
  * or holds nothing that makes it an address.
  * @example
  * ```ts
- * parseFrenchAddress("Résidence Les Lilas, 12 bis rue de la Paix, 75002 Paris")
+ * import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(parseFrenchAddress("Résidence Les Lilas, 12 bis rue de la Paix, 75002 Paris"));
  * // → {"building":"Résidence Les Lilas","number":"12","numberExtension":"bis","type":"Rue","street":"de la Paix","city":"Paris","state":"75","zip":"75002","zipValid":true,"country":"FR"}
  * ```
  */
@@ -452,7 +454,9 @@ function parseFrenchAddress(text: string, options: ParseOptions = {}): ParsedAdd
  * @returns `true` when the address is French beyond doubt, `false` otherwise.
  * @example
  * ```ts
- * [looksFrench("12 rue de la Paix, 75002 Paris"), looksFrench("123 Main St, Seattle, WA 98101")]
+ * import { looksFrench } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log([looksFrench("12 rue de la Paix, 75002 Paris"), looksFrench("123 Main St, Seattle, WA 98101")]);
  * // → [true,false]
  * ```
  */

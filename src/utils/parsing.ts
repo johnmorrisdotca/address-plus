@@ -30,7 +30,9 @@ const FRACTIONAL_NUMBER_PATTERN = new RegExp("^\\s*(\\d+(?:\\s*[-\\/]\\s*\\d+\\/
  * @returns The text in lower case, without that punctuation, with single spaces and none at either end.
  * @example
  * ```ts
- * normalizeText("  123   Main  St  ")
+ * import { normalizeText } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(normalizeText("  123   Main  St  "));
  * // → "123 main st"
  * ```
  */
@@ -49,7 +51,9 @@ const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/
  * @returns The expression, case-insensitive.
  * @example
  * ```ts
- * buildRegexFromDict({ street: "St", avenue: "Ave" }).test("avenue")
+ * import { buildRegexFromDict } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(buildRegexFromDict({ street: "St", avenue: "Ave" }).test("avenue"));
  * // → true
  * ```
  */
@@ -69,7 +73,9 @@ const wordPattern = (word: string, flags: string): RegExp => new RegExp(wholeWor
  * @returns The directional (`undefined` when there is none) and the text that remains.
  * @example
  * ```ts
- * parseDirectional("NW Main St")
+ * import { parseDirectional } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseDirectional("NW Main St"));
  * // → {"direction":"NW","remaining":"Main St"}
  * ```
  */
@@ -94,7 +100,9 @@ function parseDirectional(text: string): { direction: string | undefined; remain
  * @returns The type's USPS abbreviation in lower case (`undefined` when there is none) and the text that remains.
  * @example
  * ```ts
- * parseStreetType("Main Street")
+ * import { parseStreetType } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseStreetType("Main Street"));
  * // → {"type":"st","remaining":"Main"}
  * ```
  */
@@ -122,7 +130,9 @@ function parseStreetType(
  * @returns The two-letter code (`undefined` when there is none), the text that remains, and the country it points to.
  * @example
  * ```ts
- * parseStateProvince("Anytown NY")
+ * import { parseStateProvince } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseStateProvince("Anytown NY"));
  * // → {"state":"NY","remaining":"Anytown","detectedCountry":"US"}
  * ```
  */
@@ -178,7 +188,9 @@ function parseStateProvince(text: string): {
  * province the code points to.
  * @example
  * ```ts
- * parsePostalCode("Toronto ON M5H 2N2")
+ * import { parsePostalCode } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parsePostalCode("Toronto ON M5H 2N2"));
  * // → {"zip":"M5H 2N2","remaining":"Toronto ON","detectedCountry":"CA","detectedProvince":"ON"}
  * ```
  */
@@ -226,7 +238,9 @@ function parsePostalCode(text: string): {
  * text that remains.
  * @example
  * ```ts
- * parseSecondaryUnit("123 Main St Apt 4")
+ * import { parseSecondaryUnit } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseSecondaryUnit("123 Main St Apt 4"));
  * // → {"unit":"Apartment 4","secUnitType":"Apartment","secUnitNum":"4","remaining":"123 Main St"}
  * ```
  */
@@ -268,7 +282,9 @@ function parseSecondaryUnit(text: string): {
  * @returns The facility (`undefined` when there is none) and the text that remains.
  * @example
  * ```ts
- * parseFacility("Empire State Building, 350 5th Ave")
+ * import { parseFacility } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseFacility("Empire State Building, 350 5th Ave"));
  * // → {"facility":"Empire State Building","remaining":", 350 5th Ave"}
  * ```
  */
@@ -296,7 +312,9 @@ function parseFacility(text: string): { facility: string | undefined; remaining:
  * @returns The words in the parentheses (`undefined` when there are none) and the text without them.
  * @example
  * ```ts
- * parseParenthetical("123 Main St (Rear Entrance)")
+ * import { parseParenthetical } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseParenthetical("123 Main St (Rear Entrance)"));
  * // → {"secondary":"Rear Entrance","remaining":"123 Main St"}
  * ```
  */
@@ -318,7 +336,9 @@ function parseParenthetical(text: string): { secondary: string | undefined; rema
  * @returns The number (`undefined` when there is none) and the text that remains.
  * @example
  * ```ts
- * parseStreetNumber("123 Main St")
+ * import { parseStreetNumber } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseStreetNumber("123 Main St"));
  * // → {"number":"123","remaining":"Main St"}
  * ```
  */
@@ -349,7 +369,9 @@ function parseStreetNumber(text: string): { number: string | undefined; remainin
  * @returns `US` or `CA`, or `undefined` when nothing says.
  * @example
  * ```ts
- * detectCountry({ zip: "M5H 2N2" })
+ * import { detectCountry } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(detectCountry({ zip: "M5H 2N2" }));
  * // → "CA"
  * ```
  */

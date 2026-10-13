@@ -12,7 +12,9 @@ import type { AustralianStateCode } from "../../types/australia";
  *
  * @example
  * ```ts
- * AU_CROSS_BORDER_POSTCODES["2620"]
+ * import { AU_CROSS_BORDER_POSTCODES } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(AU_CROSS_BORDER_POSTCODES["2620"]);
  * // → ["NSW","ACT"]
  * ```
  */
@@ -83,7 +85,9 @@ const AU_CROSS_BORDER_POSTCODES: Readonly<Record<string, readonly AustralianStat
  *
  * @example
  * ```ts
- * AU_EXTERNAL_TERRITORY_POSTCODES
+ * import { AU_EXTERNAL_TERRITORY_POSTCODES } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(AU_EXTERNAL_TERRITORY_POSTCODES);
  * // → ["2540","2899","6798","6799"]
  * ```
  */

@@ -40,7 +40,13 @@ function normalize(field: keyof ParsedAddress, value: string | undefined): strin
  * @returns Whether they are the same delivery point, and each field that differs.
  * @example
  * ```ts
- * compareAustralianAddresses(parseAustralianAddress("12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("14 Smith St, Parramatta New South Wales 2150"))
+ * import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseAustralianAddress("12 Smith Street, Parramatta NSW 2150");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseAustralianAddress("14 Smith St, Parramatta New South Wales 2150");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2));
  * // → {"isSame":false,"differences":[{"field":"number","first":"12","second":"14"}]}
  * ```
  */

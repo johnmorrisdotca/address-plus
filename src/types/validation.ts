@@ -7,7 +7,10 @@ import type { ParseOptions } from "./parse-options";
  *
  * @example
  * ```ts
- * validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+ * import { validateAddress } from "@johnmorrisdotca/address-plus";
+ * import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
  * // → {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
  * ```
  */
@@ -23,7 +26,10 @@ interface ValidationError {
  *
  * @example
  * ```ts
- * validateAddress("1600 Pennsylvania Ave NW, Washington, DC 20500").isValid
+ * import { validateAddress } from "@johnmorrisdotca/address-plus";
+ * import type { AddressValidationResult } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(validateAddress("1600 Pennsylvania Ave NW, Washington, DC 20500").isValid);
  * // → true
  * ```
  */
@@ -43,7 +49,10 @@ interface AddressValidationResult {
  *
  * @example
  * ```ts
- * validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+ * import { validateAddress } from "@johnmorrisdotca/address-plus";
+ * import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
  * // → ["MISSING_POSTAL_CODE"]
  * ```
  */

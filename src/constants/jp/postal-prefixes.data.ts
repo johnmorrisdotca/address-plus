@@ -8,7 +8,9 @@
  *
  * @example
  * ```ts
- * JP_POSTAL_PREFIXES["530"]
+ * import { JP_POSTAL_PREFIXES } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(JP_POSTAL_PREFIXES["530"]);
  * // → "27"
  * ```
  */
@@ -969,7 +971,9 @@ const JP_POSTAL_PREFIXES: Readonly<Record<string, string>> = {
  *
  * @example
  * ```ts
- * Object.keys(JP_POSTAL_EXCEPTIONS).length > 0
+ * import { JP_POSTAL_EXCEPTIONS } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(Object.keys(JP_POSTAL_EXCEPTIONS).length > 0);
  * // → true
  * ```
  */

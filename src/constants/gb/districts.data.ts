@@ -11,7 +11,9 @@ import type { UKNationCode } from "../../types/united-kingdom";
  *
  * @example
  * ```ts
- * GB_POSTCODE_DISTRICTS["EC"]
+ * import { GB_POSTCODE_DISTRICTS } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(GB_POSTCODE_DISTRICTS["EC"]);
  * // → "1A,1M,1N,1P,1R,1V,1Y,2A,2M,2N,2P,2R,2V,2Y,3A,3M,3N,3P,3R,3V,4A,4M,4N,4P,4R,4V,4Y"
  * ```
  */
@@ -278,7 +280,9 @@ const GB_AREA_NATIONS: Readonly<Record<string, UKNationCode>> = {
  *
  * @example
  * ```ts
- * [GB_DISTRICT_NATIONS["TD15"], GB_DISTRICT_NATIONS["CH5"]]
+ * import { GB_DISTRICT_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log([GB_DISTRICT_NATIONS["TD15"], GB_DISTRICT_NATIONS["CH5"]]);
  * // → [["ENG","SCT"],["WLS"]]
  * ```
  */

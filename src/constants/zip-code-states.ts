@@ -11,7 +11,10 @@ import { normalizeRegion } from "../utils/normalize-region";
  *
  * @example
  * ```ts
- * getStateFromZip("00901")
+ * import { getStateFromZip } from "@johnmorrisdotca/address-plus";
+ * import type { StateCode } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getStateFromZip("00901"));
  * // → "PR"
  * ```
  */
@@ -209,7 +212,9 @@ const ZIP3_RANGES: Zip3Range[] = [
  * @returns The two-letter code, or `undefined` for a ZIP no state uses or a malformed one.
  * @example
  * ```ts
- * getStateFromZip("98101")
+ * import { getStateFromZip } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getStateFromZip("98101"));
  * // → "WA"
  * ```
  */
@@ -259,7 +264,9 @@ const pad = (value: number, length: number): string => String(value).padStart(le
  * @returns The prefixes in ascending order, or an empty array for an unknown code.
  * @example
  * ```ts
- * getZipPrefixesForState("RI")
+ * import { getZipPrefixesForState } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getZipPrefixesForState("RI"));
  * // → ["028","029"]
  * ```
  */

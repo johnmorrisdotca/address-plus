@@ -1,4 +1,4 @@
-// The docs check, run by `pnpm docs:check` after the build: every export of every entry point has a TSDoc block
+// The docs check, run by `pnpm docs:legacy-check` after the build: every export of every entry point has a TSDoc block
 // with a summary and an @example, a function has an @param for each parameter and an @returns unless it returns
 // nothing, the block reaches the published type definitions (so an editor shows it on hover), and every example
 // gives, when run against the built package, the answer written under it.

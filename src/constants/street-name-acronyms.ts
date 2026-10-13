@@ -6,7 +6,9 @@
  *
  * @example
  * ```ts
- * STREET_NAME_ACRONYMS.get("fbi")
+ * import { STREET_NAME_ACRONYMS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(STREET_NAME_ACRONYMS.get("fbi"));
  * // → "FBI"
  * ```
  */

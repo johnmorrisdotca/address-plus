@@ -11,7 +11,10 @@ import { GB_NATIONS } from "./nations.data";
  *
  * @example
  * ```ts
- * GB_POSTCODE_AREAS.BT
+ * import { GB_POSTCODE_AREAS } from "@johnmorrisdotca/address-plus/gb";
+ * import type { UKPostcodeArea } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(GB_POSTCODE_AREAS.BT);
  * // → {"name":"Northern Ireland","country":"GB","nation":"NIR"}
  * ```
  */
@@ -157,7 +160,9 @@ const AREA_NAMES: Readonly<Record<string, string>> = {
  *
  * @example
  * ```ts
- * [GB_POSTCODE_AREAS.CF.nation, GB_POSTCODE_AREAS.JE.country]
+ * import { GB_POSTCODE_AREAS } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log([GB_POSTCODE_AREAS.CF.nation, GB_POSTCODE_AREAS.JE.country]);
  * // → ["WLS","JE"]
  * ```
  */
@@ -193,7 +198,9 @@ const POSTCODE_SHAPE = /\b([A-Z]{1,2}[0-9][A-Z0-9]?)\s*([0-9][A-Z]{2})\b/gi;
  * @returns `true` when it has a postcode's shape and letters.
  * @example
  * ```ts
- * ["EC1A 1BB", "sw1a1aa", "GIR 0AA", "Q1 1AA", "M5V 1A1"].map(isValidUKPostcode)
+ * import { isValidUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(["EC1A 1BB", "sw1a1aa", "GIR 0AA", "Q1 1AA", "M5V 1A1"].map(isValidUKPostcode));
  * // → [true,true,true,false,false]
  * ```
  */
@@ -210,7 +217,9 @@ function isValidUKPostcode(postcode: string): boolean {
  * @returns The parts, or `null` when it does not follow the grammar or its area is not one Royal Mail uses.
  * @example
  * ```ts
- * parseUKPostcode("JE2 3AB")
+ * import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(parseUKPostcode("JE2 3AB"));
  * // → {"postcode":"JE2 3AB","outward":"JE2","inward":"3AB","area":"JE","district":"JE2","sector":"JE2 3","country":"JE"}
  * ```
  */
@@ -245,7 +254,9 @@ function parseUKPostcode(postcode: string): UKPostcode | null {
  * place (BFPO), or text that is not a postcode.
  * @example
  * ```ts
- * ["CH5 1AA", "BT1 1AA", "EH1 1YZ", "JE2 3AB"].map(getNationFromUKPostcode)
+ * import { getNationFromUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(["CH5 1AA", "BT1 1AA", "EH1 1YZ", "JE2 3AB"].map(getNationFromUKPostcode));
  * // → ["WLS","NIR","SCT",null]
  * ```
  */
@@ -261,7 +272,9 @@ function getNationFromUKPostcode(postcode: string): UKNationCode | undefined {
  * @returns The nations; an empty array outside the United Kingdom or for text that is not a postcode.
  * @example
  * ```ts
- * getNationsForUKPostcode("SY10 7AA")
+ * import { getNationsForUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(getNationsForUKPostcode("SY10 7AA"));
  * // → ["ENG","WLS"]
  * ```
  */
@@ -294,7 +307,9 @@ function isKnownUKDistrict(outward: string): boolean | undefined {
  * @returns The nation, or `null` when nothing matches.
  * @example
  * ```ts
- * findUKNation("wales")?.code
+ * import { findUKNation } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(findUKNation("wales")?.code);
  * // → "WLS"
  * ```
  */

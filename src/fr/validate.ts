@@ -37,7 +37,11 @@ const TERRITORY_NAMES: Readonly<Record<string, string>> = {
  * @returns The errors and warnings, each with its field, code and message.
  * @example
  * ```ts
- * validateFrenchAddress(parseFrenchAddress("12 rue de la Paix, 75099 Paris")).warnings.map((one) => one.code)
+ * import { parseFrenchAddress, validateFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * const parsedAddress1=parseFrenchAddress("12 rue de la Paix, 75099 Paris");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateFrenchAddress(parsedAddress1).warnings.map((one) => one.code));
  * // → ["UNRECOGNIZED_POSTAL_CODE"]
  * ```
  */

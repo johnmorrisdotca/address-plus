@@ -19,7 +19,9 @@ function setParseLocationImpl(impl: (address: string, options?: ParseOptions) =>
  * @returns The parts found, or `null` when nothing can be read as an address.
  * @example
  * ```ts
- * parseAddress("123 Main St Apt 4, Anytown, NY 12345")?.secUnitNum
+ * import { parseAddress } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseAddress("123 Main St Apt 4, Anytown, NY 12345")?.secUnitNum);
  * // → "4"
  * ```
  */

@@ -11,7 +11,9 @@ import type { FrenchCollectivity, FrenchDepartment } from "../../types/france";
  *
  * @example
  * ```ts
- * FR_DEPARTMENTS.find((department) => department.code === "2A")
+ * import { FR_DEPARTMENTS } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_DEPARTMENTS.find((department) => department.code === "2A"));
  * // → {"code":"2A","name":"Corse-du-Sud","region":"Corse"}
  * ```
  */
@@ -531,7 +533,9 @@ const FR_DEPARTMENTS: readonly FrenchDepartment[] = [
  *
  * @example
  * ```ts
- * FR_COLLECTIVITIES.map((one) => one.country)
+ * import { FR_COLLECTIVITIES } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_COLLECTIVITIES.map((one) => one.country));
  * // → ["PM","BL","MF","WF","PF","NC"]
  * ```
  */

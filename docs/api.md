@@ -1,6 +1,6 @@
 # API reference
 
-Every export of every entry point of @johnmorrisdotca/address-plus 1.6.0, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by `pnpm docs:make`, and `pnpm docs:check` holds every example's answer to the built package; the same reference is on the demo site at https://johnmorrisdotca.github.io/address-plus/api.html. Editors show the same TSDoc on hover, from the published type definitions.
+Every export of every entry point of @johnmorrisdotca/address-plus 1.6.0, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by `pnpm docs:make`, and `pnpm docs:legacy-check` holds every example's answer to the built package; the demo API anchor index at https://johnmorrisdotca.github.io/address-plus/api.html links to the individual documentation pages. Editors show the same TSDoc on hover, from the published type definitions.
 
 ## @johnmorrisdotca/address-plus
 
@@ -21,7 +21,10 @@ interface AddressAbbreviations {
 What `getAddressAbbreviations` returns: one map per kind of abbreviation.
 
 ```js
-Object.keys(getAddressAbbreviations())
+import { getAddressAbbreviations } from "@johnmorrisdotca/address-plus";
+import type { AddressAbbreviations } from "@johnmorrisdotca/address-plus";
+
+console.log(Object.keys(getAddressAbbreviations()));
 // ["streetTypes","directions","states","provinces","unitTypes"]
 ```
 
@@ -45,7 +48,14 @@ interface AddressComparisonOptions {
 Options for comparing addresses: what to normalize before comparing, whether to allow small typos, and whether every field must match exactly.
 
 ```js
-isSameAddress(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("123 Main Stret, Anytown, NY 12345"), { fuzzyMatching: false })
+import { isSameAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { AddressComparisonOptions } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("123 Main Stret, Anytown, NY 12345");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(isSameAddress(parsedAddress1, parsedAddress2, { fuzzyMatching: false }));
 // false
 ```
 
@@ -66,7 +76,14 @@ interface AddressComparisonResult {
 What `compareAddresses` returns: the verdict, the match type and the similarity.
 
 ```js
-compareAddresses(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("123 Main Street, Anytown, NY 12345")).isSame
+import { compareAddresses, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { AddressComparisonResult } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("123 Main Street, Anytown, NY 12345");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -92,7 +109,9 @@ interface AddressComparisonTestCase extends TestCaseBase {
 A comparison case in the package's JSON test files: two addresses and the match expected.
 
 ```js
-({ input: ["123 Main St", "123 Main Street"], expected: { isSame: true } }).expected.isSame
+import type { AddressComparisonTestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: ["123 Main St", "123 Main Street"], expected: { isSame: true } }).expected.isSame);
 // true
 ```
 
@@ -113,7 +132,14 @@ interface AddressDifference {
 One part on which two addresses differ, with both values and the kind of difference.
 
 ```js
-getAddressSimilarity(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("125 Main St, Anytown, NY 12345")).differences[0]
+import { getAddressSimilarity, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { AddressDifference } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("125 Main St, Anytown, NY 12345");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(getAddressSimilarity(parsedAddress1, parsedAddress2).differences[0]);
 // {"field":"number","value1":"123","value2":"125","type":"typo","confidence":0.6}
 ```
 
@@ -137,7 +163,12 @@ interface AddressFormattingOptions {
 Options for `formatAddress` and `cleanAddress`: what to abbreviate, capitals, the unit, the country and the line separator.
 
 ```js
-formatAddress(parseLocation("123 Main Street, Anytown, NY 12345"), { upperCase: true }).singleLine
+import { formatAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { AddressFormattingOptions } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatAddress(parsedAddress1, { upperCase: true }).singleLine);
 // "123 MAIN ST, ANYTOWN NY 12345"
 ```
 
@@ -160,7 +191,9 @@ interface AddressFormattingTestCase extends TestCaseBase {
 A formatting case in the package's JSON test files: an address and the text expected.
 
 ```js
-({ input: "123 main st", expected: "123 Main St" }).expected
+import type { AddressFormattingTestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: "123 main st", expected: "123 Main St" }).expected);
 // "123 Main St"
 ```
 
@@ -175,7 +208,14 @@ type AddressMatchType = "exact" | "strong" | "moderate" | "weak" | "none";
 How strongly two addresses match, from `exact` to `none`.
 
 ```js
-compareAddresses(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("456 Oak Ave, Portland, OR 97201")).matchType
+import { compareAddresses, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { AddressMatchType } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("456 Oak Ave, Portland, OR 97201");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAddresses(parsedAddress1, parsedAddress2).matchType);
 // "none"
 ```
 
@@ -195,7 +235,10 @@ interface AddressParser {
 The shape of the default export: the four parsers parse-address's users call on one object.
 
 ```js
-Object.keys(parser)
+import parser from "@johnmorrisdotca/address-plus";
+import type { AddressParser } from "@johnmorrisdotca/address-plus";
+
+console.log(Object.keys(parser));
 // ["parseLocation","parseIntersection","parseInformalAddress","parseAddress"]
 ```
 
@@ -229,7 +272,9 @@ interface AddressParsingTestCase extends TestCaseBase {
 A parsing case in the package's JSON test files: an address and the fields expected from it.
 
 ```js
-({ input: "123 Main St, Anytown, NY 12345", expected: { number: "123", state: "NY" } }).expected.state
+import type { AddressParsingTestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: "123 Main St, Anytown, NY 12345", expected: { number: "123", state: "NY" } }).expected.state);
 // "NY"
 ```
 
@@ -257,7 +302,14 @@ interface AddressSimilarityResult {
 How alike two addresses are: an overall score from 0 to 1, a score for each part, and the differences.
 
 ```js
-getAddressSimilarity(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("123 Main Street, Anytown, NY 12345")).score
+import { getAddressSimilarity, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { AddressSimilarityResult } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("123 Main Street, Anytown, NY 12345");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(getAddressSimilarity(parsedAddress1, parsedAddress2).score);
 // 1
 ```
 
@@ -280,7 +332,10 @@ interface AddressValidationResult {
 What `validateAddress` returns.
 
 ```js
-validateAddress("1600 Pennsylvania Ave NW, Washington, DC 20500").isValid
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { AddressValidationResult } from "@johnmorrisdotca/address-plus";
+
+console.log(validateAddress("1600 Pennsylvania Ave NW, Washington, DC 20500").isValid);
 // true
 ```
 
@@ -305,7 +360,9 @@ interface AddressValidationTestCase extends TestCaseBase {
 A validation case in the package's JSON test files: an address and the verdict and codes expected.
 
 ```js
-({ input: "123 Main St", expected: { isValid: false } }).expected.isValid
+import type { AddressValidationTestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: "123 Main St", expected: { isValid: false } }).expected.isValid);
 // false
 ```
 
@@ -323,7 +380,10 @@ interface AustralianAddressFields {
 The fields an Australian address fills beside the shared ones. The shared fields keep their meaning: `number` is the street number, `street` and `type` the street's name and its type (Australia Post's abbreviation, `St`, `Pde`, `Cres`), `secUnitType` and `secUnitNum` the unit (`Unit 3`) or the postal delivery (`PO Box 37`, `Locked Bag 801`), `city` the suburb or town, `state` the state's code and `zip` the postcode.
 
 ```js
-parseAustralianAddress("Level 6, 51 Jacobson St, Brisbane QLD 4000")?.floorType
+import { parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianAddressFields } from "@johnmorrisdotca/address-plus/au";
+
+console.log(parseAustralianAddress("Level 6, 51 Jacobson St, Brisbane QLD 4000")?.floorType);
 // "Level"
 ```
 
@@ -343,7 +403,10 @@ interface AustralianPostcodeRange {
 One block of postcodes Australia Post allocates to a state or territory: every postcode from `from` to `to`, inclusive, written as four digits.
 
 ```js
-AU_POSTCODE_RANGES.find((range) => range.state === "TAS")
+import { AU_POSTCODE_RANGES } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianPostcodeRange } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_POSTCODE_RANGES.find((range) => range.state === "TAS"));
 // {"state":"TAS","from":"7000","to":"7999","use":"delivery"}
 ```
 
@@ -364,7 +427,10 @@ interface AustralianState {
 An Australian state or territory in the tables: Australia Post's code, the ISO 3166-2 code, and its name in English and in Japanese (from kuni, which takes them from Unicode CLDR and Wikidata).
 
 ```js
-findAustralianState("Victoria")
+import { findAustralianState } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianState } from "@johnmorrisdotca/address-plus/au";
+
+console.log(findAustralianState("Victoria"));
 // {"code":"VIC","iso":"AU-VIC","name":"Victoria","nameJa":"ビクトリア州","kind":"state"}
 ```
 
@@ -379,7 +445,10 @@ type AustralianStateCode = "ACT" | "NSW" | "NT" | "QLD" | "SA" | "TAS" | "VIC" |
 The code of an Australian state or territory, as Australia Post writes it on the last line of an address.
 
 ```js
-getStateFromAustralianPostcode("3000")
+import { getStateFromAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianStateCode } from "@johnmorrisdotca/address-plus/au";
+
+console.log(getStateFromAustralianPostcode("3000"));
 // "VIC"
 ```
 
@@ -398,7 +467,10 @@ interface BatchParseError {
 One address a batch could not parse: its index, the input and the reason.
 
 ```js
-parseLocationsBatch([""]).errors[0].index
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+import type { BatchParseError } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocationsBatch([""]).errors[0].index);
 // 0
 ```
 
@@ -418,7 +490,10 @@ interface BatchParseOptions extends ParseOptions {
 Options for the batch parsers: the parse options, plus whether to stop at the first error and whether to include the statistics.
 
 ```js
-parseLocationsBatch(["123 Main St, Anytown, NY 12345"], { country: "US" }).stats.total
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+import type { BatchParseOptions } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocationsBatch(["123 Main St, Anytown, NY 12345"], { country: "US" }).stats.total);
 // 1
 ```
 
@@ -437,7 +512,10 @@ interface BatchParseResult<T = ParsedAddress | ParsedIntersection> {
 What a batch parser returns: the results in order, the errors and the statistics.
 
 ```js
-parseLocationsBatch(["123 Main St, Anytown, NY 12345"]).results.length
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+import type { BatchParseResult } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocationsBatch(["123 Main St, Anytown, NY 12345"]).results.length);
 // 1
 ```
 
@@ -459,7 +537,10 @@ interface BatchParseStats {
 The counts and timing of a batch: how many were parsed, how many failed, and how long it took.
 
 ```js
-parseLocationsBatch(["123 Main St, Anytown, NY 12345", ""]).stats.failed
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+import type { BatchParseStats } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocationsBatch(["123 Main St, Anytown, NY 12345", ""]).stats.failed);
 // 1
 ```
 
@@ -489,7 +570,9 @@ interface BatchProcessingTestCase extends TestCaseBase {
 A batch case in the package's JSON test files: several addresses and the counts expected.
 
 ```js
-({ input: ["123 Main St"], expected: { successful: 1 } }).expected.successful
+import type { BatchProcessingTestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: ["123 Main St"], expected: { successful: 1 } }).expected.successful);
 // 1
 ```
 
@@ -508,7 +591,9 @@ A regular expression matching any key of a dictionary as a whole word, longest f
 - Returns: The expression, case-insensitive.
 
 ```js
-buildRegexFromDict({ street: "St", avenue: "Ave" }).test("avenue")
+import { buildRegexFromDict } from "@johnmorrisdotca/address-plus";
+
+console.log(buildRegexFromDict({ street: "St", avenue: "Ave" }).test("avenue"));
 // true
 ```
 
@@ -523,7 +608,9 @@ CA_PROVINCE_ALTERNATIVES: Record<string, string>
 Other ways Canadian provinces are written (old and informal abbreviations such as `PQ`, `Que.`, `Nfld.`), in lower case, to their codes.
 
 ```js
-CA_PROVINCE_ALTERNATIVES["pq"]
+import { CA_PROVINCE_ALTERNATIVES } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_PROVINCE_ALTERNATIVES["pq"]);
 // "QC"
 ```
 
@@ -538,7 +625,9 @@ CA_PROVINCE_NAMES: Record<string, string>
 Every Canadian province and territory by its English or French name, to its code.
 
 ```js
-CA_PROVINCE_NAMES["québec"]
+import { CA_PROVINCE_NAMES } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_PROVINCE_NAMES["québec"]);
 // "QC"
 ```
 
@@ -553,7 +642,9 @@ CA_PROVINCE_NAMES_EN: Record<string, string>
 Every Canadian province and territory by its English name in lower case, to its two-letter code.
 
 ```js
-CA_PROVINCE_NAMES_EN["british columbia"]
+import { CA_PROVINCE_NAMES_EN } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_PROVINCE_NAMES_EN["british columbia"]);
 // "BC"
 ```
 
@@ -568,7 +659,9 @@ CA_PROVINCE_NAMES_FR: Record<string, string>
 Every Canadian province and territory by its French name in lower case, to its two-letter code.
 
 ```js
-CA_PROVINCE_NAMES_FR["colombie-britannique"]
+import { CA_PROVINCE_NAMES_FR } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_PROVINCE_NAMES_FR["colombie-britannique"]);
 // "BC"
 ```
 
@@ -583,7 +676,9 @@ CA_PROVINCES: Record<string, string>
 Every name and other spelling of a Canadian province, to its code: the names and the alternatives together.
 
 ```js
-CA_PROVINCES["nfld"]
+import { CA_PROVINCES } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_PROVINCES["nfld"]);
 // "NL"
 ```
 
@@ -598,7 +693,9 @@ CA_REGIONS: Region[]
 Every name and other spelling of a Canadian province or territory as a `Region` object, for fuzzy matching by `normalizeRegion`.
 
 ```js
-CA_REGIONS.filter((region) => region.abbr === "QC").map((region) => region.name)
+import { CA_REGIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_REGIONS.filter((region) => region.abbr === "QC").map((region) => region.name));
 // ["quebec","québec","pq","que"]
 ```
 
@@ -613,7 +710,9 @@ CA_STREET_TYPES: Record<string, string>
 Every street type Canada Post lists, in English and French, with common spellings, in lower case, to the abbreviation the parser reports. Where USPS Publication 28 has the same word, the USPS abbreviation is used (Court is `Ct`, not Canada Post's `Crt`; see the conventions in docs/TEST_COVERAGE.md); the words Publication 28 lacks keep Canada Post's abbreviation.
 
 ```js
-CA_STREET_TYPES["croissant"]
+import { CA_STREET_TYPES } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_STREET_TYPES["croissant"]);
 // "crois"
 ```
 
@@ -633,7 +732,12 @@ interface CanadaPostFormattingOptions {
 Options for `formatCanadaPost`: which lines to include, bilingual labels, and whether to set the letter case the Canada Post way.
 
 ```js
-formatCanadaPost(parseLocation("100 Queen St W, Toronto, ON M5H 2N2"), { includeDeliveryLine: false }).lines
+import { formatCanadaPost, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { CanadaPostFormattingOptions } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("100 Queen St W, Toronto, ON M5H 2N2");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatCanadaPost(parsedAddress1, { includeDeliveryLine: false }).lines);
 // ["TORONTO ON M5H 2N2"]
 ```
 
@@ -648,7 +752,9 @@ CANADIAN_POSTAL_CODE_PATTERN: RegExp
 A Canadian postal code with the letters Canada Post assigns, with or without its space.
 
 ```js
-CANADIAN_POSTAL_CODE_PATTERN.test("M5H 2N2")
+import { CANADIAN_POSTAL_CODE_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(CANADIAN_POSTAL_CODE_PATTERN.test("M5H 2N2"));
 // true
 ```
 
@@ -663,7 +769,9 @@ CANADIAN_POSTAL_LIBERAL_PATTERN: RegExp
 A Canadian postal code of any letters, for finding one before it is checked.
 
 ```js
-CANADIAN_POSTAL_LIBERAL_PATTERN.test("m5h2n2")
+import { CANADIAN_POSTAL_LIBERAL_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(CANADIAN_POSTAL_LIBERAL_PATTERN.test("m5h2n2"));
 // true
 ```
 
@@ -681,7 +789,9 @@ Capitalizes a street name the way it is signed. A word written in mixed case is 
 - Returns: The name capitalized.
 
 ```js
-capitalizeStreetName("o'brien")
+import { capitalizeStreetName } from "@johnmorrisdotca/address-plus";
+
+console.log(capitalizeStreetName("o'brien"));
 // "O'Brien"
 ```
 
@@ -699,7 +809,9 @@ Capitalizes the first letter of each word.
 - Returns: The text with each word's first letter in capitals and the rest as written.
 
 ```js
-capitalizeWords("new york city")
+import { capitalizeWords } from "@johnmorrisdotca/address-plus";
+
+console.log(capitalizeWords("new york city"));
 // "New York City"
 ```
 
@@ -714,7 +826,9 @@ CITY_PATTERNS: { readonly BASIC_CITY: RegExp; readonly MULTI_WORD_CITY: RegExp; 
 Patterns for a city of one or more words at the end of a text, after a space, used where no comma marks it. A word is letters of any alphabet, with apostrophes and hyphens inside it.
 
 ```js
-CITY_PATTERNS.SINGLE_WORD_CITY.exec("Pine St Tacoma")?.[1]
+import { CITY_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(CITY_PATTERNS.SINGLE_WORD_CITY.exec("Pine St Tacoma")?.[1]);
 // "Tacoma"
 ```
 
@@ -733,7 +847,9 @@ Tidies an address typed in a hurry: spaces, commas, letter case, the street type
 - Returns: The tidied address; the input, trimmed, when it cannot be parsed.
 
 ```js
-cleanAddress("350 FIFTH AVENUE, NEW YORK, NY 10118")
+import { cleanAddress } from "@johnmorrisdotca/address-plus";
+
+console.log(cleanAddress("350 FIFTH AVENUE, NEW YORK, NY 10118"));
 // "350 Fifth Ave, New York NY 10118"
 ```
 
@@ -752,7 +868,9 @@ Tidies an address like `cleanAddress`, and says what it changed.
 - Returns: The tidied address, the input, whether anything changed, and a line for each change.
 
 ```js
-cleanAddressDetailed("742 evergreen terrace,springfield ,  il 62704").cleanedAddress
+import { cleanAddressDetailed } from "@johnmorrisdotca/address-plus";
+
+console.log(cleanAddressDetailed("742 evergreen terrace,springfield ,  il 62704").cleanedAddress);
 // "742 Evergreen Ter, Springfield IL 62704"
 ```
 
@@ -772,7 +890,10 @@ interface CleanAddressOptions extends AddressFormattingOptions {
 Options for `cleanAddress`: which tidying to do, and the letter case to set.
 
 ```js
-cleanAddress("123 main st, anytown, ny 12345", { standardizeCase: "upper" })
+import { cleanAddress } from "@johnmorrisdotca/address-plus";
+import type { CleanAddressOptions } from "@johnmorrisdotca/address-plus";
+
+console.log(cleanAddress("123 main st, anytown, ny 12345", { standardizeCase: "upper" }));
 // "123 MAIN ST, ANYTOWN NY 12345"
 ```
 
@@ -791,7 +912,10 @@ interface CleanAddressResult {
 What `cleanAddressDetailed` returns: the tidied address and what changed.
 
 ```js
-cleanAddressDetailed("123 main st, anytown, ny 12345").wasModified
+import { cleanAddressDetailed } from "@johnmorrisdotca/address-plus";
+import type { CleanAddressResult } from "@johnmorrisdotca/address-plus";
+
+console.log(cleanAddressDetailed("123 main st, anytown, ny 12345").wasModified);
 // true
 ```
 
@@ -818,7 +942,9 @@ interface CleanAddressTestCase extends TestCaseBase {
 A cleaning case in the package's JSON test files: an address and the tidied text expected.
 
 ```js
-({ input: "123 MAIN ST", expected: "123 Main St" }).expected
+import type { CleanAddressTestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: "123 MAIN ST", expected: "123 Main St" }).expected);
 // "123 Main St"
 ```
 
@@ -833,7 +959,9 @@ COMMON_PARSER_PATTERNS: { readonly ZIP_AT_END: (zipPattern: string) => RegExp; r
 Pattern builders the parsers share: a ZIP, a state or a postal code at the end of a text, and a city before a state. Each takes the source of a pattern wrapped in one pair of parentheses or anchors, which it strips.
 
 ```js
-COMMON_PARSER_PATTERNS.ZIP_AT_END("(\\d{5})").exec("Tacoma WA 98402")?.[1]
+import { COMMON_PARSER_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(COMMON_PARSER_PATTERNS.ZIP_AT_END("(\\d{5})").exec("Tacoma WA 98402")?.[1]);
 // "98402"
 ```
 
@@ -848,7 +976,9 @@ COMMON_STREET_NAMES_PATTERN: RegExp
 Street names common enough that they must not be taken as part of a city's name.
 
 ```js
-COMMON_STREET_NAMES_PATTERN.test("Main")
+import { COMMON_STREET_NAMES_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(COMMON_STREET_NAMES_PATTERN.test("Main"));
 // true
 ```
 
@@ -868,7 +998,13 @@ Compares two parsed addresses field by field, allowing for abbreviations (Street
 - Returns: Whether they are the same place, how strong the match is (`exact` to `none`), the similarity score from 0 to 1 and every difference found.
 
 ```js
-compareAddresses(parseLocation("123 Main Street, Anytown, NY 12345"), parseLocation("123 Main St, Anytown, New York 12345")).matchType
+import { compareAddresses, parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("123 Main St, Anytown, New York 12345");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAddresses(parsedAddress1, parsedAddress2).matchType);
 // "exact"
 ```
 
@@ -883,7 +1019,9 @@ CONNECTOR_WORDS: Set<string>
 Small words (`of`, `the`, `and`) that may be in lower case inside a facility's name written in title case.
 
 ```js
-CONNECTOR_WORDS.has("of")
+import { CONNECTOR_WORDS } from "@johnmorrisdotca/address-plus";
+
+console.log(CONNECTOR_WORDS.has("of"));
 // true
 ```
 
@@ -898,7 +1036,9 @@ COUNTRIES: { readonly CANADA: "CA"; readonly JAPAN: "JP"; readonly UNITED_STATES
 The country codes the parser reports: `US`, `CA` and `JP`.
 
 ```js
-COUNTRIES.JAPAN
+import { COUNTRIES } from "@johnmorrisdotca/address-plus";
+
+console.log(COUNTRIES.JAPAN);
 // "JP"
 ```
 
@@ -913,7 +1053,10 @@ type CountryCode = (typeof COUNTRIES)[keyof typeof COUNTRIES];
 A country code the parser reports: `US`, `CA` or `JP`.
 
 ```js
-parseLocation("100 Queen St W, Toronto, ON M5H 2N2")?.country
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { CountryCode } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocation("100 Queen St W, Toronto, ON M5H 2N2")?.country);
 // "CA"
 ```
 
@@ -931,7 +1074,14 @@ interface CountryComparison {
 What a country module's comparer returns: whether the two addresses are the same delivery point, and every field that differs once both are in the same form (letter case, punctuation, a street type written out or abbreviated).
 
 ```js
-compareAustralianAddresses(parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150")).isSame
+import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryComparison } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -950,7 +1100,14 @@ interface CountryDifference {
 One way two addresses differ, as a country module's comparer reports it: the field, and its value in each address after both were put in the same form.
 
 ```js
-compareUKAddresses(parseUKAddress("10 High Street, Bath BA1 1AA"), parseUKAddress("12 High St, Bath BA1 1AA")).differences
+import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { CountryDifference } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseUKAddress("10 High Street, Bath BA1 1AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseUKAddress("12 High St, Bath BA1 1AA");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareUKAddresses(parsedAddress1, parsedAddress2).differences);
 // [{"field":"number","first":"10","second":"12"}]
 ```
 
@@ -974,7 +1131,10 @@ interface CountryModule {
 A country's address module: its codes, how to tell its addresses apart, and its parser, validator, formatter and comparer. Import one from its entry point (`australia` from `@johnmorrisdotca/address-plus/au`, `unitedKingdom` from `@johnmorrisdotca/address-plus/gb`) and hand it to `parseLocation` and `validateAddress` in `countries`.
 
 ```js
-australia.codes
+import { australia } from "@johnmorrisdotca/address-plus/au";
+import type { CountryModule } from "@johnmorrisdotca/address-plus/au";
+
+console.log(australia.codes);
 // ["AU"]
 ```
 
@@ -992,7 +1152,12 @@ interface CountryValidation {
 What a country module's validator returns: the errors and the warnings it found.
 
 ```js
-validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings.map((one) => one.code)
+import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryValidation } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateAustralianAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -1007,7 +1172,12 @@ default: AddressParser
 The default export, shaped like parse-address's module: `parseLocation`, `parseAddress`, `parseIntersection` and `parseInformalAddress` on one object, so `import parser from "@johnmorrisdotca/address-plus"` works where parse-address was imported. Named imports work too.
 
 ```js
-parser.parseLocation("123 Main St, New York, NY 10001").zip
+import parser from "@johnmorrisdotca/address-plus";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parser.parseLocation("123 Main St, New York, NY 10001");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(parsedAddress1.zip);
 // "10001"
 ```
 
@@ -1025,7 +1195,9 @@ Which country a parsed address is in, from its postal code, then its state or pr
 - Returns: `US` or `CA`, or `undefined` when nothing says.
 
 ```js
-detectCountry({ zip: "M5H 2N2" })
+import { detectCountry } from "@johnmorrisdotca/address-plus";
+
+console.log(detectCountry({ zip: "M5H 2N2" }));
 // "CA"
 ```
 
@@ -1040,7 +1212,9 @@ DIRECTION_EXPANSIONS: Record<string, string>
 Each directional abbreviation in lower case, to the word in full.
 
 ```js
-DIRECTION_EXPANSIONS["ne"]
+import { DIRECTION_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(DIRECTION_EXPANSIONS["ne"]);
 // "Northeast"
 ```
 
@@ -1055,7 +1229,9 @@ DIRECTIONAL_MAP: Record<string, string>
 Each directional word, in English or French, in lower case, to its abbreviation (`northwest` and `nord-ouest` to `NW` and `NO`).
 
 ```js
-DIRECTIONAL_MAP["northwest"]
+import { DIRECTIONAL_MAP } from "@johnmorrisdotca/address-plus";
+
+console.log(DIRECTIONAL_MAP["northwest"]);
 // "NW"
 ```
 
@@ -1070,7 +1246,9 @@ FACILITY_DELIMITER_PATTERN: RegExp
 A facility's name followed by a comma or a dash and then the address.
 
 ```js
-FACILITY_DELIMITER_PATTERN.test("City Hall - 100 Queen St W")
+import { FACILITY_DELIMITER_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(FACILITY_DELIMITER_PATTERN.test("City Hall - 100 Queen St W"));
 // true
 ```
 
@@ -1085,7 +1263,9 @@ FACILITY_DELIMITER_PATTERNS: { readonly PARENTHETICAL: RegExp; readonly DELIMITE
 The ways a facility's name is set off from an address: in parentheses, before a delimiter, or as a trailing island.
 
 ```js
-FACILITY_DELIMITER_PATTERNS.PARENTHETICAL.test("(City Hall)")
+import { FACILITY_DELIMITER_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(FACILITY_DELIMITER_PATTERNS.PARENTHETICAL.test("(City Hall)"));
 // true
 ```
 
@@ -1100,7 +1280,9 @@ FACILITY_INDICATORS: readonly ["center", "centre", "building", "tower", "plaza",
 Words that mark a place's name as a facility (`center`, `tower`, `hospital`, `université`), in lower case.
 
 ```js
-FACILITY_INDICATORS.includes("hospital")
+import { FACILITY_INDICATORS } from "@johnmorrisdotca/address-plus";
+
+console.log(FACILITY_INDICATORS.includes("hospital"));
 // true
 ```
 
@@ -1115,7 +1297,9 @@ FACILITY_PATTERNS: RegExp[]
 The patterns that find a facility's name, in English and French.
 
 ```js
-FACILITY_PATTERNS.some((pattern) => pattern.test("Empire State Building"))
+import { FACILITY_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(FACILITY_PATTERNS.some((pattern) => pattern.test("Empire State Building")));
 // true
 ```
 
@@ -1134,7 +1318,9 @@ The municipalities a Japanese name could mean: several when the name is shared (
 - Returns: Every match, an empty array when there is none.
 
 ```js
-findMunicipalitiesByName("府中市").map((one) => one.code + " " + one.romaji)
+import { findMunicipalitiesByName } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalitiesByName("府中市").map((one) => one.code + " " + one.romaji));
 // ["13206 Fuchu-shi","34208 Fuchu-shi"]
 ```
 
@@ -1153,7 +1339,9 @@ The municipalities a romaji name could mean, written with or without macrons and
 - Returns: Every match, an empty array when there is none.
 
 ```js
-findMunicipalitiesByRomaji("Chuo-ku, Sapporo").map((one) => one.name)
+import { findMunicipalitiesByRomaji } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalitiesByRomaji("Chuo-ku, Sapporo").map((one) => one.name));
 // ["札幌市中央区"]
 ```
 
@@ -1171,7 +1359,9 @@ The municipality with a JIS X 0402 code, a designated city's own code included.
 - Returns: The municipality, or `null` for a code the tables do not have.
 
 ```js
-findMunicipalityByCode("13101")?.name
+import { findMunicipalityByCode } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalityByCode("13101")?.name);
 // "千代田区"
 ```
 
@@ -1189,7 +1379,9 @@ The prefecture a name, reading, romaji spelling or JIS code refers to: `東京�
 - Returns: The prefecture, or `null` when the text names none.
 
 ```js
-findPrefecture("Osaka Prefecture")?.name
+import { findPrefecture } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findPrefecture("Osaka Prefecture")?.name);
 // "大阪府"
 ```
 
@@ -1208,7 +1400,11 @@ Writes a parsed address back out as lines and as one line, with abbreviations or
 - Returns: The address as an array of lines and as one line.
 
 ```js
-formatAddress(parseLocation("123 Main Street, Anytown, NY 12345")).singleLine
+import { formatAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatAddress(parsedAddress1).singleLine);
 // "123 Main St, Anytown NY 12345"
 ```
 
@@ -1227,7 +1423,11 @@ Writes a parsed address the way Canada Post asks: capitals, the unit before the 
 - Returns: The address as lines and as one line.
 
 ```js
-formatCanadaPost(parseLocation("100 Queen Street West, Toronto, Ontario M5H 2N2")).lines
+import { formatCanadaPost, parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("100 Queen Street West, Toronto, Ontario M5H 2N2");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatCanadaPost(parsedAddress1).lines);
 // ["100 QUEEN ST W","TORONTO ON M5H 2N2"]
 ```
 
@@ -1246,7 +1446,12 @@ Writes a Japanese address in Japanese order, as an envelope is addressed: `〒10
 - Returns: The address as text, its lines joined with newlines unless `options.multiline` is `false`; an empty string when the address has none of the parts.
 
 ```js
-formatJapanese(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { blockStyle: "markers", multiline: false })
+import { formatJapanese } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapanese(parsedAddress1, { blockStyle: "markers", multiline: false }));
 // "〒100-0005 東京都千代田区丸の内1丁目2番3号"
 ```
 
@@ -1265,7 +1470,12 @@ Writes a Japanese address in English order, as a form from abroad expects: build
 - Returns: The address as one line, its parts joined by commas.
 
 ```js
-formatJapaneseEnglish(parseLocation("1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005"))
+import { formatJapaneseEnglish } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapaneseEnglish(parsedAddress1));
 // "1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005, Japan"
 ```
 
@@ -1295,7 +1505,12 @@ interface FormattedAddress {
 A formatted address: its lines, and the same on one line.
 
 ```js
-formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"))
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { FormattedAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1));
 // {"lines":["123 MAIN ST","ANYTOWN NY 12345"],"singleLine":"123 Main St, Anytown NY 12345","deliveryLine":"123 Main St","lastLine":"Anytown NY 12345","country":"US","format":"usps"}
 ```
 
@@ -1314,7 +1529,11 @@ Writes a parsed address the way USPS Publication 28 asks: capitals, standard abb
 - Returns: The address as lines and as one line.
 
 ```js
-formatUSPS(parseLocation("123 Main Street Apt 4, Anytown, NY 12345")).lines
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main Street Apt 4, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1).lines);
 // ["123 MAIN ST APT 4","ANYTOWN NY 12345"]
 ```
 
@@ -1329,7 +1548,9 @@ FRENCH_PREPOSITIONS: Map<string, string>
 French particles that can open a street name, each with the space after it, to the way it is written there (`de la ` as `De la `).
 
 ```js
-FRENCH_PREPOSITIONS.get("de la ")
+import { FRENCH_PREPOSITIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(FRENCH_PREPOSITIONS.get("de la "));
 // "De la "
 ```
 
@@ -1354,7 +1575,10 @@ interface FrenchAddressFields {
 The fields an address in France fills beside the shared ones. The shared fields keep their meaning: `number` is the street number, `street` the name of the street without its type and `type` the type in full (`Rue`; the name is `de la Paix`), `secUnitType` and `secUnitNum` an apartment or a door, `floorType` and `floor` a floor, `building` the building's or the residence's name, `city` the commune, `state` the department's code and `zip` the postcode.
 
 ```js
-parseFrenchAddress("12 bis rue de la Paix, 75002 Paris")?.numberExtension
+import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchAddressFields } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchAddress("12 bis rue de la Paix, 75002 Paris")?.numberExtension);
 // "bis"
 ```
 
@@ -1373,7 +1597,10 @@ interface FrenchCollectivity {
 An overseas collectivity of France in the tables: its code (`987`), the ISO 3166-1 country code an address in it reads as (`PF`) and its name.
 
 ```js
-FR_COLLECTIVITIES.find((one) => one.code === "988")
+import { FR_COLLECTIVITIES } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchCollectivity } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_COLLECTIVITIES.find((one) => one.code === "988"));
 // {"code":"988","country":"NC","name":"Nouvelle-Calédonie"}
 ```
 
@@ -1392,7 +1619,10 @@ interface FrenchDepartment {
 A department of France in the tables: its code (`75`, `2A`, `971`), its name and its region's, from INSEE's Code officiel géographique.
 
 ```js
-FR_DEPARTMENTS.find((department) => department.code === "75")
+import { FR_DEPARTMENTS } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchDepartment } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_DEPARTMENTS.find((department) => department.code === "75"));
 // {"code":"75","name":"Paris","region":"Île-de-France"}
 ```
 
@@ -1407,7 +1637,10 @@ type FrenchPostalCountry = "BL" | "FR" | "MC" | "MF" | "NC" | "PF" | "PM" | "WF"
 The country an address in La Poste's base belongs to: `FR` for France (the metropolis and the overseas departments), `MC` for Monaco, and the ISO 3166-1 code of an overseas collectivity (`PM`, `BL`, `MF`, `WF`, `PF`, `NC`), which is French but has a country code of its own and is listed apart by the Universal Postal Union.
 
 ```js
-parseFrenchAddress("Avenue Pouvanaa a Oopa, 98713 Papeete, Polynésie française")?.country
+import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchPostalCountry } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchAddress("Avenue Pouvanaa a Oopa, 98713 Papeete, Polynésie française")?.country);
 // "PF"
 ```
 
@@ -1428,7 +1661,10 @@ interface FrenchPostcode {
 A postcode taken apart: the code of the department or territory its number belongs to, the country it delivers to, and whether La Poste's base has it. `place` is a department's code (`75`, `2A`, `971`), a collectivity's (`987`) or `99` for Monaco.
 
 ```js
-parseFrenchPostcode("20200")
+import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchPostcode("20200"));
 // {"postcode":"20200","place":"2B","country":"FR","known":true,"department":"2B"}
 ```
 
@@ -1448,7 +1684,9 @@ interface FuzzyMatchOptions {
 Settings for fuzzy string matching: the lowest similarity that counts, the largest edit distance, and phonetic matching.
 
 ```js
-({ threshold: 0.8, maxDistance: 2 }).maxDistance
+import type { FuzzyMatchOptions } from "@johnmorrisdotca/address-plus";
+
+console.log(({ threshold: 0.8, maxDistance: 2 }).maxDistance);
 // 2
 ```
 
@@ -1463,7 +1701,9 @@ GENERAL_DELIVERY_PATTERNS: { readonly STANDARD: RegExp; readonly WITH_CITY: RegE
 General delivery written alone or before a city.
 
 ```js
-GENERAL_DELIVERY_PATTERNS.STANDARD.test("General Delivery")
+import { GENERAL_DELIVERY_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(GENERAL_DELIVERY_PATTERNS.STANDARD.test("General Delivery"));
 // true
 ```
 
@@ -1480,7 +1720,10 @@ interface GermanAddressFields {
 The fields an address in Germany fills beside the shared ones. The shared fields keep their meaning: `street` is the whole name of the street as written (`Hauptstraße`, `Berliner Str.`, `Am Markt`), `number` the house number with its letter (`12a`) or range (`12-14`), `secUnitType` and `secUnitNum` a flat (`Wohnung 12`), a box (`Postfach 12 34 56`) or a Packstation, `floorType` and `floor` a floor (`OG` and `2`), `building` a wing, a house or a name (`Hinterhaus`, `Haus B`), `locality` the Ortsteil, `city` the place, `state` the Land's code and `zip` the postcode.
 
 ```js
-parseGermanAddress("c/o Weber, Hauptstraße 12a, 10115 Berlin")?.careOf
+import { parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+import type { GermanAddressFields } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseGermanAddress("c/o Weber, Hauptstraße 12a, 10115 Berlin")?.careOf);
 // "Weber"
 ```
 
@@ -1499,7 +1742,10 @@ interface GermanPostcode {
 A postcode taken apart: the Land it is in, and whether GeoNames' list has it.
 
 ```js
-parseGermanPostcode("10115")
+import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+import type { GermanPostcode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseGermanPostcode("10115"));
 // {"postcode":"10115","state":"BE","known":true}
 ```
 
@@ -1519,7 +1765,10 @@ interface GermanState {
 A Land of Germany in the tables: its code, its ISO 3166-2 code, and its name in English and in Japanese (from kuni, which takes them from Unicode CLDR and Wikidata).
 
 ```js
-DE_STATES.find((state) => state.code === "BY")
+import { DE_STATES } from "@johnmorrisdotca/address-plus/de";
+import type { GermanState } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_STATES.find((state) => state.code === "BY"));
 // {"code":"BY","iso":"DE-BY","name":"Bavaria","nameJa":"バイエルン自由州"}
 ```
 
@@ -1535,7 +1784,10 @@ type GermanStateCode =
 The code of one of the sixteen Länder of Germany, as ISO 3166-2:DE writes it after `DE-`.
 
 ```js
-getStateFromGermanPostcode("80331")
+import { getStateFromGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+import type { GermanStateCode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(getStateFromGermanPostcode("80331"));
 // "BY"
 ```
 
@@ -1552,7 +1804,9 @@ Every abbreviation the formatters use: street types, directionals, secondary uni
 - Returns: One map per kind, each from the full word to its abbreviation.
 
 ```js
-getAddressAbbreviations().streetTypes.avenue
+import { getAddressAbbreviations } from "@johnmorrisdotca/address-plus";
+
+console.log(getAddressAbbreviations().streetTypes.avenue);
 // "Ave"
 ```
 
@@ -1572,7 +1826,13 @@ The similarity of two parsed addresses, part by part, without a verdict: the sco
 - Returns: The overall score from 0 to 1, the street, city, state and postal scores, and each difference with its kind.
 
 ```js
-getAddressSimilarity(parseLocation("123 Main Street, Anytown, NY 12345"), parseLocation("125 Main Street, Anytown, NY 12345")).differences
+import { getAddressSimilarity, parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("125 Main Street, Anytown, NY 12345");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(getAddressSimilarity(parsedAddress1, parsedAddress2).differences);
 // [{"field":"number","value1":"123","value2":"125","type":"typo","confidence":0.6}]
 ```
 
@@ -1590,7 +1850,9 @@ The three-digit postal prefixes a prefecture's codes begin with, the reverse of 
 - Returns: The prefixes in ascending order, an empty array for an unknown prefecture.
 
 ```js
-getPostalPrefixesForPrefecture("沖縄県")
+import { getPostalPrefixesForPrefecture } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(getPostalPrefixesForPrefecture("沖縄県"));
 // ["900","901","902","903","904","905","906","907"]
 ```
 
@@ -1608,7 +1870,9 @@ The postal code prefixes a province or territory uses, the reverse of `getProvin
 - Returns: The prefixes, a letter or, for the territories, three characters; an empty array for an unknown code.
 
 ```js
-getPostalPrefixesForProvince("NU")
+import { getPostalPrefixesForProvince } from "@johnmorrisdotca/address-plus";
+
+console.log(getPostalPrefixesForProvince("NU"));
 // ["X0A","X0B","X0C"]
 ```
 
@@ -1626,7 +1890,9 @@ The prefecture a Japanese postal code delivers to, from Japan Post's data: by it
 - Returns: The prefecture's JIS code, or `null` for a malformed code or one no Japanese code begins like.
 
 ```js
-getPrefectureFromJapanesePostalCode("530-0001")
+import { getPrefectureFromJapanesePostalCode } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(getPrefectureFromJapanesePostalCode("530-0001"));
 // "27"
 ```
 
@@ -1644,7 +1910,9 @@ The province or territory a Canadian postal code is in, from its first letter, a
 - Returns: The two-letter code, or `null` for a code that is not Canadian.
 
 ```js
-getProvinceFromPostalCode("H3G 1P1")
+import { getProvinceFromPostalCode } from "@johnmorrisdotca/address-plus";
+
+console.log(getProvinceFromPostalCode("H3G 1P1"));
 // "QC"
 ```
 
@@ -1662,7 +1930,9 @@ The state or territory a US ZIP code is in.
 - Returns: The two-letter code, or `undefined` for a ZIP no state uses or a malformed one.
 
 ```js
-getStateFromZip("98101")
+import { getStateFromZip } from "@johnmorrisdotca/address-plus";
+
+console.log(getStateFromZip("98101"));
 // "WA"
 ```
 
@@ -1681,7 +1951,9 @@ The errors `validateAddress` finds, without the rest of its result.
 - Returns: The errors, each with its field, code and message; an empty array when there are none.
 
 ```js
-getValidationErrors("123 Main St, Seattle, NY 98101", { strictPostalValidation: true }).map((error) => error.code)
+import { getValidationErrors } from "@johnmorrisdotca/address-plus";
+
+console.log(getValidationErrors("123 Main St, Seattle, NY 98101", { strictPostalValidation: true }).map((error) => error.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -1699,7 +1971,9 @@ The ZIP code prefixes a state or territory uses, the reverse of `getStateFromZip
 - Returns: The prefixes in ascending order, or an empty array for an unknown code.
 
 ```js
-getZipPrefixesForState("RI")
+import { getZipPrefixesForState } from "@johnmorrisdotca/address-plus";
+
+console.log(getZipPrefixesForState("RI"));
 // ["028","029"]
 ```
 
@@ -1717,7 +1991,9 @@ Whether a string looks like an address at all: a number and a street, a PO box, 
 - Returns: `true` when it holds something an address is made of.
 
 ```js
-hasValidAddressComponents("123 Main St, Anytown, NY 12345")
+import { hasValidAddressComponents } from "@johnmorrisdotca/address-plus";
+
+console.log(hasValidAddressComponents("123 Main St, Anytown, NY 12345"));
 // true
 ```
 
@@ -1732,7 +2008,9 @@ INTERSECTION_PATTERNS: { readonly BASIC_CITY: RegExp; readonly CITY_WITH_COMMA: 
 The regular expressions and pattern builders the intersection parser uses to find the city and each street with its type.
 
 ```js
-INTERSECTION_PATTERNS.CITY_WITH_COMMA.exec("Pine St, Tacoma")?.[1]
+import { INTERSECTION_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(INTERSECTION_PATTERNS.CITY_WITH_COMMA.exec("Pine St, Tacoma")?.[1]);
 // "Tacoma"
 ```
 
@@ -1747,7 +2025,9 @@ ISLAND_TYPE_PATTERN: RegExp
 The words for an island, for addresses on one (`Island`, `Isle`, `Île`).
 
 ```js
-ISLAND_TYPE_PATTERN.test("Island")
+import { ISLAND_TYPE_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(ISLAND_TYPE_PATTERN.test("Island"));
 // true
 ```
 
@@ -1767,7 +2047,13 @@ Whether two parsed addresses are the same place, by the same rules as `compareAd
 - Returns: `true` when they match, `false` otherwise.
 
 ```js
-isSameAddress(parseLocation("東京都千代田区丸の内1丁目2番3号"), parseLocation("東京都千代田区丸の内１－２－３"))
+import { isSameAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("東京都千代田区丸の内1丁目2番3号");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseLocation("東京都千代田区丸の内１－２－３");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(isSameAddress(parsedAddress1, parsedAddress2));
 // true
 ```
 
@@ -1786,7 +2072,9 @@ Whether an address passes `validateAddress`.
 - Returns: `true` when it has no errors, `false` otherwise. Warnings do not make it invalid unless `strictPostalValidation` turns them into errors.
 
 ```js
-isValidAddress("123 Main St, Seattle, NY 98101", { strictPostalValidation: true })
+import { isValidAddress } from "@johnmorrisdotca/address-plus";
+
+console.log(isValidAddress("123 Main St, Seattle, NY 98101", { strictPostalValidation: true }));
 // false
 ```
 
@@ -1818,7 +2106,10 @@ interface JapaneseAddressFields {
 The fields a Japanese address fills on top of the shared ones. Every value is normalised: full-width and kanji numerals become ASCII digits, and the block is split into chome, ban and go whichever way it was written.
 
 ```js
-parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号")?.municipalityCode
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseAddressFields } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号")?.municipalityCode);
 // "13101"
 ```
 
@@ -1836,7 +2127,13 @@ interface JapaneseEnglishFormattingOptions {
 Options for `formatJapaneseEnglish`.
 
 ```js
-formatJapaneseEnglish(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { includeCountry: false })
+import { formatJapaneseEnglish } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseEnglishFormattingOptions } from "@johnmorrisdotca/address-plus/jp";
+
+const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapaneseEnglish(parsedAddress1, { includeCountry: false }));
 // "1-2-3 丸の内, Chiyoda-ku, Tokyo 100-0005"
 ```
 
@@ -1855,7 +2152,13 @@ interface JapaneseFormattingOptions {
 Options for `formatJapanese`.
 
 ```js
-formatJapanese(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { blockStyle: "markers", includePostalCode: false })
+import { formatJapanese } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseFormattingOptions } from "@johnmorrisdotca/address-plus/jp";
+
+const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapanese(parsedAddress1, { blockStyle: "markers", includePostalCode: false }));
 // "東京都千代田区丸の内1丁目2番3号"
 ```
 
@@ -1876,7 +2179,10 @@ interface JapaneseMunicipality {
 A municipality (市区町村) in the tables: its JIS code, its prefecture's code, its official name with the district for a town or village in one, its reading and its romaji.
 
 ```js
-findMunicipalityByCode("13101")
+import { findMunicipalityByCode } from "@johnmorrisdotca/address-plus/jp";
+import type { JapaneseMunicipality } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalityByCode("13101"));
 // {"code":"13101","prefecture":"13","name":"千代田区","kana":"チヨダク","romaji":"Chiyoda-ku"}
 ```
 
@@ -1896,7 +2202,10 @@ interface JapanesePrefecture {
 A prefecture (都道府県) in the tables: its JIS code, official name, katakana reading and romaji.
 
 ```js
-findPrefecture("13")
+import { findPrefecture } from "@johnmorrisdotca/address-plus/jp";
+import type { JapanesePrefecture } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findPrefecture("13"));
 // {"code":"13","name":"東京都","kana":"トウキョウト","romaji":"Tokyo-to"}
 ```
 
@@ -1914,7 +2223,13 @@ interface JapaneseValidation {
 What `validateJapaneseAddress` returns: the errors and the warnings found.
 
 ```js
-validateJapaneseAddress(parseLocation("東京都大阪市北区梅田1-1")).warnings.map((one) => one.code)
+import { validateJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseValidation } from "@johnmorrisdotca/address-plus/jp";
+
+const parsedAddress1=parseLocation("東京都大阪市北区梅田1-1");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateJapaneseAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["MUNICIPALITY_PREFECTURE_MISMATCH"]
 ```
 
@@ -1929,7 +2244,9 @@ JP_DESIGNATED_CITIES: readonly JapaneseMunicipality[]
 The twenty designated cities (政令指定都市) as municipalities of their own. Geolonia lists only their wards, but addresses often name the city alone (`大阪市`, `Sapporo`), and the city has a JIS code of its own: its wards' codes with the last digit 0 (札幌市 01100).
 
 ```js
-JP_DESIGNATED_CITIES.length
+import { JP_DESIGNATED_CITIES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_DESIGNATED_CITIES.length);
 // 20
 ```
 
@@ -1944,7 +2261,9 @@ JP_MUNICIPALITIES: readonly JapaneseMunicipality[]
 Every municipality (市区町村) by JIS X 0402 code, with its prefecture, official name, reading and romaji; a designated city's wards are listed, and the city itself is in `JP_DESIGNATED_CITIES`. Generated from Geolonia 住所データ (MIT).
 
 ```js
-JP_MUNICIPALITIES.find((one) => one.code === "13101")?.name
+import { JP_MUNICIPALITIES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_MUNICIPALITIES.find((one) => one.code === "13101")?.name);
 // "千代田区"
 ```
 
@@ -1959,7 +2278,9 @@ JP_POSTAL_EXCEPTIONS: Readonly<Record<string, string>>
 The postal codes that deliver to another prefecture than the rest of their three-digit prefix, each to that prefecture's JIS code. Generated from Japan Post's KEN_ALL.CSV through jp-postal (MIT).
 
 ```js
-Object.keys(JP_POSTAL_EXCEPTIONS).length > 0
+import { JP_POSTAL_EXCEPTIONS } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Object.keys(JP_POSTAL_EXCEPTIONS).length > 0);
 // true
 ```
 
@@ -1974,7 +2295,9 @@ JP_POSTAL_PREFIXES: Readonly<Record<string, string>>
 Each three-digit postal prefix, to the JIS code of the prefecture most of its codes deliver to. Generated from Japan Post's KEN_ALL.CSV through jp-postal (MIT).
 
 ```js
-JP_POSTAL_PREFIXES["530"]
+import { JP_POSTAL_PREFIXES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_POSTAL_PREFIXES["530"]);
 // "27"
 ```
 
@@ -1989,7 +2312,9 @@ JP_PREFECTURES: readonly JapanesePrefecture[]
 The 47 prefectures in JIS X 0401 order, each with its code, official name, katakana reading and romaji. Generated from Geolonia 住所データ (MIT).
 
 ```js
-JP_PREFECTURES.length
+import { JP_PREFECTURES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_PREFECTURES.length);
 // 47
 ```
 
@@ -2007,7 +2332,9 @@ Turns the kanji numerals that stand for block, floor or room numbers into digits
 - Returns: The text with those numerals as digits.
 
 ```js
-kanjiNumeralsToDigits("二丁目十五番")
+import { kanjiNumeralsToDigits } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(kanjiNumeralsToDigits("二丁目十五番"));
 // "2丁目15番"
 ```
 
@@ -2025,7 +2352,9 @@ Whether a text is a Japanese address: in Japanese script, ending with Japan, or 
 - Returns: `true` when the text should be read as Japanese.
 
 ```js
-looksJapanese("1-2-3 Marunouchi, Chiyoda-ku, Tokyo")
+import { looksJapanese } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(looksJapanese("1-2-3 Marunouchi, Chiyoda-ku, Tokyo"));
 // true
 ```
 
@@ -2043,7 +2372,9 @@ Every municipality of a prefecture, the designated cities included.
 - Returns: The municipalities, an empty array for an unknown code.
 
 ```js
-municipalitiesOf("47").length
+import { municipalitiesOf } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(municipalitiesOf("47").length);
 // 41
 ```
 
@@ -2058,7 +2389,9 @@ MUSIC_SQUARE_EAST_PATTERN: RegExp
 Nashville's Music Square East, whose name ends in a directional word that is part of it.
 
 ```js
-MUSIC_SQUARE_EAST_PATTERN.test("1 Music Square East")
+import { MUSIC_SQUARE_EAST_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(MUSIC_SQUARE_EAST_PATTERN.test("1 Music Square East"));
 // true
 ```
 
@@ -2076,7 +2409,9 @@ Makes the text of a Japanese address uniform, as the parser reads it: widths fol
 - Returns: The text made uniform.
 
 ```js
-normalizeJapaneseAddressText("〒１００-０００５ 東京都千代田区丸の内一丁目二番三号")
+import { normalizeJapaneseAddressText } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(normalizeJapaneseAddressText("〒１００-０００５ 東京都千代田区丸の内一丁目二番三号"));
 // "〒100-0005 東京都千代田区丸の内1丁目2番3号"
 ```
 
@@ -2094,7 +2429,9 @@ Finds the US state or Canadian province a name, code or misspelling means: `Calf
 - Returns: Its code and country, or `null` when nothing is close enough.
 
 ```js
-normalizeRegion("Calfornia")
+import { normalizeRegion } from "@johnmorrisdotca/address-plus";
+
+console.log(normalizeRegion("Calfornia"));
 // {"abbr":"CA","country":"US"}
 ```
 
@@ -2112,7 +2449,9 @@ The code of a US state or Canadian province written in full, in lower case.
 - Returns: The code in lower case, or `undefined` for a name that is not a state or province.
 
 ```js
-normalizeStateProvinceName("Nova Scotia")
+import { normalizeStateProvinceName } from "@johnmorrisdotca/address-plus";
+
+console.log(normalizeStateProvinceName("Nova Scotia"));
 // "ns"
 ```
 
@@ -2130,7 +2469,9 @@ Lower-cases a string, turns its periods, commas and semicolons into spaces, fold
 - Returns: The text in lower case, without that punctuation, with single spaces and none at either end.
 
 ```js
-normalizeText("  123   Main  St  ")
+import { normalizeText } from "@johnmorrisdotca/address-plus";
+
+console.log(normalizeText("  123   Main  St  "));
 // "123 main st"
 ```
 
@@ -2145,7 +2486,9 @@ PARENTHETICAL_PATTERN: RegExp
 Words in parentheses inside an address; group 1 is what is inside them.
 
 ```js
-PARENTHETICAL_PATTERN.exec("123 Main St (Rear)")?.[1]
+import { PARENTHETICAL_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(PARENTHETICAL_PATTERN.exec("123 Main St (Rear)")?.[1]);
 // "Rear"
 ```
 
@@ -2164,7 +2507,9 @@ Parses a street address. The same as `parseLocation`, kept under the name parse-
 - Returns: The parts found, or `null` when nothing can be read as an address.
 
 ```js
-parseAddress("123 Main St Apt 4, Anytown, NY 12345")?.secUnitNum
+import { parseAddress } from "@johnmorrisdotca/address-plus";
+
+console.log(parseAddress("123 Main St Apt 4, Anytown, NY 12345")?.secUnitNum);
 // "4"
 ```
 
@@ -2183,7 +2528,9 @@ Parses many street addresses with `parseAddress`, in order.
 - Returns: One result per address, in the same order, `null` where an address could not be read.
 
 ```js
-parseAddresses(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).map((one) => one?.city)
+import { parseAddresses } from "@johnmorrisdotca/address-plus";
+
+console.log(parseAddresses(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).map((one) => one?.city));
 // ["Anytown","Springfield"]
 ```
 
@@ -2202,7 +2549,9 @@ Parses many street addresses with `parseAddress`, and reports which failed and h
 - Returns: The results in order (`null` for a failure), the errors, and the counts and timing.
 
 ```js
-parseAddressesBatch(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).stats.successful
+import { parseAddressesBatch } from "@johnmorrisdotca/address-plus";
+
+console.log(parseAddressesBatch(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).stats.successful);
 // 2
 ```
 
@@ -2247,7 +2596,10 @@ interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, 
 What `parseLocation` returns: every part it found, each absent when the address has none. A Japanese address fills its own fields and the shared ones that stand for them: `state` the prefecture's JIS code, `city` the municipality, `street` the town, `number` the block, `zip` the postal code.
 
 ```js
-parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
 // {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
 ```
 
@@ -2278,7 +2630,10 @@ interface ParsedIntersection {
 What `parseIntersection` returns: two streets, each with its name, type and directionals, and the place.
 
 ```js
-parseIntersection("Hollywood Blvd and Vine St, Los Angeles, CA")
+import { parseIntersection } from "@johnmorrisdotca/address-plus";
+import type { ParsedIntersection } from "@johnmorrisdotca/address-plus";
+
+console.log(parseIntersection("Hollywood Blvd and Vine St, Los Angeles, CA"));
 // {"state":"CA","city":"Los Angeles","street1":"Hollywood","type1":"Blvd","street2":"Vine","type2":"St"}
 ```
 
@@ -2296,7 +2651,9 @@ Takes a leading directional off a street (`NW Main St`), abbreviated.
 - Returns: The directional (`undefined` when there is none) and the text that remains.
 
 ```js
-parseDirectional("NW Main St")
+import { parseDirectional } from "@johnmorrisdotca/address-plus";
+
+console.log(parseDirectional("NW Main St"));
 // {"direction":"NW","remaining":"Main St"}
 ```
 
@@ -2314,7 +2671,9 @@ Takes a facility's name (a building, a park, a hospital) off the start of an add
 - Returns: The facility (`undefined` when there is none) and the text that remains.
 
 ```js
-parseFacility("Empire State Building, 350 5th Ave")
+import { parseFacility } from "@johnmorrisdotca/address-plus";
+
+console.log(parseFacility("Empire State Building, 350 5th Ave"));
 // {"facility":"Empire State Building","remaining":", 350 5th Ave"}
 ```
 
@@ -2333,7 +2692,9 @@ Reads an address written loosely, as a fallback when `parseLocation` finds no st
 - Returns: The street and the ZIP code it could find, or `null` when the text is empty.
 
 ```js
-parseInformalAddress("Downtown near City Hall, Springfield IL 62701")
+import { parseInformalAddress } from "@johnmorrisdotca/address-plus";
+
+console.log(parseInformalAddress("Downtown near City Hall, Springfield IL 62701"));
 // {"street":"Downtown near City Hall","zip":"62701","country":"US"}
 ```
 
@@ -2352,7 +2713,9 @@ Parses many loosely written addresses with `parseInformalAddress`, in order.
 - Returns: One result per address, in the same order, `null` where nothing could be read.
 
 ```js
-parseInformalAddresses(["Downtown near City Hall, Springfield IL 62701"]).map((one) => one?.zip)
+import { parseInformalAddresses } from "@johnmorrisdotca/address-plus";
+
+console.log(parseInformalAddresses(["Downtown near City Hall, Springfield IL 62701"]).map((one) => one?.zip));
 // ["62701"]
 ```
 
@@ -2371,7 +2734,9 @@ Parses many loosely written addresses with `parseInformalAddress`, and reports w
 - Returns: The results in order (`null` for a failure), the errors, and the counts and timing.
 
 ```js
-parseInformalAddressesBatch(["Main St, Anytown NY"]).stats.successful
+import { parseInformalAddressesBatch } from "@johnmorrisdotca/address-plus";
+
+console.log(parseInformalAddressesBatch(["Main St, Anytown NY"]).stats.successful);
 // 1
 ```
 
@@ -2390,7 +2755,9 @@ Parses an intersection of two streets, joined by `&`, `and`, `at` or `@`, with t
 - Returns: Both streets with their types and directionals, and the place, or `null` when the text does not name two streets. A street with no type has `type1` or `type2` set to an empty string, as in parse-address.
 
 ```js
-parseIntersection("Main St and Pine St Tacoma WA")
+import { parseIntersection } from "@johnmorrisdotca/address-plus";
+
+console.log(parseIntersection("Main St and Pine St Tacoma WA"));
 // {"state":"WA","city":"Tacoma","street1":"Main","type1":"St","street2":"Pine","type2":"St"}
 ```
 
@@ -2409,7 +2776,9 @@ Parses many intersections with `parseIntersection`, in order.
 - Returns: One result per intersection, in the same order, `null` where one could not be read.
 
 ```js
-parseIntersections(["Yonge St and Bloor St, Toronto, ON"]).map((one) => one?.street2)
+import { parseIntersections } from "@johnmorrisdotca/address-plus";
+
+console.log(parseIntersections(["Yonge St and Bloor St, Toronto, ON"]).map((one) => one?.street2));
 // ["Bloor"]
 ```
 
@@ -2428,7 +2797,9 @@ Parses many intersections with `parseIntersection`, and reports which failed and
 - Returns: The results in order (`null` for a failure), the errors, and the counts and timing.
 
 ```js
-parseIntersectionsBatch(["Yonge St and Bloor St, Toronto, ON"]).stats.successful
+import { parseIntersectionsBatch } from "@johnmorrisdotca/address-plus";
+
+console.log(parseIntersectionsBatch(["Yonge St and Bloor St, Toronto, ON"]).stats.successful);
 // 1
 ```
 
@@ -2447,7 +2818,9 @@ Parses a Japanese address, in Japanese script or in romaji, into the Japanese fi
 - Returns: The parts found, or `null` when nothing in the text names a place in Japan (no prefecture, municipality or postal code).
 
 ```js
-parseJapaneseAddress("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階501号室")?.block
+import { parseJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseJapaneseAddress("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階501号室")?.block);
 // "1-2-3"
 ```
 
@@ -2466,7 +2839,9 @@ Parses a US, Canadian or Japanese address into its parts. The country is detecte
 - Returns: The parts found, or `null` when the text is empty or holds nothing that can be read as an address. A part that is not in the address is absent from the result, never an empty string.
 
 ```js
-parseLocation("1600 Pennsylvania Ave NW, Washington, DC 20500")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocation("1600 Pennsylvania Ave NW, Washington, DC 20500"));
 // {"number":"1600","street":"Pennsylvania","type":"Ave","suffix":"NW","city":"Washington","state":"DC","zip":"20500","zipValid":true,"country":"US"}
 ```
 
@@ -2485,7 +2860,9 @@ Parses many addresses with `parseLocation`, in order.
 - Returns: One result per address, in the same order: the parts, or `null` where an address could not be read.
 
 ```js
-parseLocations(["100 Queen St W, Toronto, ON M5H 2N2", "大阪府大阪市北区梅田3-1-1"]).map((one) => one?.country)
+import { parseLocations } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocations(["100 Queen St W, Toronto, ON M5H 2N2", "大阪府大阪市北区梅田3-1-1"]).map((one) => one?.country));
 // ["CA","JP"]
 ```
 
@@ -2504,7 +2881,9 @@ Parses many addresses with `parseLocation`, and reports which failed and how lon
 - Returns: The results in order (`null` for a failure), the errors with their index and input, and the counts and timing.
 
 ```js
-parseLocationsBatch(["100 Queen St W, Toronto, ON M5H 2N2", "", "大阪府大阪市北区梅田3-1-1"]).stats.successful
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+
+console.log(parseLocationsBatch(["100 Queen St W, Toronto, ON M5H 2N2", "", "大阪府大阪市北区梅田3-1-1"]).stats.successful);
 // 2
 ```
 
@@ -2545,7 +2924,10 @@ interface ParseOptions {
 Options for every parser: the country, strict postal codes, snake_case keys and the rest. Every one is optional.
 
 ```js
-parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
 // "13"
 ```
 
@@ -2563,7 +2945,9 @@ Takes words in parentheses out of an address, such as `(Rear Entrance)`.
 - Returns: The words in the parentheses (`undefined` when there are none) and the text without them.
 
 ```js
-parseParenthetical("123 Main St (Rear Entrance)")
+import { parseParenthetical } from "@johnmorrisdotca/address-plus";
+
+console.log(parseParenthetical("123 Main St (Rear Entrance)"));
 // {"secondary":"Rear Entrance","remaining":"123 Main St"}
 ```
 
@@ -2581,7 +2965,9 @@ Takes a ZIP code, ZIP+4 or Canadian postal code off the end of a text.
 - Returns: The code and its ZIP+4 (`undefined` when there is none), the text that remains, and the country and province the code points to.
 
 ```js
-parsePostalCode("Toronto ON M5H 2N2")
+import { parsePostalCode } from "@johnmorrisdotca/address-plus";
+
+console.log(parsePostalCode("Toronto ON M5H 2N2"));
 // {"zip":"M5H 2N2","remaining":"Toronto ON","detectedCountry":"CA","detectedProvince":"ON"}
 ```
 
@@ -2599,7 +2985,9 @@ Takes a secondary unit (apartment, suite, floor and the rest) off a street line.
 - Returns: The unit as written, its designator in full and its number (each `undefined` when there is none), and the text that remains.
 
 ```js
-parseSecondaryUnit("123 Main St Apt 4")
+import { parseSecondaryUnit } from "@johnmorrisdotca/address-plus";
+
+console.log(parseSecondaryUnit("123 Main St Apt 4"));
 // {"unit":"Apartment 4","secUnitType":"Apartment","secUnitNum":"4","remaining":"123 Main St"}
 ```
 
@@ -2617,7 +3005,9 @@ Takes a US state or Canadian province off the end of a text, by code or by name.
 - Returns: The two-letter code (`undefined` when there is none), the text that remains, and the country it points to.
 
 ```js
-parseStateProvince("Anytown NY")
+import { parseStateProvince } from "@johnmorrisdotca/address-plus";
+
+console.log(parseStateProvince("Anytown NY"));
 // {"state":"NY","remaining":"Anytown","detectedCountry":"US"}
 ```
 
@@ -2635,7 +3025,9 @@ Takes the house number off the start of a street line, with a fraction or a lett
 - Returns: The number (`undefined` when there is none) and the text that remains.
 
 ```js
-parseStreetNumber("123 Main St")
+import { parseStreetNumber } from "@johnmorrisdotca/address-plus";
+
+console.log(parseStreetNumber("123 Main St"));
 // {"number":"123","remaining":"Main St"}
 ```
 
@@ -2654,7 +3046,9 @@ Takes the street type off the end of a street, abbreviated the USPS way.
 - Returns: The type's USPS abbreviation in lower case (`undefined` when there is none) and the text that remains.
 
 ```js
-parseStreetType("Main Street")
+import { parseStreetType } from "@johnmorrisdotca/address-plus";
+
+console.log(parseStreetType("Main Street"));
 // {"type":"st","remaining":"Main"}
 ```
 
@@ -2669,7 +3063,9 @@ PO_BOX_PATTERNS: { readonly US_PO_BOX: RegExp; readonly STATION_PATTERN: RegExp;
 The regular expressions the PO box parser uses: the box itself, a station after it, a box number first, and a trailing comma.
 
 ```js
-PO_BOX_PATTERNS.US_PO_BOX.exec("PO Box 123, Springfield, IL 62701")?.slice(1)
+import { PO_BOX_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(PO_BOX_PATTERNS.US_PO_BOX.exec("PO Box 123, Springfield, IL 62701")?.slice(1));
 // ["123","Springfield","IL","62701"]
 ```
 
@@ -2684,7 +3080,9 @@ POSTAL_CODE_TO_PROVINCE: Record<string, string>
 Each first letter of a Canadian postal code, to the province or territory it is assigned to. X is shared by the Northwest Territories and Nunavut and is resolved with `TERRITORY_POSTAL_RANGES`.
 
 ```js
-POSTAL_CODE_TO_PROVINCE["V"]
+import { POSTAL_CODE_TO_PROVINCE } from "@johnmorrisdotca/address-plus";
+
+console.log(POSTAL_CODE_TO_PROVINCE["V"]);
 // "BC"
 ```
 
@@ -2704,7 +3102,10 @@ interface PostalValidationResult {
 What `validatePostalCode` returns: whether the code is well formed, its type, and the code written the standard way.
 
 ```js
-validatePostalCode("98101")
+import { validatePostalCode } from "@johnmorrisdotca/address-plus";
+import type { PostalValidationResult } from "@johnmorrisdotca/address-plus";
+
+console.log(validatePostalCode("98101"));
 // {"isValid":true,"type":"zip","formatted":"98101","message":"Valid US ZIP code format"}
 ```
 
@@ -2719,7 +3120,9 @@ PROVINCE_EXPANSIONS: Record<string, string>
 Each Canadian province's code in lower case, to its name in lower case: English by default, the French names under their own keys.
 
 ```js
-PROVINCE_EXPANSIONS["on"]
+import { PROVINCE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(PROVINCE_EXPANSIONS["on"]);
 // "ontario"
 ```
 
@@ -2734,7 +3137,9 @@ PROVINCE_EXPANSIONS_EN: Record<string, string>
 Each Canadian province's code in lower case, to its English name in lower case.
 
 ```js
-PROVINCE_EXPANSIONS_EN["qc"]
+import { PROVINCE_EXPANSIONS_EN } from "@johnmorrisdotca/address-plus";
+
+console.log(PROVINCE_EXPANSIONS_EN["qc"]);
 // "quebec"
 ```
 
@@ -2749,7 +3154,9 @@ PROVINCE_EXPANSIONS_FR: Record<string, string>
 Each Canadian province's code in lower case, to its French name in lower case.
 
 ```js
-PROVINCE_EXPANSIONS_FR["qc"]
+import { PROVINCE_EXPANSIONS_FR } from "@johnmorrisdotca/address-plus";
+
+console.log(PROVINCE_EXPANSIONS_FR["qc"]);
 // "québec"
 ```
 
@@ -2768,7 +3175,10 @@ type Region = {
 A US state or Canadian province: its code, its country and its name, as `normalizeRegion` matches them.
 
 ```js
-CA_REGIONS[0]
+import { CA_REGIONS } from "@johnmorrisdotca/address-plus";
+import type { Region } from "@johnmorrisdotca/address-plus";
+
+console.log(CA_REGIONS[0]);
 // {"abbr":"AB","country":"CA","name":"alberta"}
 ```
 
@@ -2783,7 +3193,9 @@ SECONDARY_UNIT_PATTERN: RegExp
 A unit at the end of a street line: group 1 is the street before it, group 2 the unit.
 
 ```js
-SECONDARY_UNIT_PATTERN.exec("123 Main St Apt 4")?.[2]
+import { SECONDARY_UNIT_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(SECONDARY_UNIT_PATTERN.exec("123 Main St Apt 4")?.[2]);
 // "Apt 4"
 ```
 
@@ -2798,7 +3210,9 @@ SECONDARY_UNIT_TYPES: Record<string, string>
 Each secondary unit designator, abbreviated or in full, in lower case, to the word the parser reports in full: USPS Publication 28 Appendix C2, and Canada Post's French unit words, which stay French.
 
 ```js
-SECONDARY_UNIT_TYPES["ste"]
+import { SECONDARY_UNIT_TYPES } from "@johnmorrisdotca/address-plus";
+
+console.log(SECONDARY_UNIT_TYPES["ste"]);
 // "Suite"
 ```
 
@@ -2817,9 +3231,11 @@ Sets a ZIP or postal code on a result, the way the parsers do: split into ZIP an
 - `options`: `strict` keeps a malformed code out (see `ParseOptions`).
 
 ```js
+import { setValidatedPostalCode } from "@johnmorrisdotca/address-plus";
+
 const parsed = { city: "Toronto", state: "ON" };
 setValidatedPostalCode(parsed, "m5h2n2", {});
-parsed
+console.log(parsed);
 // {"city":"Toronto","state":"ON","zip":"M5H 2N2"}
 ```
 
@@ -2873,7 +3289,10 @@ type StateCode =
 A US state, DC or territory code that `getStateFromZip` can return.
 
 ```js
-getStateFromZip("00901")
+import { getStateFromZip } from "@johnmorrisdotca/address-plus";
+import type { StateCode } from "@johnmorrisdotca/address-plus";
+
+console.log(getStateFromZip("00901"));
 // "PR"
 ```
 
@@ -2888,7 +3307,9 @@ STREET_NAME_ACRONYMS: Map<string, string>
 Acronyms written in capitals inside a street name (`US`, `FBI`), from their lower-case form, for `capitalizeStreetName`.
 
 ```js
-STREET_NAME_ACRONYMS.get("fbi")
+import { STREET_NAME_ACRONYMS } from "@johnmorrisdotca/address-plus";
+
+console.log(STREET_NAME_ACRONYMS.get("fbi"));
 // "FBI"
 ```
 
@@ -2903,7 +3324,9 @@ STREET_TYPE_DETECTION_PATTERN: RegExp
 Whether a text has a common street type in it, used to judge that a parse found a street.
 
 ```js
-STREET_TYPE_DETECTION_PATTERN.test("123 Main Street")
+import { STREET_TYPE_DETECTION_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(STREET_TYPE_DETECTION_PATTERN.test("123 Main Street"));
 // true
 ```
 
@@ -2918,7 +3341,9 @@ STREET_TYPE_EXPANSIONS: Record<string, string>
 Each USPS street type abbreviation in lower case, to the word in full.
 
 ```js
-STREET_TYPE_EXPANSIONS["blvd"]
+import { STREET_TYPE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(STREET_TYPE_EXPANSIONS["blvd"]);
 // "Boulevard"
 ```
 
@@ -2933,7 +3358,9 @@ STREET_TYPE_PROPER_CASE: Record<string, string>
 Each street type abbreviation in lower case, to the way the parser reports it (`Ave`, `Xing`).
 
 ```js
-STREET_TYPE_PROPER_CASE["xing"]
+import { STREET_TYPE_PROPER_CASE } from "@johnmorrisdotca/address-plus";
+
+console.log(STREET_TYPE_PROPER_CASE["xing"]);
 // "Xing"
 ```
 
@@ -2955,7 +3382,9 @@ interface SubRegion {
 An administrative part of a city (a borough, a parish, a ward, an arrondissement) that may be written where the city is expected.
 
 ```js
-({ name: "brooklyn", parentCity: "new york", state: "NY", country: "US", type: "borough" }).type
+import type { SubRegion } from "@johnmorrisdotca/address-plus";
+
+console.log(({ name: "brooklyn", parentCity: "new york", state: "NY", country: "US", type: "borough" }).type);
 // "borough"
 ```
 
@@ -2970,7 +3399,9 @@ TERRITORY_POSTAL_PREFIXES: Record<string, string[]>
 The first three characters of each territory's postal codes, since the territories share a first letter.
 
 ```js
-TERRITORY_POSTAL_PREFIXES["NU"]
+import { TERRITORY_POSTAL_PREFIXES } from "@johnmorrisdotca/address-plus";
+
+console.log(TERRITORY_POSTAL_PREFIXES["NU"]);
 // ["X0A","X0B","X0C"]
 ```
 
@@ -2985,7 +3416,9 @@ TERRITORY_POSTAL_RANGES: { pattern: RegExp; province: string; }[]
 The patterns that tell the Northwest Territories' X codes from Nunavut's, by their first three characters.
 
 ```js
-TERRITORY_POSTAL_RANGES.find((range) => range.pattern.test("X0A"))?.province
+import { TERRITORY_POSTAL_RANGES } from "@johnmorrisdotca/address-plus";
+
+console.log(TERRITORY_POSTAL_RANGES.find((range) => range.pattern.test("X0A"))?.province);
 // "NU"
 ```
 
@@ -3006,7 +3439,9 @@ type TestCase =
 Any case in the package's JSON test files.
 
 ```js
-({ input: "98101", expected: "WA" }).input
+import type { TestCase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ input: "98101", expected: "WA" }).input);
 // "98101"
 ```
 
@@ -3027,7 +3462,9 @@ interface TestCaseBase {
 The fields every case in the package's JSON test files has: a name or description, the input, what is expected and the options. Exported for tools that read those files.
 
 ```js
-({ name: "a ZIP code", input: "98101", expected: "WA" }).expected
+import type { TestCaseBase } from "@johnmorrisdotca/address-plus";
+
+console.log(({ name: "a ZIP code", input: "98101", expected: "WA" }).expected);
 // "WA"
 ```
 
@@ -3049,7 +3486,10 @@ interface UKAddressFields {
 The fields an address in the United Kingdom fills beside the shared ones. The shared fields keep their meaning: `number` is the building number, `street` and `type` the thoroughfare's name and its descriptor in full (`Upper` and `Street`, as Royal Mail writes it), `secUnitType` and `secUnitNum` a flat or unit (`Flat 2`) or a PO Box, `building` the building's name, `locality` the dependent locality, `city` the post town and `zip` the postcode.
 
 ```js
-parseUKAddress("Flat 2, Rose Court, 14 High Street, Kingsbury, LONDON NW9 0AA")?.locality
+import { parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { UKAddressFields } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseUKAddress("Flat 2, Rose Court, 14 High Street, Kingsbury, LONDON NW9 0AA")?.locality);
 // "Kingsbury"
 ```
 
@@ -3069,7 +3509,10 @@ interface UKNation {
 A nation of the United Kingdom in the tables: its code, its ISO 3166-2 code, and its name in English and in Japanese (from kuni, which takes them from Unicode CLDR and Wikidata).
 
 ```js
-GB_NATIONS.find((nation) => nation.code === "SCT")
+import { GB_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+import type { UKNation } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(GB_NATIONS.find((nation) => nation.code === "SCT"));
 // {"code":"SCT","iso":"GB-SCT","name":"Scotland","nameJa":"スコットランド"}
 ```
 
@@ -3084,7 +3527,10 @@ type UKNationCode = "ENG" | "NIR" | "SCT" | "WLS";
 The code of one of the four nations of the United Kingdom, as ISO 3166-2:GB writes it after `GB-`.
 
 ```js
-getNationFromUKPostcode("CF10 1AA")
+import { getNationFromUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+import type { UKNationCode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(getNationFromUKPostcode("CF10 1AA"));
 // "WLS"
 ```
 
@@ -3108,7 +3554,10 @@ interface UKPostcode {
 A postcode taken apart: the outward code (area and district) and the inward code (sector and unit), and where it delivers. `country` is `GB` for the United Kingdom and `JE`, `GY` or `IM` for Jersey, Guernsey and the Isle of Man, which use Royal Mail's postcodes but are not part of the United Kingdom.
 
 ```js
-parseUKPostcode("ec1a1bb")
+import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+import type { UKPostcode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseUKPostcode("ec1a1bb"));
 // {"postcode":"EC1A 1BB","outward":"EC1A","inward":"1BB","area":"EC","district":"EC1A","sector":"EC1A 1","country":"GB","nation":"ENG"}
 ```
 
@@ -3123,7 +3572,9 @@ UNIT_TYPE_KEYWORDS: string
 The secondary unit designators that take a value after them, as one alternation for a regular expression, longest first so that `apartment` is tried before `apt`: USPS Publication 28 Appendix C2, Canada Post's English and French unit words, and a few spellings people write.
 
 ```js
-new RegExp("^(?:" + UNIT_TYPE_KEYWORDS + ")$", "i").test("suite")
+import { UNIT_TYPE_KEYWORDS } from "@johnmorrisdotca/address-plus";
+
+console.log(new RegExp("^(?:" + UNIT_TYPE_KEYWORDS + ")$", "i").test("suite"));
 // true
 ```
 
@@ -3138,7 +3589,9 @@ UNIT_TYPE_NUMBER_PATTERN: RegExp
 A unit's designator and value: groups 1 and 2 (`apt 123`, `Apt. #4B`), groups 3 and 4 for a lot run together (`lt42`), group 5 for the value after a bare `#`.
 
 ```js
-UNIT_TYPE_NUMBER_PATTERN.exec("Apt. #4B")?.slice(1, 3)
+import { UNIT_TYPE_NUMBER_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(UNIT_TYPE_NUMBER_PATTERN.exec("Apt. #4B")?.slice(1, 3));
 // ["Apt","4B"]
 ```
 
@@ -3153,7 +3606,9 @@ US_REGIONS: Region[]
 Every name and other spelling of a US state, DC or territory as a `Region` object, for fuzzy matching by `normalizeRegion`.
 
 ```js
-US_REGIONS.find((region) => region.abbr === "WA")?.name
+import { US_REGIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(US_REGIONS.find((region) => region.abbr === "WA")?.name);
 // "washington"
 ```
 
@@ -3168,7 +3623,9 @@ US_STATE_ALTERNATIVES: Record<string, string>
 Other ways US states are written (shortened forms, old abbreviations, `D.C.`), in lower case, to their codes.
 
 ```js
-US_STATE_ALTERNATIVES["calif"]
+import { US_STATE_ALTERNATIVES } from "@johnmorrisdotca/address-plus";
+
+console.log(US_STATE_ALTERNATIVES["calif"]);
 // "CA"
 ```
 
@@ -3183,7 +3640,9 @@ US_STATE_EXPANSIONS: Record<string, string>
 Each US state's code in lower case, to its name in lower case: the reverse of `US_STATE_NAMES`.
 
 ```js
-US_STATE_EXPANSIONS["wa"]
+import { US_STATE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+
+console.log(US_STATE_EXPANSIONS["wa"]);
 // "washington"
 ```
 
@@ -3198,7 +3657,9 @@ US_STATE_NAMES: Record<string, string>
 Every US state, DC and territory by its name in lower case, to its two-letter code.
 
 ```js
-US_STATE_NAMES["new york"]
+import { US_STATE_NAMES } from "@johnmorrisdotca/address-plus";
+
+console.log(US_STATE_NAMES["new york"]);
 // "NY"
 ```
 
@@ -3213,7 +3674,9 @@ US_STATES: Record<string, string>
 Every name and other spelling of a US state in lower case, to its code: `US_STATE_NAMES` and `US_STATE_ALTERNATIVES` together.
 
 ```js
-US_STATES["mass"]
+import { US_STATES } from "@johnmorrisdotca/address-plus";
+
+console.log(US_STATES["mass"]);
 // "MA"
 ```
 
@@ -3228,7 +3691,9 @@ US_STREET_TYPES: Record<string, string>
 Every street type USPS Publication 28 lists, and the common spellings of each, in lower case, to its USPS abbreviation in lower case.
 
 ```js
-US_STREET_TYPES["boulevard"]
+import { US_STREET_TYPES } from "@johnmorrisdotca/address-plus";
+
+console.log(US_STREET_TYPES["boulevard"]);
 // "blvd"
 ```
 
@@ -3248,7 +3713,12 @@ interface USPSFormattingOptions {
 Options for `formatUSPS`: which lines to include, and whether to set the letter case the USPS way.
 
 ```js
-formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"), { includeLastLine: false }).lines
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { USPSFormattingOptions } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1, { includeLastLine: false }).lines);
 // ["123 MAIN ST"]
 ```
 
@@ -3267,7 +3737,9 @@ Checks an address: whether it has what an address needs, whether its ZIP or post
 - Returns: Whether it is valid, the confidence and completeness from 0 to 1, every error and warning with its code, suggestions, and the parsed address (`null` when it could not be parsed).
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0].code
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0].code);
 // "POSTAL_REGION_MISMATCH"
 ```
 
@@ -3286,7 +3758,12 @@ Checks a parsed Japanese address against the tables: the postal code's shape, wh
 - Returns: The errors and the warnings, each with its field, code and message.
 
 ```js
-validateJapaneseAddress(parseLocation("〒530-0001 東京都千代田区丸の内1-2-3")).warnings.map((one) => one.code)
+import { validateJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("〒530-0001 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateJapaneseAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -3304,7 +3781,9 @@ Checks the shape of a US ZIP code or a Canadian postal code.
 - Returns: Whether it is well formed, its type (`zip` or `postal`), and the code written the standard way.
 
 ```js
-validatePostalCode("k1a0b1")
+import { validatePostalCode } from "@johnmorrisdotca/address-plus";
+
+console.log(validatePostalCode("k1a0b1"));
 // {"isValid":true,"type":"postal","formatted":"K1A 0B1","message":"Valid Canadian postal code format"}
 ```
 
@@ -3319,7 +3798,9 @@ VALIDATION_PATTERNS: { readonly HAS_LETTERS: RegExp; readonly ALPHANUMERIC: RegE
 Small regular expressions the validators share: letters, digits, a house number at the start, and the like.
 
 ```js
-VALIDATION_PATTERNS.STARTS_WITH_NUMBER.test("123 Main St")
+import { VALIDATION_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(VALIDATION_PATTERNS.STARTS_WITH_NUMBER.test("123 Main St"));
 // true
 ```
 
@@ -3339,7 +3820,10 @@ interface ValidationError {
 One finding of a validator: the field it is about, its code, a message, and how serious it is.
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
 // {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
 ```
 
@@ -3366,7 +3850,10 @@ interface ValidationOptions {
 Options for the validators: which parts an address must have, which kinds are allowed, and whether a postal code that does not match its region is an error.
 
 ```js
-validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
 // ["MISSING_POSTAL_CODE"]
 ```
 
@@ -3381,7 +3868,9 @@ WRITTEN_NUMBERS: string
 House numbers written as words (`One`, `Twenty`), as one alternation for a regular expression, so `One Microsoft Way` is read as number 1.
 
 ```js
-new RegExp("^(?:" + WRITTEN_NUMBERS + ")$", "i").test("one")
+import { WRITTEN_NUMBERS } from "@johnmorrisdotca/address-plus";
+
+console.log(new RegExp("^(?:" + WRITTEN_NUMBERS + ")$", "i").test("one"));
 // true
 ```
 
@@ -3396,7 +3885,9 @@ ZIP_CODE_PATTERN: RegExp
 A US ZIP code with an optional ZIP+4.
 
 ```js
-ZIP_CODE_PATTERN.test("98101-1234")
+import { ZIP_CODE_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(ZIP_CODE_PATTERN.test("98101-1234"));
 // true
 ```
 
@@ -3411,7 +3902,9 @@ ZIP_CODE_REGEX_PATTERN: string
 The source of `ZIP_CODE_PATTERN`, for building larger patterns.
 
 ```js
-ZIP_CODE_REGEX_PATTERN.length > 0
+import { ZIP_CODE_REGEX_PATTERN } from "@johnmorrisdotca/address-plus";
+
+console.log(ZIP_CODE_REGEX_PATTERN.length > 0);
 // true
 ```
 
@@ -3426,7 +3919,9 @@ ZIP_VALIDATION_PATTERNS: { readonly POTENTIAL_ZIP: RegExp; }
 The shape of something that could be a ZIP code.
 
 ```js
-ZIP_VALIDATION_PATTERNS.POTENTIAL_ZIP.test("98101")
+import { ZIP_VALIDATION_PATTERNS } from "@johnmorrisdotca/address-plus";
+
+console.log(ZIP_VALIDATION_PATTERNS.POTENTIAL_ZIP.test("98101"));
 // true
 ```
 
@@ -3448,7 +3943,9 @@ The municipalities a Japanese name could mean: several when the name is shared (
 - Returns: Every match, an empty array when there is none.
 
 ```js
-findMunicipalitiesByName("府中市").map((one) => one.code + " " + one.romaji)
+import { findMunicipalitiesByName } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalitiesByName("府中市").map((one) => one.code + " " + one.romaji));
 // ["13206 Fuchu-shi","34208 Fuchu-shi"]
 ```
 
@@ -3467,7 +3964,9 @@ The municipalities a romaji name could mean, written with or without macrons and
 - Returns: Every match, an empty array when there is none.
 
 ```js
-findMunicipalitiesByRomaji("Chuo-ku, Sapporo").map((one) => one.name)
+import { findMunicipalitiesByRomaji } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalitiesByRomaji("Chuo-ku, Sapporo").map((one) => one.name));
 // ["札幌市中央区"]
 ```
 
@@ -3485,7 +3984,9 @@ The municipality with a JIS X 0402 code, a designated city's own code included.
 - Returns: The municipality, or `null` for a code the tables do not have.
 
 ```js
-findMunicipalityByCode("13101")?.name
+import { findMunicipalityByCode } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalityByCode("13101")?.name);
 // "千代田区"
 ```
 
@@ -3503,7 +4004,9 @@ The prefecture a name, reading, romaji spelling or JIS code refers to: `東京�
 - Returns: The prefecture, or `null` when the text names none.
 
 ```js
-findPrefecture("Osaka Prefecture")?.name
+import { findPrefecture } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findPrefecture("Osaka Prefecture")?.name);
 // "大阪府"
 ```
 
@@ -3522,7 +4025,12 @@ Writes a Japanese address in Japanese order, as an envelope is addressed: `〒10
 - Returns: The address as text, its lines joined with newlines unless `options.multiline` is `false`; an empty string when the address has none of the parts.
 
 ```js
-formatJapanese(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { blockStyle: "markers", multiline: false })
+import { formatJapanese } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapanese(parsedAddress1, { blockStyle: "markers", multiline: false }));
 // "〒100-0005 東京都千代田区丸の内1丁目2番3号"
 ```
 
@@ -3541,7 +4049,12 @@ Writes a Japanese address in English order, as a form from abroad expects: build
 - Returns: The address as one line, its parts joined by commas.
 
 ```js
-formatJapaneseEnglish(parseLocation("1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005"))
+import { formatJapaneseEnglish } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapaneseEnglish(parsedAddress1));
 // "1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005, Japan"
 ```
 
@@ -3559,7 +4072,9 @@ The three-digit postal prefixes a prefecture's codes begin with, the reverse of 
 - Returns: The prefixes in ascending order, an empty array for an unknown prefecture.
 
 ```js
-getPostalPrefixesForPrefecture("沖縄県")
+import { getPostalPrefixesForPrefecture } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(getPostalPrefixesForPrefecture("沖縄県"));
 // ["900","901","902","903","904","905","906","907"]
 ```
 
@@ -3577,7 +4092,9 @@ The prefecture a Japanese postal code delivers to, from Japan Post's data: by it
 - Returns: The prefecture's JIS code, or `null` for a malformed code or one no Japanese code begins like.
 
 ```js
-getPrefectureFromJapanesePostalCode("530-0001")
+import { getPrefectureFromJapanesePostalCode } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(getPrefectureFromJapanesePostalCode("530-0001"));
 // "27"
 ```
 
@@ -3609,7 +4126,10 @@ interface JapaneseAddressFields {
 The fields a Japanese address fills on top of the shared ones. Every value is normalised: full-width and kanji numerals become ASCII digits, and the block is split into chome, ban and go whichever way it was written.
 
 ```js
-parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号")?.municipalityCode
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseAddressFields } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号")?.municipalityCode);
 // "13101"
 ```
 
@@ -3627,7 +4147,13 @@ interface JapaneseEnglishFormattingOptions {
 Options for `formatJapaneseEnglish`.
 
 ```js
-formatJapaneseEnglish(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { includeCountry: false })
+import { formatJapaneseEnglish } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseEnglishFormattingOptions } from "@johnmorrisdotca/address-plus/jp";
+
+const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapaneseEnglish(parsedAddress1, { includeCountry: false }));
 // "1-2-3 丸の内, Chiyoda-ku, Tokyo 100-0005"
 ```
 
@@ -3646,7 +4172,13 @@ interface JapaneseFormattingOptions {
 Options for `formatJapanese`.
 
 ```js
-formatJapanese(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { blockStyle: "markers", includePostalCode: false })
+import { formatJapanese } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseFormattingOptions } from "@johnmorrisdotca/address-plus/jp";
+
+const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatJapanese(parsedAddress1, { blockStyle: "markers", includePostalCode: false }));
 // "東京都千代田区丸の内1丁目2番3号"
 ```
 
@@ -3667,7 +4199,10 @@ interface JapaneseMunicipality {
 A municipality (市区町村) in the tables: its JIS code, its prefecture's code, its official name with the district for a town or village in one, its reading and its romaji.
 
 ```js
-findMunicipalityByCode("13101")
+import { findMunicipalityByCode } from "@johnmorrisdotca/address-plus/jp";
+import type { JapaneseMunicipality } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findMunicipalityByCode("13101"));
 // {"code":"13101","prefecture":"13","name":"千代田区","kana":"チヨダク","romaji":"Chiyoda-ku"}
 ```
 
@@ -3687,7 +4222,10 @@ interface JapanesePrefecture {
 A prefecture (都道府県) in the tables: its JIS code, official name, katakana reading and romaji.
 
 ```js
-findPrefecture("13")
+import { findPrefecture } from "@johnmorrisdotca/address-plus/jp";
+import type { JapanesePrefecture } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(findPrefecture("13"));
 // {"code":"13","name":"東京都","kana":"トウキョウト","romaji":"Tokyo-to"}
 ```
 
@@ -3705,7 +4243,13 @@ interface JapaneseValidation {
 What `validateJapaneseAddress` returns: the errors and the warnings found.
 
 ```js
-validateJapaneseAddress(parseLocation("東京都大阪市北区梅田1-1")).warnings.map((one) => one.code)
+import { validateJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { JapaneseValidation } from "@johnmorrisdotca/address-plus/jp";
+
+const parsedAddress1=parseLocation("東京都大阪市北区梅田1-1");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateJapaneseAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["MUNICIPALITY_PREFECTURE_MISMATCH"]
 ```
 
@@ -3720,7 +4264,9 @@ JP_DESIGNATED_CITIES: readonly JapaneseMunicipality[]
 The twenty designated cities (政令指定都市) as municipalities of their own. Geolonia lists only their wards, but addresses often name the city alone (`大阪市`, `Sapporo`), and the city has a JIS code of its own: its wards' codes with the last digit 0 (札幌市 01100).
 
 ```js
-JP_DESIGNATED_CITIES.length
+import { JP_DESIGNATED_CITIES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_DESIGNATED_CITIES.length);
 // 20
 ```
 
@@ -3735,7 +4281,9 @@ JP_MUNICIPALITIES: readonly JapaneseMunicipality[]
 Every municipality (市区町村) by JIS X 0402 code, with its prefecture, official name, reading and romaji; a designated city's wards are listed, and the city itself is in `JP_DESIGNATED_CITIES`. Generated from Geolonia 住所データ (MIT).
 
 ```js
-JP_MUNICIPALITIES.find((one) => one.code === "13101")?.name
+import { JP_MUNICIPALITIES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_MUNICIPALITIES.find((one) => one.code === "13101")?.name);
 // "千代田区"
 ```
 
@@ -3750,7 +4298,9 @@ JP_POSTAL_EXCEPTIONS: Readonly<Record<string, string>>
 The postal codes that deliver to another prefecture than the rest of their three-digit prefix, each to that prefecture's JIS code. Generated from Japan Post's KEN_ALL.CSV through jp-postal (MIT).
 
 ```js
-Object.keys(JP_POSTAL_EXCEPTIONS).length > 0
+import { JP_POSTAL_EXCEPTIONS } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Object.keys(JP_POSTAL_EXCEPTIONS).length > 0);
 // true
 ```
 
@@ -3765,7 +4315,9 @@ JP_POSTAL_PREFIXES: Readonly<Record<string, string>>
 Each three-digit postal prefix, to the JIS code of the prefecture most of its codes deliver to. Generated from Japan Post's KEN_ALL.CSV through jp-postal (MIT).
 
 ```js
-JP_POSTAL_PREFIXES["530"]
+import { JP_POSTAL_PREFIXES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_POSTAL_PREFIXES["530"]);
 // "27"
 ```
 
@@ -3780,7 +4332,9 @@ JP_PREFECTURES: readonly JapanesePrefecture[]
 The 47 prefectures in JIS X 0401 order, each with its code, official name, katakana reading and romaji. Generated from Geolonia 住所データ (MIT).
 
 ```js
-JP_PREFECTURES.length
+import { JP_PREFECTURES } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(JP_PREFECTURES.length);
 // 47
 ```
 
@@ -3798,7 +4352,9 @@ Turns the kanji numerals that stand for block, floor or room numbers into digits
 - Returns: The text with those numerals as digits.
 
 ```js
-kanjiNumeralsToDigits("二丁目十五番")
+import { kanjiNumeralsToDigits } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(kanjiNumeralsToDigits("二丁目十五番"));
 // "2丁目15番"
 ```
 
@@ -3816,7 +4372,9 @@ Whether a text is a Japanese address: in Japanese script, ending with Japan, or 
 - Returns: `true` when the text should be read as Japanese.
 
 ```js
-looksJapanese("1-2-3 Marunouchi, Chiyoda-ku, Tokyo")
+import { looksJapanese } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(looksJapanese("1-2-3 Marunouchi, Chiyoda-ku, Tokyo"));
 // true
 ```
 
@@ -3834,7 +4392,9 @@ Every municipality of a prefecture, the designated cities included.
 - Returns: The municipalities, an empty array for an unknown code.
 
 ```js
-municipalitiesOf("47").length
+import { municipalitiesOf } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(municipalitiesOf("47").length);
 // 41
 ```
 
@@ -3852,7 +4412,9 @@ Makes the text of a Japanese address uniform, as the parser reads it: widths fol
 - Returns: The text made uniform.
 
 ```js
-normalizeJapaneseAddressText("〒１００-０００５ 東京都千代田区丸の内一丁目二番三号")
+import { normalizeJapaneseAddressText } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(normalizeJapaneseAddressText("〒１００-０００５ 東京都千代田区丸の内一丁目二番三号"));
 // "〒100-0005 東京都千代田区丸の内1丁目2番3号"
 ```
 
@@ -3897,7 +4459,10 @@ interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, 
 What `parseLocation` returns: every part it found, each absent when the address has none. A Japanese address fills its own fields and the shared ones that stand for them: `state` the prefecture's JIS code, `city` the municipality, `street` the town, `number` the block, `zip` the postal code.
 
 ```js
-parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
 // {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
 ```
 
@@ -3916,7 +4481,9 @@ Parses a Japanese address, in Japanese script or in romaji, into the Japanese fi
 - Returns: The parts found, or `null` when nothing in the text names a place in Japan (no prefecture, municipality or postal code).
 
 ```js
-parseJapaneseAddress("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階501号室")?.block
+import { parseJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseJapaneseAddress("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階501号室")?.block);
 // "1-2-3"
 ```
 
@@ -3957,7 +4524,10 @@ interface ParseOptions {
 Options for every parser: the country, strict postal codes, snake_case keys and the rest. Every one is optional.
 
 ```js
-parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
 // "13"
 ```
 
@@ -3976,7 +4546,12 @@ Checks a parsed Japanese address against the tables: the postal code's shape, wh
 - Returns: The errors and the warnings, each with its field, code and message.
 
 ```js
-validateJapaneseAddress(parseLocation("〒530-0001 東京都千代田区丸の内1-2-3")).warnings.map((one) => one.code)
+import { validateJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
+const parsedAddress1=parseLocation("〒530-0001 東京都千代田区丸の内1-2-3");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateJapaneseAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -3996,7 +4571,10 @@ interface ValidationError {
 One finding of a validator: the field it is about, its code, a message, and how serious it is.
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
 // {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
 ```
 
@@ -4023,7 +4601,10 @@ interface ValidationOptions {
 Options for the validators: which parts an address must have, which kinds are allowed, and whether a postal code that does not match its region is an error.
 
 ```js
-validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
 // ["MISSING_POSTAL_CODE"]
 ```
 
@@ -4041,7 +4622,9 @@ AU_CROSS_BORDER_POSTCODES: Readonly<Record<string, readonly AustralianStateCode[
 The postcodes whose area lies in more than one state or territory, each with the states it lies in, the one with most of it first. Read from the Australian Bureau of Statistics' Postal Areas (ASGS Edition 3, CC BY 4.0), which approximate Australia Post's postcodes by mesh blocks, so a state with a sliver of a postcode's area is listed too. An address naming any of these states passes the postcode check.
 
 ```js
-AU_CROSS_BORDER_POSTCODES["2620"]
+import { AU_CROSS_BORDER_POSTCODES } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_CROSS_BORDER_POSTCODES["2620"]);
 // ["NSW","ACT"]
 ```
 
@@ -4056,7 +4639,9 @@ AU_EXTERNAL_TERRITORY_POSTCODES: readonly string[]
 The postcodes the Australian Bureau of Statistics places, wholly or partly, in the Other Territories: Jervis Bay, Norfolk Island, Christmas Island and the Cocos (Keeling) Islands. Which state's code Australia Post writes beside each is not in the open data, so the validator does not judge the state given with one.
 
 ```js
-AU_EXTERNAL_TERRITORY_POSTCODES
+import { AU_EXTERNAL_TERRITORY_POSTCODES } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_EXTERNAL_TERRITORY_POSTCODES);
 // ["2540","2899","6798","6799"]
 ```
 
@@ -4071,7 +4656,9 @@ AU_POSTCODE_RANGES: readonly AustralianPostcodeRange[]
 The blocks of postcodes Australia Post allocates to each state and territory. A postcode outside every block is not Australian. A few postcodes near a border also serve towns across it (`AU_CROSS_BORDER_POSTCODES`), and the external territories have postcodes inside a state's block (`AU_EXTERNAL_TERRITORY_POSTCODES`).
 
 ```js
-AU_POSTCODE_RANGES.filter((range) => range.state === "ACT").map((range) => `${range.from}-${range.to}`)
+import { AU_POSTCODE_RANGES } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_POSTCODE_RANGES.filter((range) => range.state === "ACT").map((range) => `${range.from}-${range.to}`));
 // ["0200-0299","2600-2618","2900-2920"]
 ```
 
@@ -4086,7 +4673,9 @@ AU_STATES: readonly AustralianState[]
 The six states and two territories of Australia, in order of their codes, each with Australia Post's code, the ISO 3166-2 code and its name in English and in Japanese. Copied from kuni when the tables are made.
 
 ```js
-AU_STATES.map((state) => state.code)
+import { AU_STATES } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_STATES.map((state) => state.code));
 // ["ACT","NSW","NT","QLD","SA","TAS","VIC","WA"]
 ```
 
@@ -4101,7 +4690,9 @@ AU_STREET_TYPES: Readonly<Record<string, string>>
 Australia's street types: each AS4590 abbreviation, in proper case as the parser reports it, with the word it stands for. The parser also reads the word itself, and a few spellings people use (`Boulevarde`, `Crs`, `Tce`).
 
 ```js
-AU_STREET_TYPES.Pde
+import { AU_STREET_TYPES } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_STREET_TYPES.Pde);
 // "Parade"
 ```
 
@@ -4116,7 +4707,10 @@ australia: CountryModule
 Australia's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address that ends with a state and its postcode (or `Australia`) is read as Australian; `country: "AU"` reads any address as one.
 
 ```js
-parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia] })?.secUnitNum
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import { australia } from "@johnmorrisdotca/address-plus/au";
+
+console.log(parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia] })?.secUnitNum);
 // "3"
 ```
 
@@ -4134,7 +4728,10 @@ interface AustralianAddressFields {
 The fields an Australian address fills beside the shared ones. The shared fields keep their meaning: `number` is the street number, `street` and `type` the street's name and its type (Australia Post's abbreviation, `St`, `Pde`, `Cres`), `secUnitType` and `secUnitNum` the unit (`Unit 3`) or the postal delivery (`PO Box 37`, `Locked Bag 801`), `city` the suburb or town, `state` the state's code and `zip` the postcode.
 
 ```js
-parseAustralianAddress("Level 6, 51 Jacobson St, Brisbane QLD 4000")?.floorType
+import { parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianAddressFields } from "@johnmorrisdotca/address-plus/au";
+
+console.log(parseAustralianAddress("Level 6, 51 Jacobson St, Brisbane QLD 4000")?.floorType);
 // "Level"
 ```
 
@@ -4154,7 +4751,10 @@ interface AustralianPostcodeRange {
 One block of postcodes Australia Post allocates to a state or territory: every postcode from `from` to `to`, inclusive, written as four digits.
 
 ```js
-AU_POSTCODE_RANGES.find((range) => range.state === "TAS")
+import { AU_POSTCODE_RANGES } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianPostcodeRange } from "@johnmorrisdotca/address-plus/au";
+
+console.log(AU_POSTCODE_RANGES.find((range) => range.state === "TAS"));
 // {"state":"TAS","from":"7000","to":"7999","use":"delivery"}
 ```
 
@@ -4175,7 +4775,10 @@ interface AustralianState {
 An Australian state or territory in the tables: Australia Post's code, the ISO 3166-2 code, and its name in English and in Japanese (from kuni, which takes them from Unicode CLDR and Wikidata).
 
 ```js
-findAustralianState("Victoria")
+import { findAustralianState } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianState } from "@johnmorrisdotca/address-plus/au";
+
+console.log(findAustralianState("Victoria"));
 // {"code":"VIC","iso":"AU-VIC","name":"Victoria","nameJa":"ビクトリア州","kind":"state"}
 ```
 
@@ -4190,7 +4793,10 @@ type AustralianStateCode = "ACT" | "NSW" | "NT" | "QLD" | "SA" | "TAS" | "VIC" |
 The code of an Australian state or territory, as Australia Post writes it on the last line of an address.
 
 ```js
-getStateFromAustralianPostcode("3000")
+import { getStateFromAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+import type { AustralianStateCode } from "@johnmorrisdotca/address-plus/au";
+
+console.log(getStateFromAustralianPostcode("3000"));
 // "VIC"
 ```
 
@@ -4209,7 +4815,12 @@ interface AustraliaPostFormattingOptions {
 Options for `formatAustraliaPost`.
 
 ```js
-formatAustraliaPost(parseAustralianAddress("Unit 3, 12 Smith St, Parramatta NSW 2150"), { unitStyle: "slash" }).lines
+import { formatAustraliaPost, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { AustraliaPostFormattingOptions } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("Unit 3, 12 Smith St, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatAustraliaPost(parsedAddress1, { unitStyle: "slash" }).lines);
 // ["3/12 SMITH ST","PARRAMATTA NSW 2150"]
 ```
 
@@ -4228,7 +4839,13 @@ Compares two Australian addresses field by field: the unit, level, lot, number, 
 - Returns: Whether they are the same delivery point, and each field that differs.
 
 ```js
-compareAustralianAddresses(parseAustralianAddress("12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("14 Smith St, Parramatta New South Wales 2150"))
+import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("12 Smith Street, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseAustralianAddress("14 Smith St, Parramatta New South Wales 2150");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2));
 // {"isSame":false,"differences":[{"field":"number","first":"12","second":"14"}]}
 ```
 
@@ -4246,7 +4863,14 @@ interface CountryComparison {
 What a country module's comparer returns: whether the two addresses are the same delivery point, and every field that differs once both are in the same form (letter case, punctuation, a street type written out or abbreviated).
 
 ```js
-compareAustralianAddresses(parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150")).isSame
+import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryComparison } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -4265,7 +4889,14 @@ interface CountryDifference {
 One way two addresses differ, as a country module's comparer reports it: the field, and its value in each address after both were put in the same form.
 
 ```js
-compareUKAddresses(parseUKAddress("10 High Street, Bath BA1 1AA"), parseUKAddress("12 High St, Bath BA1 1AA")).differences
+import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { CountryDifference } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseUKAddress("10 High Street, Bath BA1 1AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseUKAddress("12 High St, Bath BA1 1AA");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareUKAddresses(parsedAddress1, parsedAddress2).differences);
 // [{"field":"number","first":"10","second":"12"}]
 ```
 
@@ -4289,7 +4920,10 @@ interface CountryModule {
 A country's address module: its codes, how to tell its addresses apart, and its parser, validator, formatter and comparer. Import one from its entry point (`australia` from `@johnmorrisdotca/address-plus/au`, `unitedKingdom` from `@johnmorrisdotca/address-plus/gb`) and hand it to `parseLocation` and `validateAddress` in `countries`.
 
 ```js
-australia.codes
+import { australia } from "@johnmorrisdotca/address-plus/au";
+import type { CountryModule } from "@johnmorrisdotca/address-plus/au";
+
+console.log(australia.codes);
 // ["AU"]
 ```
 
@@ -4307,7 +4941,12 @@ interface CountryValidation {
 What a country module's validator returns: the errors and the warnings it found.
 
 ```js
-validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings.map((one) => one.code)
+import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryValidation } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateAustralianAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -4325,7 +4964,9 @@ The word an AS4590 street type stands for: `Pde` is `Parade`. Any other text com
 - Returns: The word.
 
 ```js
-expandAustralianStreetType("CRES")
+import { expandAustralianStreetType } from "@johnmorrisdotca/address-plus/au";
+
+console.log(expandAustralianStreetType("CRES"));
 // "Crescent"
 ```
 
@@ -4343,7 +4984,9 @@ Finds an Australian state or territory by its code (`VIC`, `AU-VIC`, `Vic.`) or 
 - Returns: The state, or `null` when nothing matches.
 
 ```js
-findAustralianState("n.s.w.")?.name
+import { findAustralianState } from "@johnmorrisdotca/address-plus/au";
+
+console.log(findAustralianState("n.s.w.")?.name);
 // "New South Wales"
 ```
 
@@ -4362,7 +5005,11 @@ Writes an Australian address as Australia Post asks: the building's name, then t
 - Returns: The lines, the same on one line, the delivery line and the last line.
 
 ```js
-formatAustraliaPost(parseAustralianAddress("Level 6, 51 Jacobson Street, Brisbane Qld 4000")).lines
+import { formatAustraliaPost, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("Level 6, 51 Jacobson Street, Brisbane Qld 4000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatAustraliaPost(parsedAddress1).lines);
 // ["LEVEL 6 51 JACOBSON ST","BRISBANE QLD 4000"]
 ```
 
@@ -4392,7 +5039,12 @@ interface FormattedAddress {
 A formatted address: its lines, and the same on one line.
 
 ```js
-formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"))
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { FormattedAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1));
 // {"lines":["123 MAIN ST","ANYTOWN NY 12345"],"singleLine":"123 Main St, Anytown NY 12345","deliveryLine":"123 Main St","lastLine":"Anytown NY 12345","country":"US","format":"usps"}
 ```
 
@@ -4410,7 +5062,9 @@ The blocks of postcodes Australia Post allocates to a state or territory.
 - Returns: The blocks, in order; an empty array for something that is not a state.
 
 ```js
-getPostcodeRangesForAustralianState("Victoria").map((range) => `${range.from}-${range.to}`)
+import { getPostcodeRangesForAustralianState } from "@johnmorrisdotca/address-plus/au";
+
+console.log(getPostcodeRangesForAustralianState("Victoria").map((range) => `${range.from}-${range.to}`));
 // ["3000-3999","8000-8999"]
 ```
 
@@ -4428,7 +5082,9 @@ The state or territory whose block of postcodes a postcode is in. A postcode tha
 - Returns: The state's code, or `undefined` when the text is not four digits or no block holds it.
 
 ```js
-getStateFromAustralianPostcode("2620")
+import { getStateFromAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+
+console.log(getStateFromAustralianPostcode("2620"));
 // "NSW"
 ```
 
@@ -4446,7 +5102,9 @@ Every state or territory a postcode serves: its block's state, and for a postcod
 - Returns: The states' codes; an empty array when the postcode is not in any block.
 
 ```js
-getStatesForAustralianPostcode("0872")
+import { getStatesForAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+
+console.log(getStatesForAustralianPostcode("0872"));
 // ["NT","SA","WA"]
 ```
 
@@ -4464,7 +5122,9 @@ Whether an address is surely Australian, with no hint: it ends with `Australia`,
 - Returns: `true` when the address is Australian beyond doubt, `false` otherwise.
 
 ```js
-[looksAustralian("12 Smith St, Parramatta NSW 2150"), looksAustralian("123 Main St, Seattle, WA 9810")]
+import { looksAustralian } from "@johnmorrisdotca/address-plus/au";
+
+console.log([looksAustralian("12 Smith St, Parramatta NSW 2150"), looksAustralian("123 Main St, Seattle, WA 9810")]);
 // [true,false]
 ```
 
@@ -4483,7 +5143,9 @@ Parses an Australian address into its parts, as Australia Post lays one out: the
 - Returns: The parts found, with `country: "AU"`, or `null` when the text is empty or has nothing but a state.
 
 ```js
-parseAustralianAddress("Unit 3/12 Smith St, Parramatta NSW 2150")
+import { parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+
+console.log(parseAustralianAddress("Unit 3/12 Smith St, Parramatta NSW 2150"));
 // {"secUnitType":"Unit","secUnitNum":"3","number":"12","street":"Smith","type":"St","city":"Parramatta","state":"NSW","zip":"2150","zipValid":true,"country":"AU"}
 ```
 
@@ -4528,7 +5190,10 @@ interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, 
 What `parseLocation` returns: every part it found, each absent when the address has none. A Japanese address fills its own fields and the shared ones that stand for them: `state` the prefecture's JIS code, `city` the municipality, `street` the town, `number` the block, `zip` the postal code.
 
 ```js
-parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
 // {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
 ```
 
@@ -4569,7 +5234,10 @@ interface ParseOptions {
 Options for every parser: the country, strict postal codes, snake_case keys and the rest. Every one is optional.
 
 ```js
-parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
 // "13"
 ```
 
@@ -4588,7 +5256,11 @@ Checks an Australian address against Australia Post's blocks of postcodes: the p
 - Returns: The errors and warnings, each with its field, code and message.
 
 ```js
-validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings[0].message
+import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateAustralianAddress(parsedAddress1).warnings[0].message);
 // "Postcode 2000 belongs to NSW, not VIC"
 ```
 
@@ -4608,7 +5280,10 @@ interface ValidationError {
 One finding of a validator: the field it is about, its code, a message, and how serious it is.
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
 // {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
 ```
 
@@ -4635,7 +5310,10 @@ interface ValidationOptions {
 Options for the validators: which parts an address must have, which kinds are allowed, and whether a postal code that does not match its region is an error.
 
 ```js
-validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
 // ["MISSING_POSTAL_CODE"]
 ```
 
@@ -4657,7 +5335,13 @@ Compares two addresses in the United Kingdom field by field: the flat, the build
 - Returns: Whether they are the same delivery point, and each field that differs.
 
 ```js
-compareUKAddresses(parseUKAddress("10 Downing Street, London SW1A 2AA"), parseUKAddress("10 DOWNING ST, LONDON, SW1A2AA")).isSame
+import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+
+const parsedAddress1=parseUKAddress("10 Downing Street, London SW1A 2AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseUKAddress("10 DOWNING ST, LONDON, SW1A2AA");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareUKAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -4675,7 +5359,14 @@ interface CountryComparison {
 What a country module's comparer returns: whether the two addresses are the same delivery point, and every field that differs once both are in the same form (letter case, punctuation, a street type written out or abbreviated).
 
 ```js
-compareAustralianAddresses(parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150")).isSame
+import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryComparison } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -4694,7 +5385,14 @@ interface CountryDifference {
 One way two addresses differ, as a country module's comparer reports it: the field, and its value in each address after both were put in the same form.
 
 ```js
-compareUKAddresses(parseUKAddress("10 High Street, Bath BA1 1AA"), parseUKAddress("12 High St, Bath BA1 1AA")).differences
+import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { CountryDifference } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseUKAddress("10 High Street, Bath BA1 1AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseUKAddress("12 High St, Bath BA1 1AA");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareUKAddresses(parsedAddress1, parsedAddress2).differences);
 // [{"field":"number","first":"10","second":"12"}]
 ```
 
@@ -4718,7 +5416,10 @@ interface CountryModule {
 A country's address module: its codes, how to tell its addresses apart, and its parser, validator, formatter and comparer. Import one from its entry point (`australia` from `@johnmorrisdotca/address-plus/au`, `unitedKingdom` from `@johnmorrisdotca/address-plus/gb`) and hand it to `parseLocation` and `validateAddress` in `countries`.
 
 ```js
-australia.codes
+import { australia } from "@johnmorrisdotca/address-plus/au";
+import type { CountryModule } from "@johnmorrisdotca/address-plus/au";
+
+console.log(australia.codes);
 // ["AU"]
 ```
 
@@ -4736,7 +5437,12 @@ interface CountryValidation {
 What a country module's validator returns: the errors and the warnings it found.
 
 ```js
-validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings.map((one) => one.code)
+import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryValidation } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateAustralianAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -4754,7 +5460,9 @@ Finds a nation of the United Kingdom by its code (`SCT`, `GB-SCT`) or its name i
 - Returns: The nation, or `null` when nothing matches.
 
 ```js
-findUKNation("wales")?.code
+import { findUKNation } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(findUKNation("wales")?.code);
 // "WLS"
 ```
 
@@ -4773,7 +5481,11 @@ Writes an address in the United Kingdom as Royal Mail asks: the flat or part of 
 - Returns: The lines, the same on one line, the delivery line (the number and thoroughfare) and the last line.
 
 ```js
-formatRoyalMail(parseUKAddress("Flat 2, Rose Court, 14 High St, Kingsbury, London NW9 0AA")).lines
+import { formatRoyalMail, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+
+const parsedAddress1=parseUKAddress("Flat 2, Rose Court, 14 High St, Kingsbury, London NW9 0AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatRoyalMail(parsedAddress1).lines);
 // ["Flat 2","Rose Court","14 High Street","Kingsbury","LONDON","NW9 0AA"]
 ```
 
@@ -4803,7 +5515,12 @@ interface FormattedAddress {
 A formatted address: its lines, and the same on one line.
 
 ```js
-formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"))
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { FormattedAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1));
 // {"lines":["123 MAIN ST","ANYTOWN NY 12345"],"singleLine":"123 Main St, Anytown NY 12345","deliveryLine":"123 Main St","lastLine":"Anytown NY 12345","country":"US","format":"usps"}
 ```
 
@@ -4818,7 +5535,9 @@ GB_DISTRICT_NATIONS: Readonly<Record<string, readonly UKNationCode[]>>
 The postcode districts not wholly in the nation of their area, each with the nations its postcodes lie in, the one with most of them first: the districts that cross the borders of Wales and of Scotland, and those wholly across one (CH5 to CH8 are in Wales, though most of the CH area is in England). From Code-Point Open (OGL v3).
 
 ```js
-[GB_DISTRICT_NATIONS["TD15"], GB_DISTRICT_NATIONS["CH5"]]
+import { GB_DISTRICT_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+
+console.log([GB_DISTRICT_NATIONS["TD15"], GB_DISTRICT_NATIONS["CH5"]]);
 // [["ENG","SCT"],["WLS"]]
 ```
 
@@ -4833,7 +5552,9 @@ GB_NATIONS: readonly UKNation[]
 The four nations of the United Kingdom, in order of their codes, each with its ISO 3166-2 code and its name in English and in Japanese. Copied from kuni when the tables are made.
 
 ```js
-GB_NATIONS.map((nation) => nation.name)
+import { GB_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(GB_NATIONS.map((nation) => nation.name));
 // ["England","Northern Ireland","Scotland","Wales"]
 ```
 
@@ -4848,7 +5569,9 @@ GB_POSTCODE_AREAS: Readonly<Record<string, UKPostcodeArea>>
 Every postcode area Royal Mail uses: the 121 of the United Kingdom, the three Crown Dependencies (`GY`, `IM`, `JE`), and the two that are not places, `BF` (the British Forces Post Office) and `BX` (addresses kept for organisations wherever they are). Each with the town it is named for, its country and its nation.
 
 ```js
-[GB_POSTCODE_AREAS.CF.nation, GB_POSTCODE_AREAS.JE.country]
+import { GB_POSTCODE_AREAS } from "@johnmorrisdotca/address-plus/gb";
+
+console.log([GB_POSTCODE_AREAS.CF.nation, GB_POSTCODE_AREAS.JE.country]);
 // ["WLS","JE"]
 ```
 
@@ -4863,7 +5586,9 @@ GB_POSTCODE_DISTRICTS: Readonly<Record<string, string>>
 Every postcode district in Great Britain, by area: the numbered districts as runs, then those with a letter. Read from Ordnance Survey's Code-Point Open (OGL v3; contains Royal Mail data © Royal Mail copyright and database right). Northern Ireland's BT area is not in it, so its districts are not listed.
 
 ```js
-GB_POSTCODE_DISTRICTS["EC"]
+import { GB_POSTCODE_DISTRICTS } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(GB_POSTCODE_DISTRICTS["EC"]);
 // "1A,1M,1N,1P,1R,1V,1Y,2A,2M,2N,2P,2R,2V,2Y,3A,3M,3N,3P,3R,3V,4A,4M,4N,4P,4R,4V,4Y"
 ```
 
@@ -4878,7 +5603,9 @@ GB_THOROUGHFARE_DESCRIPTORS: Readonly<Record<string, readonly string[]>>
 The thoroughfare descriptors the parser takes off the end of a street's name and reports, in full, as `type` (`High Street` is street `High`, type `Street`), with the abbreviations it reads for each. A street ending in none of them (`Kingsway`, `The Strand`) has no type.
 
 ```js
-GB_THOROUGHFARE_DESCRIPTORS.Road
+import { GB_THOROUGHFARE_DESCRIPTORS } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(GB_THOROUGHFARE_DESCRIPTORS.Road);
 // ["RD"]
 ```
 
@@ -4896,7 +5623,9 @@ The nation of the United Kingdom a postcode delivers to, by its area, or by its 
 - Returns: `ENG`, `NIR`, `SCT` or `WLS`; `undefined` for a postcode outside the United Kingdom, one that is not a place (BFPO), or text that is not a postcode.
 
 ```js
-["CH5 1AA", "BT1 1AA", "EH1 1YZ", "JE2 3AB"].map(getNationFromUKPostcode)
+import { getNationFromUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(["CH5 1AA", "BT1 1AA", "EH1 1YZ", "JE2 3AB"].map(getNationFromUKPostcode));
 // ["WLS","NIR","SCT",null]
 ```
 
@@ -4914,7 +5643,9 @@ Every nation a postcode's district delivers to: one for most, two for the distri
 - Returns: The nations; an empty array outside the United Kingdom or for text that is not a postcode.
 
 ```js
-getNationsForUKPostcode("SY10 7AA")
+import { getNationsForUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(getNationsForUKPostcode("SY10 7AA"));
 // ["ENG","WLS"]
 ```
 
@@ -4932,7 +5663,9 @@ Whether a postcode follows Royal Mail's grammar: one of the six shapes (`M2 5BQ`
 - Returns: `true` when it has a postcode's shape and letters.
 
 ```js
-["EC1A 1BB", "sw1a1aa", "GIR 0AA", "Q1 1AA", "M5V 1A1"].map(isValidUKPostcode)
+import { isValidUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(["EC1A 1BB", "sw1a1aa", "GIR 0AA", "Q1 1AA", "M5V 1A1"].map(isValidUKPostcode));
 // [true,true,true,false,false]
 ```
 
@@ -4950,7 +5683,9 @@ Whether an address is surely British, with no hint: it ends with the United King
 - Returns: `true` when the address is British beyond doubt, `false` otherwise.
 
 ```js
-[looksBritish("10 Downing Street, London SW1A 2AA"), looksBritish("100 Queen St W, Toronto, ON M5H 2N2")]
+import { looksBritish } from "@johnmorrisdotca/address-plus/gb";
+
+console.log([looksBritish("10 Downing Street, London SW1A 2AA"), looksBritish("100 Queen St W, Toronto, ON M5H 2N2")]);
 // [true,false]
 ```
 
@@ -4995,7 +5730,10 @@ interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, 
 What `parseLocation` returns: every part it found, each absent when the address has none. A Japanese address fills its own fields and the shared ones that stand for them: `state` the prefecture's JIS code, `city` the municipality, `street` the town, `number` the block, `zip` the postal code.
 
 ```js
-parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
 // {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
 ```
 
@@ -5036,7 +5774,10 @@ interface ParseOptions {
 Options for every parser: the country, strict postal codes, snake_case keys and the rest. Every one is optional.
 
 ```js
-parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
 // "13"
 ```
 
@@ -5055,7 +5796,9 @@ Parses an address in the United Kingdom (or Jersey, Guernsey and the Isle of Man
 - Returns: The parts found, with `country` `GB` (or `JE`, `GY`, `IM`), or `null` when the text is empty.
 
 ```js
-parseUKAddress("Flat 14, Ziggurat Building, 60-66 Saffron Hill, London EC1N 8QX")
+import { parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseUKAddress("Flat 14, Ziggurat Building, 60-66 Saffron Hill, London EC1N 8QX"));
 // {"secUnitType":"Flat","secUnitNum":"14","building":"Ziggurat Building","number":"60-66","street":"Saffron","type":"Hill","city":"London","zip":"EC1N 8QX","zipValid":true,"nation":"ENG","country":"GB"}
 ```
 
@@ -5073,7 +5816,9 @@ Takes a postcode apart: outward code, inward code, area, district and sector, an
 - Returns: The parts, or `null` when it does not follow the grammar or its area is not one Royal Mail uses.
 
 ```js
-parseUKPostcode("JE2 3AB")
+import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseUKPostcode("JE2 3AB"));
 // {"postcode":"JE2 3AB","outward":"JE2","inward":"3AB","area":"JE","district":"JE2","sector":"JE2 3","country":"JE"}
 ```
 
@@ -5091,7 +5836,12 @@ interface RoyalMailFormattingOptions {
 Options for `formatRoyalMail`.
 
 ```js
-formatRoyalMail(parseUKAddress("10 Downing Street, London SW1A 2AA"), { includeCountry: true }).lines
+import { formatRoyalMail, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { RoyalMailFormattingOptions } from "@johnmorrisdotca/address-plus/gb";
+
+const parsedAddress1=parseUKAddress("10 Downing Street, London SW1A 2AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatRoyalMail(parsedAddress1, { includeCountry: true }).lines);
 // ["10 Downing Street","LONDON","SW1A 2AA","UNITED KINGDOM"]
 ```
 
@@ -5113,7 +5863,10 @@ interface UKAddressFields {
 The fields an address in the United Kingdom fills beside the shared ones. The shared fields keep their meaning: `number` is the building number, `street` and `type` the thoroughfare's name and its descriptor in full (`Upper` and `Street`, as Royal Mail writes it), `secUnitType` and `secUnitNum` a flat or unit (`Flat 2`) or a PO Box, `building` the building's name, `locality` the dependent locality, `city` the post town and `zip` the postcode.
 
 ```js
-parseUKAddress("Flat 2, Rose Court, 14 High Street, Kingsbury, LONDON NW9 0AA")?.locality
+import { parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { UKAddressFields } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseUKAddress("Flat 2, Rose Court, 14 High Street, Kingsbury, LONDON NW9 0AA")?.locality);
 // "Kingsbury"
 ```
 
@@ -5133,7 +5886,10 @@ interface UKNation {
 A nation of the United Kingdom in the tables: its code, its ISO 3166-2 code, and its name in English and in Japanese (from kuni, which takes them from Unicode CLDR and Wikidata).
 
 ```js
-GB_NATIONS.find((nation) => nation.code === "SCT")
+import { GB_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+import type { UKNation } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(GB_NATIONS.find((nation) => nation.code === "SCT"));
 // {"code":"SCT","iso":"GB-SCT","name":"Scotland","nameJa":"スコットランド"}
 ```
 
@@ -5148,7 +5904,10 @@ type UKNationCode = "ENG" | "NIR" | "SCT" | "WLS";
 The code of one of the four nations of the United Kingdom, as ISO 3166-2:GB writes it after `GB-`.
 
 ```js
-getNationFromUKPostcode("CF10 1AA")
+import { getNationFromUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+import type { UKNationCode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(getNationFromUKPostcode("CF10 1AA"));
 // "WLS"
 ```
 
@@ -5172,7 +5931,10 @@ interface UKPostcode {
 A postcode taken apart: the outward code (area and district) and the inward code (sector and unit), and where it delivers. `country` is `GB` for the United Kingdom and `JE`, `GY` or `IM` for Jersey, Guernsey and the Isle of Man, which use Royal Mail's postcodes but are not part of the United Kingdom.
 
 ```js
-parseUKPostcode("ec1a1bb")
+import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+import type { UKPostcode } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseUKPostcode("ec1a1bb"));
 // {"postcode":"EC1A 1BB","outward":"EC1A","inward":"1BB","area":"EC","district":"EC1A","sector":"EC1A 1","country":"GB","nation":"ENG"}
 ```
 
@@ -5191,7 +5953,10 @@ interface UKPostcodeArea {
 A postcode area: the town Royal Mail names it for, the country it delivers to (`GB`, or `JE`, `GY` and `IM` for the Crown Dependencies), and for the United Kingdom the nation, absent for an area that is not a place (`BF`, `BX`).
 
 ```js
-GB_POSTCODE_AREAS.BT
+import { GB_POSTCODE_AREAS } from "@johnmorrisdotca/address-plus/gb";
+import type { UKPostcodeArea } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(GB_POSTCODE_AREAS.BT);
 // {"name":"Northern Ireland","country":"GB","nation":"NIR"}
 ```
 
@@ -5206,7 +5971,10 @@ unitedKingdom: CountryModule
 The United Kingdom's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address with a British postcode (or ending with the United Kingdom or a nation) is read as British; `country: "GB"` reads any address as one. It reads Jersey (`JE`), Guernsey (`GY`) and the Isle of Man (`IM`) too.
 
 ```js
-parseLocation("221B Baker Street, London NW1 6XE", { countries: [unitedKingdom] })?.number
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import { unitedKingdom } from "@johnmorrisdotca/address-plus/gb";
+
+console.log(parseLocation("221B Baker Street, London NW1 6XE", { countries: [unitedKingdom] })?.number);
 // "221B"
 ```
 
@@ -5225,7 +5993,11 @@ Checks an address in the United Kingdom against Royal Mail's postcode grammar an
 - Returns: The errors and warnings, each with its field, code and message.
 
 ```js
-validateUKAddress(parseUKAddress("1 High Street, London EC9Z 1AA")).warnings.map((one) => one.code)
+import { parseUKAddress, validateUKAddress } from "@johnmorrisdotca/address-plus/gb";
+
+const parsedAddress1=parseUKAddress("1 High Street, London EC9Z 1AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateUKAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["INVALID_POSTAL_FORMAT"]
 ```
 
@@ -5245,7 +6017,10 @@ interface ValidationError {
 One finding of a validator: the field it is about, its code, a message, and how serious it is.
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
 // {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
 ```
 
@@ -5272,7 +6047,10 @@ interface ValidationOptions {
 Options for the validators: which parts an address must have, which kinds are allowed, and whether a postal code that does not match its region is an error.
 
 ```js
-validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
 // ["MISSING_POSTAL_CODE"]
 ```
 
@@ -5294,7 +6072,13 @@ Compares two addresses in Germany field by field: who it is care of, the buildin
 - Returns: Whether they are the same delivery point, and each field that differs.
 
 ```js
-compareGermanAddresses(parseGermanAddress("Müllerstraße 5, 13353 Berlin"), parseGermanAddress("MUELLERSTR. 5, 13353 BERLIN")).isSame
+import { compareGermanAddresses, parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+
+const parsedAddress1=parseGermanAddress("Müllerstraße 5, 13353 Berlin");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseGermanAddress("MUELLERSTR. 5, 13353 BERLIN");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareGermanAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -5312,7 +6096,14 @@ interface CountryComparison {
 What a country module's comparer returns: whether the two addresses are the same delivery point, and every field that differs once both are in the same form (letter case, punctuation, a street type written out or abbreviated).
 
 ```js
-compareAustralianAddresses(parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150")).isSame
+import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryComparison } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -5331,7 +6122,14 @@ interface CountryDifference {
 One way two addresses differ, as a country module's comparer reports it: the field, and its value in each address after both were put in the same form.
 
 ```js
-compareUKAddresses(parseUKAddress("10 High Street, Bath BA1 1AA"), parseUKAddress("12 High St, Bath BA1 1AA")).differences
+import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { CountryDifference } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseUKAddress("10 High Street, Bath BA1 1AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseUKAddress("12 High St, Bath BA1 1AA");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareUKAddresses(parsedAddress1, parsedAddress2).differences);
 // [{"field":"number","first":"10","second":"12"}]
 ```
 
@@ -5355,7 +6153,10 @@ interface CountryModule {
 A country's address module: its codes, how to tell its addresses apart, and its parser, validator, formatter and comparer. Import one from its entry point (`australia` from `@johnmorrisdotca/address-plus/au`, `unitedKingdom` from `@johnmorrisdotca/address-plus/gb`) and hand it to `parseLocation` and `validateAddress` in `countries`.
 
 ```js
-australia.codes
+import { australia } from "@johnmorrisdotca/address-plus/au";
+import type { CountryModule } from "@johnmorrisdotca/address-plus/au";
+
+console.log(australia.codes);
 // ["AU"]
 ```
 
@@ -5373,7 +6174,12 @@ interface CountryValidation {
 What a country module's validator returns: the errors and the warnings it found.
 
 ```js
-validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings.map((one) => one.code)
+import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryValidation } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateAustralianAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -5388,7 +6194,9 @@ DE_BUILDING_WORDS: readonly string[]
 The words for a part of a building, which open the line the parser keeps whole as `building` (`Hinterhaus`, `Haus B`, `Gebäude 4`, `Block C`), in lower case.
 
 ```js
-DE_BUILDING_WORDS.slice(0, 3)
+import { DE_BUILDING_WORDS } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_BUILDING_WORDS.slice(0, 3));
 // ["hinterhaus","vorderhaus","seitenflügel"]
 ```
 
@@ -5403,7 +6211,9 @@ DE_COUNTRY_NAMES: readonly string[]
 What a country at the end of an address may be called, in capitals with no umlauts: `DEUTSCHLAND`, `GERMANY`, `ALLEMAGNE`, `BRD`.
 
 ```js
-DE_COUNTRY_NAMES.includes("DEUTSCHLAND")
+import { DE_COUNTRY_NAMES } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_COUNTRY_NAMES.includes("DEUTSCHLAND"));
 // true
 ```
 
@@ -5418,7 +6228,9 @@ DE_STATES: readonly GermanState[]
 The sixteen Länder of Germany, in order of their codes, each with its ISO 3166-2 code and its name in English and in Japanese. Copied from kuni when the tables are made.
 
 ```js
-DE_STATES.map((state) => state.code)
+import { DE_STATES } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_STATES.map((state) => state.code));
 // ["BB","BE","BW","BY","HB","HE","HH","MV","NI","NW","RP","SH","SL","SN","ST","TH"]
 ```
 
@@ -5433,7 +6245,9 @@ DE_STREET_OPENERS: readonly string[]
 The words that begin a street's name with no suffix to end it (`Am Markt`, `An der Weide`, `Zum alten Hof`, `Im Winkel`), and the adjectives that begin one (`Große Bleiche`, `Alte Dorfstraße`), in lower case.
 
 ```js
-DE_STREET_OPENERS.slice(0, 5)
+import { DE_STREET_OPENERS } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_STREET_OPENERS.slice(0, 5));
 // ["am","an","auf","im","in"]
 ```
 
@@ -5448,7 +6262,9 @@ DE_STREET_SUFFIXES: readonly string[]
 What a street's name may end with, which makes the word the name ends in a thoroughfare (`Hauptstraße`, `Berliner Str.`, `Kastanienallee`), in lower case with their spellings: `strasse` for `straße`, `str` for the abbreviation. The parser reads the street's whole name as written into `street`; these tell where it ends.
 
 ```js
-DE_STREET_SUFFIXES.slice(0, 4)
+import { DE_STREET_SUFFIXES } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_STREET_SUFFIXES.slice(0, 4));
 // ["straße","strasse","str","weg"]
 ```
 
@@ -5463,7 +6279,9 @@ DE_UNIT_TYPES: Readonly<Record<string, readonly string[]>>
 The words for a flat or a room, which the parser reports as `secUnitType` in full, with the abbreviations it reads for each: `Whg. 12` is `Wohnung 12`.
 
 ```js
-DE_UNIT_TYPES.Wohnung
+import { DE_UNIT_TYPES } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_UNIT_TYPES.Wohnung);
 // ["whg","wohn","wo"]
 ```
 
@@ -5480,7 +6298,12 @@ interface DeutschePostFormattingOptions {
 Options for `formatDeutschePost`.
 
 ```js
-formatDeutschePost(parseGermanAddress("Hauptstr. 12, 10115 Berlin"), { includeCountry: true }).lines
+import { formatDeutschePost, parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+import type { DeutschePostFormattingOptions } from "@johnmorrisdotca/address-plus/de";
+
+const parsedAddress1=parseGermanAddress("Hauptstr. 12, 10115 Berlin");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatDeutschePost(parsedAddress1, { includeCountry: true }).lines);
 // ["Hauptstr. 12","10115 Berlin","DEUTSCHLAND"]
 ```
 
@@ -5498,7 +6321,9 @@ Finds a Land of Germany by its code (`BY`, `DE-BY`) or its name in English, Germ
 - Returns: The Land, or `null` when nothing matches.
 
 ```js
-[findGermanState("Bayern")?.code, findGermanState("thueringen")?.code, findGermanState("Lower Saxony")?.code]
+import { findGermanState } from "@johnmorrisdotca/address-plus/de";
+
+console.log([findGermanState("Bayern")?.code, findGermanState("thueringen")?.code, findGermanState("Lower Saxony")?.code]);
 // ["BY","TH","NI"]
 ```
 
@@ -5517,7 +6342,11 @@ Writes an address in Germany as Deutsche Post asks: who it is care of (`c/o`), t
 - Returns: The lines, the same on one line, the delivery line (the street and its number) and the last line.
 
 ```js
-formatDeutschePost(parseGermanAddress("Hinterhaus, 2. OG, Kastanienallee 4 b, 10435 Berlin")).lines
+import { formatDeutschePost, parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+
+const parsedAddress1=parseGermanAddress("Hinterhaus, 2. OG, Kastanienallee 4 b, 10435 Berlin");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatDeutschePost(parsedAddress1).lines);
 // ["Hinterhaus","2. OG","Kastanienallee 4B","10435 Berlin"]
 ```
 
@@ -5547,7 +6376,12 @@ interface FormattedAddress {
 A formatted address: its lines, and the same on one line.
 
 ```js
-formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"))
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { FormattedAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1));
 // {"lines":["123 MAIN ST","ANYTOWN NY 12345"],"singleLine":"123 Main St, Anytown NY 12345","deliveryLine":"123 Main St","lastLine":"Anytown NY 12345","country":"US","format":"usps"}
 ```
 
@@ -5564,7 +6398,10 @@ interface GermanAddressFields {
 The fields an address in Germany fills beside the shared ones. The shared fields keep their meaning: `street` is the whole name of the street as written (`Hauptstraße`, `Berliner Str.`, `Am Markt`), `number` the house number with its letter (`12a`) or range (`12-14`), `secUnitType` and `secUnitNum` a flat (`Wohnung 12`), a box (`Postfach 12 34 56`) or a Packstation, `floorType` and `floor` a floor (`OG` and `2`), `building` a wing, a house or a name (`Hinterhaus`, `Haus B`), `locality` the Ortsteil, `city` the place, `state` the Land's code and `zip` the postcode.
 
 ```js
-parseGermanAddress("c/o Weber, Hauptstraße 12a, 10115 Berlin")?.careOf
+import { parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+import type { GermanAddressFields } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseGermanAddress("c/o Weber, Hauptstraße 12a, 10115 Berlin")?.careOf);
 // "Weber"
 ```
 
@@ -5583,7 +6420,10 @@ interface GermanPostcode {
 A postcode taken apart: the Land it is in, and whether GeoNames' list has it.
 
 ```js
-parseGermanPostcode("10115")
+import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+import type { GermanPostcode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseGermanPostcode("10115"));
 // {"postcode":"10115","state":"BE","known":true}
 ```
 
@@ -5603,7 +6443,10 @@ interface GermanState {
 A Land of Germany in the tables: its code, its ISO 3166-2 code, and its name in English and in Japanese (from kuni, which takes them from Unicode CLDR and Wikidata).
 
 ```js
-DE_STATES.find((state) => state.code === "BY")
+import { DE_STATES } from "@johnmorrisdotca/address-plus/de";
+import type { GermanState } from "@johnmorrisdotca/address-plus/de";
+
+console.log(DE_STATES.find((state) => state.code === "BY"));
 // {"code":"BY","iso":"DE-BY","name":"Bavaria","nameJa":"バイエルン自由州"}
 ```
 
@@ -5619,7 +6462,10 @@ type GermanStateCode =
 The code of one of the sixteen Länder of Germany, as ISO 3166-2:DE writes it after `DE-`.
 
 ```js
-getStateFromGermanPostcode("80331")
+import { getStateFromGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+import type { GermanStateCode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(getStateFromGermanPostcode("80331"));
 // "BY"
 ```
 
@@ -5634,7 +6480,10 @@ germany: CountryModule
 Germany's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address that ends with Germany or Deutschland, or has a German street and its number and a postcode first on its last line, is read as German; `country: "DE"` reads any address as one.
 
 ```js
-parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [germany] })?.number
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import { germany } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [germany] })?.number);
 // "12A"
 ```
 
@@ -5652,7 +6501,9 @@ The Land a postcode is in, by its code: `BY` for 80331, `BE` for 10115.
 - Returns: The Land's code; `undefined` for a postcode GeoNames' list does not have, or text that is not a postcode.
 
 ```js
-["80331", "10115", "20095", "00000"].map(getStateFromGermanPostcode)
+import { getStateFromGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(["80331", "10115", "20095", "00000"].map(getStateFromGermanPostcode));
 // ["BY","BE","HH",null]
 ```
 
@@ -5670,7 +6521,9 @@ Whether GeoNames' list for Germany has a postcode (its places include those of l
 - Returns: `true` when the list has it.
 
 ```js
-["10115", "80331", "00000", "99999"].map(isKnownGermanPostcode)
+import { isKnownGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(["10115", "80331", "00000", "99999"].map(isKnownGermanPostcode));
 // [true,true,false,false]
 ```
 
@@ -5688,7 +6541,9 @@ Whether a postcode follows Deutsche Post's shape: five digits. Whether the postc
 - Returns: `true` when it is five digits.
 
 ```js
-["10115", "1011", "1011a", " 80331 "].map(isValidGermanPostcode)
+import { isValidGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(["10115", "1011", "1011a", " 80331 "].map(isValidGermanPostcode));
 // [true,false,false,true]
 ```
 
@@ -5706,7 +6561,9 @@ Whether an address is surely German, with no hint: it ends with Germany, Deutsch
 - Returns: `true` when the address is German beyond doubt, `false` otherwise.
 
 ```js
-[looksGerman("Hauptstraße 12, 10115 Berlin"), looksGerman("123 Main St, Seattle, WA 98101")]
+import { looksGerman } from "@johnmorrisdotca/address-plus/de";
+
+console.log([looksGerman("Hauptstraße 12, 10115 Berlin"), looksGerman("123 Main St, Seattle, WA 98101")]);
 // [true,false]
 ```
 
@@ -5751,7 +6608,10 @@ interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, 
 What `parseLocation` returns: every part it found, each absent when the address has none. A Japanese address fills its own fields and the shared ones that stand for them: `state` the prefecture's JIS code, `city` the municipality, `street` the town, `number` the block, `zip` the postal code.
 
 ```js
-parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
 // {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
 ```
 
@@ -5770,7 +6630,9 @@ Parses an address in Germany into the parts Deutsche Post and DIN 5008 lay out: 
 - Returns: The parts found, with `country` `DE`, or `null` when the text is empty or holds nothing that makes it an address.
 
 ```js
-parseGermanAddress("c/o Weber, Hinterhaus, Hauptstraße 12a, 10115 Berlin")
+import { parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseGermanAddress("c/o Weber, Hinterhaus, Hauptstraße 12a, 10115 Berlin"));
 // {"careOf":"Weber","building":"Hinterhaus","street":"Hauptstraße","number":"12A","city":"Berlin","state":"BE","zip":"10115","zipValid":true,"country":"DE"}
 ```
 
@@ -5788,7 +6650,9 @@ Takes a postcode apart: the Land it is in, from GeoNames' list (a postcode with 
 - Returns: The parts, or `null` when it is not five digits.
 
 ```js
-parseGermanPostcode("80331")
+import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+
+console.log(parseGermanPostcode("80331"));
 // {"postcode":"80331","state":"BY","known":true}
 ```
 
@@ -5829,7 +6693,10 @@ interface ParseOptions {
 Options for every parser: the country, strict postal codes, snake_case keys and the rest. Every one is optional.
 
 ```js
-parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
 // "13"
 ```
 
@@ -5848,7 +6715,11 @@ Checks an address in Germany against Deutsche Post's postcode shape and GeoNames
 - Returns: The errors and warnings, each with its field, code and message.
 
 ```js
-validateGermanAddress(parseGermanAddress("Hauptstraße 12, 00000 Berlin")).warnings.map((one) => one.code)
+import { parseGermanAddress, validateGermanAddress } from "@johnmorrisdotca/address-plus/de";
+
+const parsedAddress1=parseGermanAddress("Hauptstraße 12, 00000 Berlin");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateGermanAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["UNRECOGNIZED_POSTAL_CODE"]
 ```
 
@@ -5868,7 +6739,10 @@ interface ValidationError {
 One finding of a validator: the field it is about, its code, a message, and how serious it is.
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
 // {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
 ```
 
@@ -5895,7 +6769,10 @@ interface ValidationOptions {
 Options for the validators: which parts an address must have, which kinds are allowed, and whether a postal code that does not match its region is an error.
 
 ```js
-validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
 // ["MISSING_POSTAL_CODE"]
 ```
 
@@ -5917,7 +6794,13 @@ Compares two addresses in France field by field: the delivery point, the buildin
 - Returns: Whether they are the same delivery point, and each field that differs.
 
 ```js
-compareFrenchAddresses(parseFrenchAddress("12 rue de l'Église, 38000 Saint-Étienne"), parseFrenchAddress("12 R. DE L EGLISE, 38000 ST ETIENNE")).isSame
+import { compareFrenchAddresses, parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+
+const parsedAddress1=parseFrenchAddress("12 rue de l'Église, 38000 Saint-Étienne");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseFrenchAddress("12 R. DE L EGLISE, 38000 ST ETIENNE");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareFrenchAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -5935,7 +6818,14 @@ interface CountryComparison {
 What a country module's comparer returns: whether the two addresses are the same delivery point, and every field that differs once both are in the same form (letter case, punctuation, a street type written out or abbreviated).
 
 ```js
-compareAustralianAddresses(parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150")).isSame
+import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryComparison } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2).isSame);
 // true
 ```
 
@@ -5954,7 +6844,14 @@ interface CountryDifference {
 One way two addresses differ, as a country module's comparer reports it: the field, and its value in each address after both were put in the same form.
 
 ```js
-compareUKAddresses(parseUKAddress("10 High Street, Bath BA1 1AA"), parseUKAddress("12 High St, Bath BA1 1AA")).differences
+import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+import type { CountryDifference } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseUKAddress("10 High Street, Bath BA1 1AA");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+const parsedAddress2=parseUKAddress("12 High St, Bath BA1 1AA");
+if (!parsedAddress2) throw new Error("The example address did not parse.");
+console.log(compareUKAddresses(parsedAddress1, parsedAddress2).differences);
 // [{"field":"number","first":"10","second":"12"}]
 ```
 
@@ -5978,7 +6875,10 @@ interface CountryModule {
 A country's address module: its codes, how to tell its addresses apart, and its parser, validator, formatter and comparer. Import one from its entry point (`australia` from `@johnmorrisdotca/address-plus/au`, `unitedKingdom` from `@johnmorrisdotca/address-plus/gb`) and hand it to `parseLocation` and `validateAddress` in `countries`.
 
 ```js
-australia.codes
+import { australia } from "@johnmorrisdotca/address-plus/au";
+import type { CountryModule } from "@johnmorrisdotca/address-plus/au";
+
+console.log(australia.codes);
 // ["AU"]
 ```
 
@@ -5996,7 +6896,12 @@ interface CountryValidation {
 What a country module's validator returns: the errors and the warnings it found.
 
 ```js
-validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings.map((one) => one.code)
+import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+import type { CountryValidation } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateAustralianAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["POSTAL_REGION_MISMATCH"]
 ```
 
@@ -6014,7 +6919,9 @@ Finds a department of France by its code (`75`, `2A`, `971`) or its name (`Paris
 - Returns: The department, or `null` when nothing matches.
 
 ```js
-findFrenchDepartment("haute-corse")?.code
+import { findFrenchDepartment } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(findFrenchDepartment("haute-corse")?.code);
 // "2B"
 ```
 
@@ -6033,7 +6940,11 @@ Writes an address in France as La Poste's specification asks (SP 8855): the pers
 - Returns: The lines, the same on one line, the delivery line (the number and street) and the last line.
 
 ```js
-formatLaPoste(parseFrenchAddress("Apt 12, Résidence Les Lilas, 4 bis av. des Écoles, 31000 Toulouse")).lines
+import { formatLaPoste, parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+
+const parsedAddress1=parseFrenchAddress("Apt 12, Résidence Les Lilas, 4 bis av. des Écoles, 31000 Toulouse");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatLaPoste(parsedAddress1).lines);
 // ["APPARTEMENT 12","RESIDENCE LES LILAS","4 BIS AVENUE DES ECOLES","31000 TOULOUSE"]
 ```
 
@@ -6063,7 +6974,12 @@ interface FormattedAddress {
 A formatted address: its lines, and the same on one line.
 
 ```js
-formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"))
+import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+import type { FormattedAddress } from "@johnmorrisdotca/address-plus/au";
+
+const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatUSPS(parsedAddress1));
 // {"lines":["123 MAIN ST","ANYTOWN NY 12345"],"singleLine":"123 Main St, Anytown NY 12345","deliveryLine":"123 Main St","lastLine":"Anytown NY 12345","country":"US","format":"usps"}
 ```
 
@@ -6078,7 +6994,9 @@ FR_BUILDING_WORDS: Readonly<Record<string, readonly string[]>>
 The words that open the line naming a building, a residence or a zone (La Poste's third line), which the parser keeps whole as `building` (`Résidence Les Lilas`, `Bâtiment A`, `Zone industrielle Nord`, `ZAC des Prés`), with their abbreviations.
 
 ```js
-FR_BUILDING_WORDS.Bâtiment
+import { FR_BUILDING_WORDS } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_BUILDING_WORDS.Bâtiment);
 // ["BAT","BATIMENT","BÂT"]
 ```
 
@@ -6093,7 +7011,9 @@ FR_COLLECTIVITIES: readonly FrenchCollectivity[]
 The overseas collectivities that have postcodes in La Poste's base: each with its code, its ISO 3166-1 country code and its name. They are French, and addressed through La Poste, but each has a country code of its own and the Universal Postal Union lists them apart, so an address in one reads as that country's. From INSEE's Code officiel géographique (Licence Ouverte 2.0).
 
 ```js
-FR_COLLECTIVITIES.map((one) => one.country)
+import { FR_COLLECTIVITIES } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_COLLECTIVITIES.map((one) => one.country));
 // ["PM","BL","MF","WF","PF","NC"]
 ```
 
@@ -6108,7 +7028,9 @@ FR_DEPARTMENTS: readonly FrenchDepartment[]
 The 101 departments of France, in order of their codes, each with its code (`75`, `2A`, `971`), its name and its region's. The code is how a postcode begins: its first two digits (three overseas), with Corsica's 20 split at 20200. From INSEE's Code officiel géographique (Licence Ouverte 2.0).
 
 ```js
-FR_DEPARTMENTS.find((department) => department.code === "2A")
+import { FR_DEPARTMENTS } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_DEPARTMENTS.find((department) => department.code === "2A"));
 // {"code":"2A","name":"Corse-du-Sud","region":"Corse"}
 ```
 
@@ -6123,7 +7045,9 @@ FR_NUMBER_EXTENSIONS: readonly string[]
 The words that may follow the number as its indice de répétition: `bis`, `ter`, `quater` and the rest of the Latin series. A single letter (the B of `12 B rue Hugo`) is read as one too, when a type of voie follows it.
 
 ```js
-FR_NUMBER_EXTENSIONS.slice(0, 3)
+import { FR_NUMBER_EXTENSIONS } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_NUMBER_EXTENSIONS.slice(0, 3));
 // ["bis","ter","quater"]
 ```
 
@@ -6138,7 +7062,9 @@ FR_STREET_TYPES: Readonly<Record<string, readonly string[]>>
 The types of voie the parser takes off the front of a street's name and reports, in full, as `type` (`rue de la Paix` is street `de la Paix`, type `Rue`), with the abbreviations it reads for each. In French the type comes first. A street with none of them (`Le Vieux Pont`) has no type.
 
 ```js
-FR_STREET_TYPES.Boulevard
+import { FR_STREET_TYPES } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_STREET_TYPES.Boulevard);
 // ["BD","BLD","BOUL","BVD","BLVD"]
 ```
 
@@ -6153,7 +7079,9 @@ FR_UNIT_TYPES: Readonly<Record<string, readonly string[]>>
 The types of the part of a building that an address names below the number: an apartment or a door, which the parser reports as `secUnitType` and `secUnitNum`, with the abbreviations it reads for each.
 
 ```js
-FR_UNIT_TYPES.Appartement
+import { FR_UNIT_TYPES } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_UNIT_TYPES.Appartement);
 // ["APPT","APT","APP","APPART"]
 ```
 
@@ -6168,7 +7096,10 @@ france: CountryModule
 France's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address that ends with France (or Monaco or an overseas territory), holds CEDEX, or has a French type of voie and a postcode first on its last line is read as French; `country: "FR"` reads any address as one, and so does the code of an overseas department or collectivity. It reads Monaco (`MC`) and the collectivities (`PM`, `BL`, `MF`, `WF`, `PF`, `NC`) too, and reports their own codes.
 
 ```js
-parseLocation("12 bis rue de la Paix, 75002 Paris, France", { countries: [france] })?.numberExtension
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import { france } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseLocation("12 bis rue de la Paix, 75002 Paris, France", { countries: [france] })?.numberExtension);
 // "bis"
 ```
 
@@ -6193,7 +7124,10 @@ interface FrenchAddressFields {
 The fields an address in France fills beside the shared ones. The shared fields keep their meaning: `number` is the street number, `street` the name of the street without its type and `type` the type in full (`Rue`; the name is `de la Paix`), `secUnitType` and `secUnitNum` an apartment or a door, `floorType` and `floor` a floor, `building` the building's or the residence's name, `city` the commune, `state` the department's code and `zip` the postcode.
 
 ```js
-parseFrenchAddress("12 bis rue de la Paix, 75002 Paris")?.numberExtension
+import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchAddressFields } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchAddress("12 bis rue de la Paix, 75002 Paris")?.numberExtension);
 // "bis"
 ```
 
@@ -6212,7 +7146,10 @@ interface FrenchCollectivity {
 An overseas collectivity of France in the tables: its code (`987`), the ISO 3166-1 country code an address in it reads as (`PF`) and its name.
 
 ```js
-FR_COLLECTIVITIES.find((one) => one.code === "988")
+import { FR_COLLECTIVITIES } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchCollectivity } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_COLLECTIVITIES.find((one) => one.code === "988"));
 // {"code":"988","country":"NC","name":"Nouvelle-Calédonie"}
 ```
 
@@ -6231,7 +7168,10 @@ interface FrenchDepartment {
 A department of France in the tables: its code (`75`, `2A`, `971`), its name and its region's, from INSEE's Code officiel géographique.
 
 ```js
-FR_DEPARTMENTS.find((department) => department.code === "75")
+import { FR_DEPARTMENTS } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchDepartment } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(FR_DEPARTMENTS.find((department) => department.code === "75"));
 // {"code":"75","name":"Paris","region":"Île-de-France"}
 ```
 
@@ -6246,7 +7186,10 @@ type FrenchPostalCountry = "BL" | "FR" | "MC" | "MF" | "NC" | "PF" | "PM" | "WF"
 The country an address in La Poste's base belongs to: `FR` for France (the metropolis and the overseas departments), `MC` for Monaco, and the ISO 3166-1 code of an overseas collectivity (`PM`, `BL`, `MF`, `WF`, `PF`, `NC`), which is French but has a country code of its own and is listed apart by the Universal Postal Union.
 
 ```js
-parseFrenchAddress("Avenue Pouvanaa a Oopa, 98713 Papeete, Polynésie française")?.country
+import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchPostalCountry } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchAddress("Avenue Pouvanaa a Oopa, 98713 Papeete, Polynésie française")?.country);
 // "PF"
 ```
 
@@ -6267,7 +7210,10 @@ interface FrenchPostcode {
 A postcode taken apart: the code of the department or territory its number belongs to, the country it delivers to, and whether La Poste's base has it. `place` is a department's code (`75`, `2A`, `971`), a collectivity's (`987`) or `99` for Monaco.
 
 ```js
-parseFrenchPostcode("20200")
+import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+import type { FrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchPostcode("20200"));
 // {"postcode":"20200","place":"2B","country":"FR","known":true,"department":"2B"}
 ```
 
@@ -6285,7 +7231,9 @@ The department a postcode's number belongs to, by its code: `75` for 75008, `2B`
 - Returns: The department's code; `undefined` for a postcode in a collectivity or Monaco, one that no department has, or text that is not a postcode.
 
 ```js
-["75008", "20190", "20200", "97400", "98714", "98000"].map(getDepartmentFromFrenchPostcode)
+import { getDepartmentFromFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(["75008", "20190", "20200", "97400", "98714", "98000"].map(getDepartmentFromFrenchPostcode));
 // ["75","2A","2B","974",null,null]
 ```
 
@@ -6303,7 +7251,9 @@ Whether La Poste's base officielle des codes postaux lists a postcode: France, t
 - Returns: `true` when La Poste's base lists it.
 
 ```js
-["75008", "75099", "98000", "00000"].map(isKnownFrenchPostcode)
+import { isKnownFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(["75008", "75099", "98000", "00000"].map(isKnownFrenchPostcode));
 // [true,false,true,false]
 ```
 
@@ -6321,7 +7271,9 @@ Whether a postcode follows La Poste's shape: five digits. Whether the postcode i
 - Returns: `true` when it is five digits.
 
 ```js
-["75008", "2000", "7500a", " 13001 "].map(isValidFrenchPostcode)
+import { isValidFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(["75008", "2000", "7500a", " 13001 "].map(isValidFrenchPostcode));
 // [true,false,false,true]
 ```
 
@@ -6339,7 +7291,12 @@ interface LaPosteFormattingOptions {
 Options for `formatLaPoste`.
 
 ```js
-formatLaPoste(parseFrenchAddress("12 rue de la Paix, 75002 Paris"), { includeCountry: true }).lines
+import { formatLaPoste, parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+import type { LaPosteFormattingOptions } from "@johnmorrisdotca/address-plus/fr";
+
+const parsedAddress1=parseFrenchAddress("12 rue de la Paix, 75002 Paris");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(formatLaPoste(parsedAddress1, { includeCountry: true }).lines);
 // ["12 RUE DE LA PAIX","75002 PARIS","FRANCE"]
 ```
 
@@ -6357,7 +7314,9 @@ Whether an address is surely French, with no hint: it ends with France, an overs
 - Returns: `true` when the address is French beyond doubt, `false` otherwise.
 
 ```js
-[looksFrench("12 rue de la Paix, 75002 Paris"), looksFrench("123 Main St, Seattle, WA 98101")]
+import { looksFrench } from "@johnmorrisdotca/address-plus/fr";
+
+console.log([looksFrench("12 rue de la Paix, 75002 Paris"), looksFrench("123 Main St, Seattle, WA 98101")]);
 // [true,false]
 ```
 
@@ -6402,7 +7361,10 @@ interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, 
 What `parseLocation` returns: every part it found, each absent when the address has none. A Japanese address fills its own fields and the shared ones that stand for them: `state` the prefecture's JIS code, `city` the municipality, `street` the town, `number` the block, `zip` the postal code.
 
 ```js
-parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
 // {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
 ```
 
@@ -6421,7 +7383,9 @@ Parses an address in France (or Monaco, or an overseas department or collectivit
 - Returns: The parts found, with `country` `FR` (or `MC` or a collectivity's code), or `null` when the text is empty or holds nothing that makes it an address.
 
 ```js
-parseFrenchAddress("Résidence Les Lilas, 12 bis rue de la Paix, 75002 Paris")
+import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchAddress("Résidence Les Lilas, 12 bis rue de la Paix, 75002 Paris"));
 // {"building":"Résidence Les Lilas","number":"12","numberExtension":"bis","type":"Rue","street":"de la Paix","city":"Paris","state":"75","zip":"75002","zipValid":true,"country":"FR"}
 ```
 
@@ -6439,7 +7403,9 @@ Takes a postcode apart: the code of the department or territory its number belon
 - Returns: The parts, or `null` when it is not five digits.
 
 ```js
-parseFrenchPostcode("98714")
+import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+
+console.log(parseFrenchPostcode("98714"));
 // {"postcode":"98714","place":"987","country":"PF","known":true}
 ```
 
@@ -6480,7 +7446,10 @@ interface ParseOptions {
 Options for every parser: the country, strict postal codes, snake_case keys and the rest. Every one is optional.
 
 ```js
-parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
 // "13"
 ```
 
@@ -6499,7 +7468,11 @@ Checks an address in France against La Poste's postcode shape and the tables: th
 - Returns: The errors and warnings, each with its field, code and message.
 
 ```js
-validateFrenchAddress(parseFrenchAddress("12 rue de la Paix, 75099 Paris")).warnings.map((one) => one.code)
+import { parseFrenchAddress, validateFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+
+const parsedAddress1=parseFrenchAddress("12 rue de la Paix, 75099 Paris");
+if (!parsedAddress1) throw new Error("The example address did not parse.");
+console.log(validateFrenchAddress(parsedAddress1).warnings.map((one) => one.code));
 // ["UNRECOGNIZED_POSTAL_CODE"]
 ```
 
@@ -6519,7 +7492,10 @@ interface ValidationError {
 One finding of a validator: the field it is about, its code, a message, and how serious it is.
 
 ```js
-validateAddress("123 Main St, Seattle, NY 98101").warnings[0]
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationError } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0]);
 // {"field":"zip","code":"POSTAL_REGION_MISMATCH","message":"ZIP code 98101 belongs to WA, not NY","severity":"warning"}
 ```
 
@@ -6546,7 +7522,10 @@ interface ValidationOptions {
 Options for the validators: which parts an address must have, which kinds are allowed, and whether a postal code that does not match its region is an error.
 
 ```js
-validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code)
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+import type { ValidationOptions } from "@johnmorrisdotca/address-plus/jp";
+
+console.log(validateAddress("123 Main St", { requirePostalCode: true }).errors.map((error) => error.code));
 // ["MISSING_POSTAL_CODE"]
 ```
 
@@ -6564,7 +7543,9 @@ ADDRESS_FIELD_COUNTRIES: readonly ["US", "CA", "JP", "AU", "GB", "FR", "DE"]
 Seven built-in field countries; auto detects among them.
 
 ```js
-ADDRESS_FIELD_COUNTRIES.length
+import { ADDRESS_FIELD_COUNTRIES } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_COUNTRIES.length);
 // 7
 ```
 
@@ -6579,7 +7560,9 @@ ADDRESS_FIELD_PARSE_KEYS: string[]
 Native parser options checked by builder coverage.
 
 ```js
-ADDRESS_FIELD_PARSE_KEYS.includes("strict")
+import { ADDRESS_FIELD_PARSE_KEYS } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_PARSE_KEYS.includes("strict"));
 // true
 ```
 
@@ -6594,7 +7577,9 @@ ADDRESS_FIELD_VALIDATION_KEYS: string[]
 Native validator options checked by builder coverage.
 
 ```js
-ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode")
+import { ADDRESS_FIELD_VALIDATION_KEYS } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode"));
 // true
 ```
 
@@ -6609,7 +7594,9 @@ AddressField: typeof AddressField
 A form-associated address input using the seven native country parsers. Import this entry safely on a server; defineField registers it in a browser. The raw value is submitted under name; address and validation are local getters.
 
 ```js
-typeof AddressField
+import { AddressField } from "@johnmorrisdotca/address-plus/element";
+
+console.log(typeof AddressField);
 // "function"
 ```
 
@@ -6629,7 +7616,10 @@ interface AddressFieldOptions {
 Full native settings and a private callback; raw addresses never enter public events.
 
 ```js
-ADDRESS_FIELD_PARSE_KEYS.includes("countries")
+import { ADDRESS_FIELD_PARSE_KEYS } from "@johnmorrisdotca/address-plus/element";
+import type { AddressFieldOptions } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_PARSE_KEYS.includes("countries"));
 // true
 ```
 
@@ -6648,8 +7638,10 @@ Register the form field under its default or a custom tag, idempotently; safe on
 - Returns: Nothing; existing definitions are preserved.
 
 ```js
+import { defineField } from "@johnmorrisdotca/address-plus/element";
+
 defineField();
-typeof defineField
+console.log(typeof defineField);
 // "function"
 ```
 
@@ -6667,7 +7659,9 @@ ADDRESS_FIELD_COUNTRIES: readonly ["US", "CA", "JP", "AU", "GB", "FR", "DE"]
 Seven built-in field countries; auto detects among them.
 
 ```js
-ADDRESS_FIELD_COUNTRIES.length
+import { ADDRESS_FIELD_COUNTRIES } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_COUNTRIES.length);
 // 7
 ```
 
@@ -6682,7 +7676,9 @@ ADDRESS_FIELD_PARSE_KEYS: string[]
 Native parser options checked by builder coverage.
 
 ```js
-ADDRESS_FIELD_PARSE_KEYS.includes("strict")
+import { ADDRESS_FIELD_PARSE_KEYS } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_PARSE_KEYS.includes("strict"));
 // true
 ```
 
@@ -6697,7 +7693,9 @@ ADDRESS_FIELD_VALIDATION_KEYS: string[]
 Native validator options checked by builder coverage.
 
 ```js
-ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode")
+import { ADDRESS_FIELD_VALIDATION_KEYS } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode"));
 // true
 ```
 
@@ -6712,7 +7710,9 @@ AddressField: typeof AddressField
 A form-associated address input using the seven native country parsers. Import this entry safely on a server; defineField registers it in a browser. The raw value is submitted under name; address and validation are local getters.
 
 ```js
-typeof AddressField
+import { AddressField } from "@johnmorrisdotca/address-plus/element";
+
+console.log(typeof AddressField);
 // "function"
 ```
 
@@ -6732,7 +7732,10 @@ interface AddressFieldOptions {
 Full native settings and a private callback; raw addresses never enter public events.
 
 ```js
-ADDRESS_FIELD_PARSE_KEYS.includes("countries")
+import { ADDRESS_FIELD_PARSE_KEYS } from "@johnmorrisdotca/address-plus/element";
+import type { AddressFieldOptions } from "@johnmorrisdotca/address-plus/element";
+
+console.log(ADDRESS_FIELD_PARSE_KEYS.includes("countries"));
 // true
 ```
 
@@ -6751,7 +7754,9 @@ Register the form field under its default or a custom tag, idempotently; safe on
 - Returns: Nothing; existing definitions are preserved.
 
 ```js
+import { defineField } from "@johnmorrisdotca/address-plus/element";
+
 defineField();
-typeof defineField
+console.log(typeof defineField);
 // "function"
 ```

@@ -96,7 +96,9 @@ const cityAndFullState = (patterns: ReturnType<typeof buildPatterns>): RegExp =>
  * that is not in the address is absent from the result, never an empty string.
  * @example
  * ```ts
- * parseLocation("1600 Pennsylvania Ave NW, Washington, DC 20500")
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocation("1600 Pennsylvania Ave NW, Washington, DC 20500"));
  * // → {"number":"1600","street":"Pennsylvania","type":"Ave","suffix":"NW","city":"Washington","state":"DC","zip":"20500","zipValid":true,"country":"US"}
  * ```
  */

@@ -8,7 +8,9 @@
  *
  * @example
  * ```ts
- * AU_STREET_TYPES.Pde
+ * import { AU_STREET_TYPES } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(AU_STREET_TYPES.Pde);
  * // → "Parade"
  * ```
  */

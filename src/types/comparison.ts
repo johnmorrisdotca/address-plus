@@ -8,7 +8,14 @@ import type { ParsedAddress } from "./index";
  *
  * @example
  * ```ts
- * isSameAddress(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("123 Main Stret, Anytown, NY 12345"), { fuzzyMatching: false })
+ * import { isSameAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { AddressComparisonOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("123 Main Stret, Anytown, NY 12345");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(isSameAddress(parsedAddress1, parsedAddress2, { fuzzyMatching: false }));
  * // → false
  * ```
  */
@@ -28,7 +35,14 @@ interface AddressComparisonOptions {
  *
  * @example
  * ```ts
- * getAddressSimilarity(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("123 Main Street, Anytown, NY 12345")).score
+ * import { getAddressSimilarity, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { AddressSimilarityResult } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("123 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(getAddressSimilarity(parsedAddress1, parsedAddress2).score);
  * // → 1
  * ```
  */
@@ -52,7 +66,14 @@ interface AddressSimilarityResult {
  *
  * @example
  * ```ts
- * getAddressSimilarity(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("125 Main St, Anytown, NY 12345")).differences[0]
+ * import { getAddressSimilarity, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { AddressDifference } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("125 Main St, Anytown, NY 12345");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(getAddressSimilarity(parsedAddress1, parsedAddress2).differences[0]);
  * // → {"field":"number","value1":"123","value2":"125","type":"typo","confidence":0.6}
  * ```
  */
@@ -69,7 +90,14 @@ interface AddressDifference {
  *
  * @example
  * ```ts
- * compareAddresses(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("456 Oak Ave, Portland, OR 97201")).matchType
+ * import { compareAddresses, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { AddressMatchType } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("456 Oak Ave, Portland, OR 97201");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareAddresses(parsedAddress1, parsedAddress2).matchType);
  * // → "none"
  * ```
  */
@@ -80,7 +108,14 @@ type AddressMatchType = "exact" | "strong" | "moderate" | "weak" | "none";
  *
  * @example
  * ```ts
- * compareAddresses(parseLocation("123 Main St, Anytown, NY 12345"), parseLocation("123 Main Street, Anytown, NY 12345")).isSame
+ * import { compareAddresses, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { AddressComparisonResult } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("123 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareAddresses(parsedAddress1, parsedAddress2).isSame);
  * // → true
  * ```
  */
@@ -98,7 +133,9 @@ interface AddressComparisonResult {
  *
  * @example
  * ```ts
- * ({ threshold: 0.8, maxDistance: 2 }).maxDistance
+ * import type { FuzzyMatchOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ threshold: 0.8, maxDistance: 2 }).maxDistance);
  * // → 2
  * ```
  */

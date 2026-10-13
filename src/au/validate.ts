@@ -34,7 +34,11 @@ const POSTCODE = /^\d{4}$/;
  * @returns The errors and warnings, each with its field, code and message.
  * @example
  * ```ts
- * validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings[0].message
+ * import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateAustralianAddress(parsedAddress1).warnings[0].message);
  * // → "Postcode 2000 belongs to NSW, not VIC"
  * ```
  */

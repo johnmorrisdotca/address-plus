@@ -10,7 +10,9 @@ import type { UKNation } from "../../types/united-kingdom";
  *
  * @example
  * ```ts
- * GB_NATIONS.map((nation) => nation.name)
+ * import { GB_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(GB_NATIONS.map((nation) => nation.name));
  * // → ["England","Northern Ireland","Scotland","Wales"]
  * ```
  */

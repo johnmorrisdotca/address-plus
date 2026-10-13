@@ -10,7 +10,9 @@ import type { JapanesePrefecture } from "../../types/japan";
  *
  * @example
  * ```ts
- * JP_PREFECTURES.length
+ * import { JP_PREFECTURES } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(JP_PREFECTURES.length);
  * // → 47
  * ```
  */

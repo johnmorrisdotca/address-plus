@@ -6,7 +6,9 @@
  *
  * @example
  * ```ts
- * US_STREET_TYPES["boulevard"]
+ * import { US_STREET_TYPES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(US_STREET_TYPES["boulevard"]);
  * // → "blvd"
  * ```
  */
@@ -523,7 +525,9 @@ const US_STREET_TYPES: Record<string, string> = {
  *
  * @example
  * ```ts
- * STREET_TYPE_EXPANSIONS["blvd"]
+ * import { STREET_TYPE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(STREET_TYPE_EXPANSIONS["blvd"]);
  * // → "Boulevard"
  * ```
  */

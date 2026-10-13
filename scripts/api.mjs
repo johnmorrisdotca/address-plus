@@ -163,16 +163,52 @@ export async function exampleScope() {
   const library = await import(pathToFileURL(join(root, "dist", "index.js")).href);
   const { default: parser, ...named } = library;
   // The country entry points' exports join the scope, so an example may hand australia to parseLocation.
+  const countryEntries = ["jp", "au", "gb", "fr", "de"];
   const countries = await Promise.all(
-    ["au", "gb", "fr", "de"].map((entry) => import(pathToFileURL(join(root, "dist", entry, "index.js")).href)),
+    countryEntries.map((entry) => import(pathToFileURL(join(root, "dist", entry, "index.js")).href)),
   );
   const elements = await import(pathToFileURL(join(root, "dist", "element.js")).href);
+  const modules = new Map([
+    [pkg.name, library],
+    ...countryEntries.map((entry, index) => [`${pkg.name}/${entry}`, countries[index]]),
+    [`${pkg.name}/element`, elements],
+    [`${pkg.name}/element/define`, elements],
+  ]);
   const scope = { ...Object.assign({}, ...countries), ...elements, ...named, parser };
-  const names = Object.keys(scope).filter((key) => /^[A-Za-z_$][\w$]*$/.test(key));
   return (code) => {
-    const lines = code.trim().split("\n");
-    const body = `${lines.slice(0, -1).join("\n")}\nreturn (${lines.at(-1).replace(/;$/, "")});`;
-    return new Function(...names, body)(...names.map((key) => scope[key]));
+    const source = ts.createSourceFile("example.ts", code, ts.ScriptTarget.Latest, true);
+    const bindings = { ...scope };
+    for (const statement of source.statements) {
+      if (!ts.isImportDeclaration(statement)) continue;
+      const clause = statement.importClause;
+      if (!clause || clause.isTypeOnly) continue;
+      const module = modules.get(statement.moduleSpecifier.text);
+      if (!module) throw new Error(`Example imports an unsupported package: ${statement.moduleSpecifier.text}`);
+      if (clause.name) bindings[clause.name.text] = module.default;
+      if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+        for (const binding of clause.namedBindings.elements) {
+          if (!binding.isTypeOnly) bindings[binding.name.text] = module[(binding.propertyName ?? binding.name).text];
+        }
+      } else if (clause.namedBindings) bindings[clause.namedBindings.name.text] = module;
+    }
+    const statements = source.statements.filter((statement) => !ts.isImportDeclaration(statement));
+    const last = statements.at(-1);
+    if (!last || !ts.isExpressionStatement(last))
+      throw new Error("An example must end in an expression or console.log of its answer.");
+    let expression = last.expression;
+    if (ts.isCallExpression(expression) && expression.expression.getText(source) === "console.log") {
+      if (expression.arguments.length !== 1) throw new Error("An expected-answer example must log exactly one value.");
+      expression = expression.arguments[0];
+    }
+    const prefix = statements
+      .slice(0, -1)
+      .map((statement) => statement.getText(source))
+      .join("\n");
+    const body = ts.transpileModule(`${prefix}\nreturn (${expression.getText(source)});`, {
+      compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+    }).outputText;
+    const names = Object.keys(bindings).filter((key) => /^[A-Za-z_$][\w$]*$/.test(key));
+    return new Function(...names, body)(...names.map((key) => bindings[key]));
   };
 }
 
@@ -184,7 +220,9 @@ export async function runExamples(api, extra = {}) {
   const run = await exampleScope();
   const missing = api.flatMap((entry) => entry.exports.filter((one) => !one.example).map((one) => one.name));
   if (missing.length > 0)
-    throw new Error(`No @example for ${[...new Set(missing)].join(", ")}: add one to its TSDoc (pnpm docs:check)`);
+    throw new Error(
+      `No @example for ${[...new Set(missing)].join(", ")}: add one to its TSDoc (pnpm docs:legacy-check)`,
+    );
   const examples = {};
   for (const entry of api) for (const one of entry.exports) examples[one.name] = one.example.code;
   const out = {};
@@ -252,7 +290,7 @@ export function apiMarkdown(api, examples) {
   const parts = [
     "# API reference",
     "",
-    `Every export of every entry point of ${pkg.name} ${pkg.version}, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by \`pnpm docs:make\`, and \`pnpm docs:check\` holds every example's answer to the built package; the same reference is on the demo site at https://johnmorrisdotca.github.io/address-plus/api.html. Editors show the same TSDoc on hover, from the published type definitions.`,
+    `Every export of every entry point of ${pkg.name} ${pkg.version}, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by \`pnpm docs:make\`, and \`pnpm docs:legacy-check\` holds every example's answer to the built package; the demo API anchor index at https://johnmorrisdotca.github.io/address-plus/api.html links to the individual documentation pages. Editors show the same TSDoc on hover, from the published type definitions.`,
   ];
   for (const entry of api) {
     parts.push("", `## ${entry.name}`, "");

@@ -59,7 +59,11 @@ const FRENCH_PARTICLE_START = /^(?:de|du|des|la|le|les|d'|l')(?:\s|(?<=')\S)/;
  * @returns The address as an array of lines and as one line.
  * @example
  * ```ts
- * formatAddress(parseLocation("123 Main Street, Anytown, NY 12345")).singleLine
+ * import { formatAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatAddress(parsedAddress1).singleLine);
  * // → "123 Main St, Anytown NY 12345"
  * ```
  */
@@ -125,7 +129,11 @@ function formatAddress(address: ParsedAddress, options: AddressFormattingOptions
  * @returns The address as lines and as one line.
  * @example
  * ```ts
- * formatUSPS(parseLocation("123 Main Street Apt 4, Anytown, NY 12345")).lines
+ * import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main Street Apt 4, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatUSPS(parsedAddress1).lines);
  * // → ["123 MAIN ST APT 4","ANYTOWN NY 12345"]
  * ```
  */
@@ -175,7 +183,11 @@ function formatUSPS(address: ParsedAddress, options: USPSFormattingOptions = {})
  * @returns The address as lines and as one line.
  * @example
  * ```ts
- * formatCanadaPost(parseLocation("100 Queen Street West, Toronto, Ontario M5H 2N2")).lines
+ * import { formatCanadaPost, parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("100 Queen Street West, Toronto, Ontario M5H 2N2");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatCanadaPost(parsedAddress1).lines);
  * // → ["100 QUEEN ST W","TORONTO ON M5H 2N2"]
  * ```
  */
@@ -227,7 +239,9 @@ function formatCanadaPost(address: ParsedAddress, options: CanadaPostFormattingO
  * @returns One map per kind, each from the full word to its abbreviation.
  * @example
  * ```ts
- * getAddressAbbreviations().streetTypes.avenue
+ * import { getAddressAbbreviations } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getAddressAbbreviations().streetTypes.avenue);
  * // → "Ave"
  * ```
  */

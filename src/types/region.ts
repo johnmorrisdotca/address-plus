@@ -3,7 +3,10 @@
  *
  * @example
  * ```ts
- * CA_REGIONS[0]
+ * import { CA_REGIONS } from "@johnmorrisdotca/address-plus";
+ * import type { Region } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_REGIONS[0]);
  * // → {"abbr":"AB","country":"CA","name":"alberta"}
  * ```
  */

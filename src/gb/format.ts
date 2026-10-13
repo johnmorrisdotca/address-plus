@@ -9,7 +9,12 @@ import type { ParsedAddress } from "../types/parsed-address";
  *
  * @example
  * ```ts
- * formatRoyalMail(parseUKAddress("10 Downing Street, London SW1A 2AA"), { includeCountry: true }).lines
+ * import { formatRoyalMail, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ * import type { RoyalMailFormattingOptions } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * const parsedAddress1=parseUKAddress("10 Downing Street, London SW1A 2AA");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatRoyalMail(parsedAddress1, { includeCountry: true }).lines);
  * // → ["10 Downing Street","LONDON","SW1A 2AA","UNITED KINGDOM"]
  * ```
  */
@@ -37,7 +42,11 @@ const joined = (...words: (string | undefined)[]): string => words.filter(Boolea
  * @returns The lines, the same on one line, the delivery line (the number and thoroughfare) and the last line.
  * @example
  * ```ts
- * formatRoyalMail(parseUKAddress("Flat 2, Rose Court, 14 High St, Kingsbury, London NW9 0AA")).lines
+ * import { formatRoyalMail, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * const parsedAddress1=parseUKAddress("Flat 2, Rose Court, 14 High St, Kingsbury, London NW9 0AA");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatRoyalMail(parsedAddress1).lines);
  * // → ["Flat 2","Rose Court","14 High Street","Kingsbury","LONDON","NW9 0AA"]
  * ```
  */

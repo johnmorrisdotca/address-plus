@@ -15,7 +15,10 @@ import { validateGermanAddress } from "./validate";
  *
  * @example
  * ```ts
- * parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [germany] })?.number
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import { germany } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [germany] })?.number);
  * // → "12A"
  * ```
  */

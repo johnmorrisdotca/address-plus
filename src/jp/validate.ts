@@ -27,7 +27,13 @@ import { POSTAL_CODE_SHAPE } from "./patterns";
  *
  * @example
  * ```ts
- * validateJapaneseAddress(parseLocation("東京都大阪市北区梅田1-1")).warnings.map((one) => one.code)
+ * import { validateJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { JapaneseValidation } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * const parsedAddress1=parseLocation("東京都大阪市北区梅田1-1");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateJapaneseAddress(parsedAddress1).warnings.map((one) => one.code));
  * // → ["MUNICIPALITY_PREFECTURE_MISMATCH"]
  * ```
  */
@@ -114,7 +120,12 @@ function municipalityFindings(address: ParsedAddress): Finding[] {
  * @returns The errors and the warnings, each with its field, code and message.
  * @example
  * ```ts
- * validateJapaneseAddress(parseLocation("〒530-0001 東京都千代田区丸の内1-2-3")).warnings.map((one) => one.code)
+ * import { validateJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("〒530-0001 東京都千代田区丸の内1-2-3");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateJapaneseAddress(parsedAddress1).warnings.map((one) => one.code));
  * // → ["POSTAL_REGION_MISMATCH"]
  * ```
  */

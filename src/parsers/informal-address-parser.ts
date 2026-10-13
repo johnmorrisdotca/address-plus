@@ -12,7 +12,9 @@ import { hasValidAddressComponents, setValidatedPostalCode } from "../utils/addr
  * @returns The street and the ZIP code it could find, or `null` when the text is empty.
  * @example
  * ```ts
- * parseInformalAddress("Downtown near City Hall, Springfield IL 62701")
+ * import { parseInformalAddress } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseInformalAddress("Downtown near City Hall, Springfield IL 62701"));
  * // → {"street":"Downtown near City Hall","zip":"62701","country":"US"}
  * ```
  */

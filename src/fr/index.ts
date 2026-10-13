@@ -18,7 +18,10 @@ import { validateFrenchAddress } from "./validate";
  *
  * @example
  * ```ts
- * parseLocation("12 bis rue de la Paix, 75002 Paris, France", { countries: [france] })?.numberExtension
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import { france } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(parseLocation("12 bis rue de la Paix, 75002 Paris, France", { countries: [france] })?.numberExtension);
  * // → "bis"
  * ```
  */

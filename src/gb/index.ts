@@ -16,7 +16,10 @@ import { validateUKAddress } from "./validate";
  *
  * @example
  * ```ts
- * parseLocation("221B Baker Street, London NW1 6XE", { countries: [unitedKingdom] })?.number
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import { unitedKingdom } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(parseLocation("221B Baker Street, London NW1 6XE", { countries: [unitedKingdom] })?.number);
  * // → "221B"
  * ```
  */

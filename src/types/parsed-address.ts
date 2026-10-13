@@ -14,7 +14,10 @@ import type { UKAddressFields } from "./united-kingdom";
  *
  * @example
  * ```ts
- * parseLocation("123 Main St Apt 4, Anytown, NY 12345")
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { ParsedAddress } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(parseLocation("123 Main St Apt 4, Anytown, NY 12345"));
  * // → {"number":"123","secUnitType":"Apartment","secUnitNum":"4","unit":"Apt 4","street":"Main","type":"St","city":"Anytown","state":"NY","zip":"12345","zipValid":true,"country":"US"}
  * ```
  */

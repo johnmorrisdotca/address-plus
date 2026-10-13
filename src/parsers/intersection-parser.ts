@@ -16,7 +16,9 @@ import { normalizeStreetType } from "../utils/street-type-normalizer";
  * streets. A street with no type has `type1` or `type2` set to an empty string, as in parse-address.
  * @example
  * ```ts
- * parseIntersection("Main St and Pine St Tacoma WA")
+ * import { parseIntersection } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseIntersection("Main St and Pine St Tacoma WA"));
  * // → {"state":"WA","city":"Tacoma","street1":"Main","type1":"St","street2":"Pine","type2":"St"}
  * ```
  */

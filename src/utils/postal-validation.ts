@@ -7,7 +7,10 @@ import { CANADIAN_POSTAL_CODE_PATTERN, ZIP_CODE_PATTERN } from "../patterns/loca
  *
  * @example
  * ```ts
- * validatePostalCode("98101")
+ * import { validatePostalCode } from "@johnmorrisdotca/address-plus";
+ * import type { PostalValidationResult } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(validatePostalCode("98101"));
  * // → {"isValid":true,"type":"zip","formatted":"98101","message":"Valid US ZIP code format"}
  * ```
  */
@@ -25,7 +28,9 @@ interface PostalValidationResult {
  * @returns Whether it is well formed, its type (`zip` or `postal`), and the code written the standard way.
  * @example
  * ```ts
- * validatePostalCode("k1a0b1")
+ * import { validatePostalCode } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(validatePostalCode("k1a0b1"));
  * // → {"isValid":true,"type":"postal","formatted":"K1A 0B1","message":"Valid Canadian postal code format"}
  * ```
  */

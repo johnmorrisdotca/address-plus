@@ -7,7 +7,10 @@
  *
  * @example
  * ```ts
- * getStateFromGermanPostcode("80331")
+ * import { getStateFromGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ * import type { GermanStateCode } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(getStateFromGermanPostcode("80331"));
  * // → "BY"
  * ```
  */
@@ -20,7 +23,10 @@ type GermanStateCode =
  *
  * @example
  * ```ts
- * DE_STATES.find((state) => state.code === "BY")
+ * import { DE_STATES } from "@johnmorrisdotca/address-plus/de";
+ * import type { GermanState } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_STATES.find((state) => state.code === "BY"));
  * // → {"code":"BY","iso":"DE-BY","name":"Bavaria","nameJa":"バイエルン自由州"}
  * ```
  */
@@ -36,7 +42,10 @@ interface GermanState {
  *
  * @example
  * ```ts
- * parseGermanPostcode("10115")
+ * import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ * import type { GermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(parseGermanPostcode("10115"));
  * // → {"postcode":"10115","state":"BE","known":true}
  * ```
  */
@@ -55,7 +64,10 @@ interface GermanPostcode {
  *
  * @example
  * ```ts
- * parseGermanAddress("c/o Weber, Hauptstraße 12a, 10115 Berlin")?.careOf
+ * import { parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+ * import type { GermanAddressFields } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(parseGermanAddress("c/o Weber, Hauptstraße 12a, 10115 Berlin")?.careOf);
  * // → "Weber"
  * ```
  */

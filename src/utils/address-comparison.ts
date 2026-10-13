@@ -34,7 +34,13 @@ const DEFAULT_COMPARISON_OPTIONS: Required<AddressComparisonOptions> = {
  * to 1 and every difference found.
  * @example
  * ```ts
- * compareAddresses(parseLocation("123 Main Street, Anytown, NY 12345"), parseLocation("123 Main St, Anytown, New York 12345")).matchType
+ * import { compareAddresses, parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("123 Main St, Anytown, New York 12345");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareAddresses(parsedAddress1, parsedAddress2).matchType);
  * // → "exact"
  * ```
  */
@@ -93,7 +99,13 @@ function compareAddresses(
  * @returns `true` when they match, `false` otherwise.
  * @example
  * ```ts
- * isSameAddress(parseLocation("東京都千代田区丸の内1丁目2番3号"), parseLocation("東京都千代田区丸の内１－２－３"))
+ * import { isSameAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("東京都千代田区丸の内1丁目2番3号");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("東京都千代田区丸の内１－２－３");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(isSameAddress(parsedAddress1, parsedAddress2));
  * // → true
  * ```
  */
@@ -117,7 +129,13 @@ function isSameAddress(
  * kind.
  * @example
  * ```ts
- * getAddressSimilarity(parseLocation("123 Main Street, Anytown, NY 12345"), parseLocation("125 Main Street, Anytown, NY 12345")).differences
+ * import { getAddressSimilarity, parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseLocation("125 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(getAddressSimilarity(parsedAddress1, parsedAddress2).differences);
  * // → [{"field":"number","value1":"123","value2":"125","type":"typo","confidence":0.6}]
  * ```
  */

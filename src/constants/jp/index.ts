@@ -126,7 +126,9 @@ const commonStart = (texts: readonly string[]): string => {
  *
  * @example
  * ```ts
- * JP_DESIGNATED_CITIES.length
+ * import { JP_DESIGNATED_CITIES } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(JP_DESIGNATED_CITIES.length);
  * // → 20
  * ```
  */
@@ -263,7 +265,9 @@ const inPrefecture = (
  * @returns The prefecture, or `null` when the text names none.
  * @example
  * ```ts
- * findPrefecture("Osaka Prefecture")?.name
+ * import { findPrefecture } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(findPrefecture("Osaka Prefecture")?.name);
  * // → "大阪府"
  * ```
  */
@@ -324,7 +328,9 @@ function municipalitiesAtStart(
  * @returns Every match, an empty array when there is none.
  * @example
  * ```ts
- * findMunicipalitiesByName("府中市").map((one) => one.code + " " + one.romaji)
+ * import { findMunicipalitiesByName } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(findMunicipalitiesByName("府中市").map((one) => one.code + " " + one.romaji));
  * // → ["13206 Fuchu-shi","34208 Fuchu-shi"]
  * ```
  */
@@ -342,7 +348,9 @@ function findMunicipalitiesByName(name: string, prefectureCode?: string): Japane
  * @returns Every match, an empty array when there is none.
  * @example
  * ```ts
- * findMunicipalitiesByRomaji("Chuo-ku, Sapporo").map((one) => one.name)
+ * import { findMunicipalitiesByRomaji } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(findMunicipalitiesByRomaji("Chuo-ku, Sapporo").map((one) => one.name));
  * // → ["札幌市中央区"]
  * ```
  */
@@ -376,7 +384,9 @@ function findMunicipalitiesByRomaji(text: string, prefectureCode?: string): Japa
  * @returns The municipalities, an empty array for an unknown code.
  * @example
  * ```ts
- * municipalitiesOf("47").length
+ * import { municipalitiesOf } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(municipalitiesOf("47").length);
  * // → 41
  * ```
  */
@@ -391,7 +401,9 @@ function municipalitiesOf(prefectureCode: string): readonly JapaneseMunicipality
  * @returns The municipality, or `null` for a code the tables do not have.
  * @example
  * ```ts
- * findMunicipalityByCode("13101")?.name
+ * import { findMunicipalityByCode } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(findMunicipalityByCode("13101")?.name);
  * // → "千代田区"
  * ```
  */
@@ -407,7 +419,9 @@ function findMunicipalityByCode(code: string): JapaneseMunicipality | null {
  * @returns The prefecture's JIS code, or `null` for a malformed code or one no Japanese code begins like.
  * @example
  * ```ts
- * getPrefectureFromJapanesePostalCode("530-0001")
+ * import { getPrefectureFromJapanesePostalCode } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(getPrefectureFromJapanesePostalCode("530-0001"));
  * // → "27"
  * ```
  */
@@ -428,7 +442,9 @@ function getPrefectureFromJapanesePostalCode(postalCode: string): string | null 
  * @returns The prefixes in ascending order, an empty array for an unknown prefecture.
  * @example
  * ```ts
- * getPostalPrefixesForPrefecture("沖縄県")
+ * import { getPostalPrefixesForPrefecture } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(getPostalPrefixesForPrefecture("沖縄県"));
  * // → ["900","901","902","903","904","905","906","907"]
  * ```
  */

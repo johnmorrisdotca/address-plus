@@ -6,7 +6,10 @@
  *
  * @example
  * ```ts
- * getNationFromUKPostcode("CF10 1AA")
+ * import { getNationFromUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ * import type { UKNationCode } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(getNationFromUKPostcode("CF10 1AA"));
  * // → "WLS"
  * ```
  */
@@ -18,7 +21,10 @@ type UKNationCode = "ENG" | "NIR" | "SCT" | "WLS";
  *
  * @example
  * ```ts
- * GB_NATIONS.find((nation) => nation.code === "SCT")
+ * import { GB_NATIONS } from "@johnmorrisdotca/address-plus/gb";
+ * import type { UKNation } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(GB_NATIONS.find((nation) => nation.code === "SCT"));
  * // → {"code":"SCT","iso":"GB-SCT","name":"Scotland","nameJa":"スコットランド"}
  * ```
  */
@@ -36,7 +42,10 @@ interface UKNation {
  *
  * @example
  * ```ts
- * parseUKPostcode("ec1a1bb")
+ * import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ * import type { UKPostcode } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(parseUKPostcode("ec1a1bb"));
  * // → {"postcode":"EC1A 1BB","outward":"EC1A","inward":"1BB","area":"EC","district":"EC1A","sector":"EC1A 1","country":"GB","nation":"ENG"}
  * ```
  */
@@ -59,7 +68,10 @@ interface UKPostcode {
  *
  * @example
  * ```ts
- * parseUKAddress("Flat 2, Rose Court, 14 High Street, Kingsbury, LONDON NW9 0AA")?.locality
+ * import { parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ * import type { UKAddressFields } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(parseUKAddress("Flat 2, Rose Court, 14 High Street, Kingsbury, LONDON NW9 0AA")?.locality);
  * // → "Kingsbury"
  * ```
  */

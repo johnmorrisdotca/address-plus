@@ -6,7 +6,10 @@ import type { FrenchPostalCountry } from "./france";
  *
  * @example
  * ```ts
- * parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true })?.prefecture_code
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { ParseOptions } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(Reflect.get(parseLocation("東京都千代田区丸の内1-2-3", { country: "JP", useSnakeCase: true }) ?? {}, "prefecture_code"));
  * // → "13"
  * ```
  */

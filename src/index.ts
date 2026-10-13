@@ -11,7 +11,12 @@ import type { AddressParser } from "./types";
  *
  * @example
  * ```ts
- * parser.parseLocation("123 Main St, New York, NY 10001").zip
+ * import parser from "@johnmorrisdotca/address-plus";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parser.parseLocation("123 Main St, New York, NY 10001");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(parsedAddress1.zip);
  * // → "10001"
  * ```
  */

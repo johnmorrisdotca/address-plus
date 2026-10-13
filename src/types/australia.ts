@@ -6,7 +6,10 @@
  *
  * @example
  * ```ts
- * getStateFromAustralianPostcode("3000")
+ * import { getStateFromAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+ * import type { AustralianStateCode } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(getStateFromAustralianPostcode("3000"));
  * // → "VIC"
  * ```
  */
@@ -18,7 +21,10 @@ type AustralianStateCode = "ACT" | "NSW" | "NT" | "QLD" | "SA" | "TAS" | "VIC" |
  *
  * @example
  * ```ts
- * findAustralianState("Victoria")
+ * import { findAustralianState } from "@johnmorrisdotca/address-plus/au";
+ * import type { AustralianState } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(findAustralianState("Victoria"));
  * // → {"code":"VIC","iso":"AU-VIC","name":"Victoria","nameJa":"ビクトリア州","kind":"state"}
  * ```
  */
@@ -36,7 +42,10 @@ interface AustralianState {
  *
  * @example
  * ```ts
- * AU_POSTCODE_RANGES.find((range) => range.state === "TAS")
+ * import { AU_POSTCODE_RANGES } from "@johnmorrisdotca/address-plus/au";
+ * import type { AustralianPostcodeRange } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(AU_POSTCODE_RANGES.find((range) => range.state === "TAS"));
  * // → {"state":"TAS","from":"7000","to":"7999","use":"delivery"}
  * ```
  */
@@ -55,7 +64,10 @@ interface AustralianPostcodeRange {
  *
  * @example
  * ```ts
- * parseAustralianAddress("Level 6, 51 Jacobson St, Brisbane QLD 4000")?.floorType
+ * import { parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ * import type { AustralianAddressFields } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(parseAustralianAddress("Level 6, 51 Jacobson St, Brisbane QLD 4000")?.floorType);
  * // → "Level"
  * ```
  */

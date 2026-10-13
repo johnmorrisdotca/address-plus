@@ -227,7 +227,9 @@ function setLocalities(localities: string[], result: ParsedAddress): void {
  * @returns The parts found, with `country` `GB` (or `JE`, `GY`, `IM`), or `null` when the text is empty.
  * @example
  * ```ts
- * parseUKAddress("Flat 14, Ziggurat Building, 60-66 Saffron Hill, London EC1N 8QX")
+ * import { parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(parseUKAddress("Flat 14, Ziggurat Building, 60-66 Saffron Hill, London EC1N 8QX"));
  * // → {"secUnitType":"Flat","secUnitNum":"14","building":"Ziggurat Building","number":"60-66","street":"Saffron","type":"Hill","city":"London","zip":"EC1N 8QX","zipValid":true,"nation":"ENG","country":"GB"}
  * ```
  */
@@ -354,7 +356,9 @@ const UK_AT_END =
  * @returns `true` when the address is British beyond doubt, `false` otherwise.
  * @example
  * ```ts
- * [looksBritish("10 Downing Street, London SW1A 2AA"), looksBritish("100 Queen St W, Toronto, ON M5H 2N2")]
+ * import { looksBritish } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log([looksBritish("10 Downing Street, London SW1A 2AA"), looksBritish("100 Queen St W, Toronto, ON M5H 2N2")]);
  * // → [true,false]
  * ```
  */

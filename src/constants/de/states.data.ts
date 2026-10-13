@@ -10,7 +10,9 @@ import type { GermanState } from "../../types/germany";
  *
  * @example
  * ```ts
- * DE_STATES.map((state) => state.code)
+ * import { DE_STATES } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(DE_STATES.map((state) => state.code));
  * // → ["BB","BE","BW","BY","HB","HE","HH","MV","NI","NW","RP","SH","SL","SN","ST","TH"]
  * ```
  */

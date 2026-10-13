@@ -10,7 +10,10 @@ import type { ParsedIntersection } from "./parsed-intersection";
  *
  * @example
  * ```ts
- * parseLocationsBatch(["123 Main St, Anytown, NY 12345"], { country: "US" }).stats.total
+ * import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+ * import type { BatchParseOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocationsBatch(["123 Main St, Anytown, NY 12345"], { country: "US" }).stats.total);
  * // → 1
  * ```
  */
@@ -26,7 +29,10 @@ interface BatchParseOptions extends ParseOptions {
  *
  * @example
  * ```ts
- * parseLocationsBatch([""]).errors[0].index
+ * import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+ * import type { BatchParseError } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocationsBatch([""]).errors[0].index);
  * // → 0
  * ```
  */
@@ -41,7 +47,10 @@ interface BatchParseError {
  *
  * @example
  * ```ts
- * parseLocationsBatch(["123 Main St, Anytown, NY 12345", ""]).stats.failed
+ * import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+ * import type { BatchParseStats } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocationsBatch(["123 Main St, Anytown, NY 12345", ""]).stats.failed);
  * // → 1
  * ```
  */
@@ -59,7 +68,10 @@ interface BatchParseStats {
  *
  * @example
  * ```ts
- * parseLocationsBatch(["123 Main St, Anytown, NY 12345"]).results.length
+ * import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+ * import type { BatchParseResult } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocationsBatch(["123 Main St, Anytown, NY 12345"]).results.length);
  * // → 1
  * ```
  */

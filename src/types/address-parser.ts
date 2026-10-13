@@ -9,7 +9,10 @@ import type { ParsedIntersection } from "./parsed-intersection";
  *
  * @example
  * ```ts
- * Object.keys(parser)
+ * import parser from "@johnmorrisdotca/address-plus";
+ * import type { AddressParser } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(Object.keys(parser));
  * // → ["parseLocation","parseIntersection","parseInformalAddress","parseAddress"]
  * ```
  */

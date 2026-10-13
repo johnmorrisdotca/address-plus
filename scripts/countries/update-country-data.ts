@@ -1,3 +1,4 @@
+import { refreshTableExamples, tableExampleLines } from "../table-docs.ts";
 // Builds the Australian and British tables in src/constants/au/ and src/constants/gb/ from three open sources:
 //
 //   - kuni (@johnmorrisdotca/kuni, MIT, a devDependency only): the states and territories of Australia and the four
@@ -229,7 +230,7 @@ const tsdoc = (summary: string, example: string, answer: string): string => {
     " *",
     " * @example",
     " * ```ts",
-    ` * ${example}`,
+    ...tableExampleLines(example).map((line) => ` *${line ? " " + line : ""}`),
     ` * // → ${answer}`,
     " * ```",
     " */",
@@ -644,4 +645,13 @@ const main = async (): Promise<void> => {
   if (geonames) writeGermany(readGeoNames(resolve(geonames)));
 };
 
-await main();
+if (process.argv.includes("--docs-only")) {
+  refreshTableExamples([
+    "src/constants/au/cross-border.data.ts",
+    "src/constants/au/states.data.ts",
+    "src/constants/gb/districts.data.ts",
+    "src/constants/gb/nations.data.ts",
+    "src/constants/de/states.data.ts",
+    "src/constants/fr/departments.data.ts",
+  ]);
+} else await main();

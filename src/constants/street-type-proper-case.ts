@@ -7,7 +7,9 @@
  *
  * @example
  * ```ts
- * STREET_TYPE_PROPER_CASE["xing"]
+ * import { STREET_TYPE_PROPER_CASE } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(STREET_TYPE_PROPER_CASE["xing"]);
  * // → "Xing"
  * ```
  */

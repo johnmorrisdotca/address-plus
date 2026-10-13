@@ -6,7 +6,9 @@
  *
  * @example
  * ```ts
- * DIRECTIONAL_MAP["northwest"]
+ * import { DIRECTIONAL_MAP } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(DIRECTIONAL_MAP["northwest"]);
  * // → "NW"
  * ```
  */
@@ -83,7 +85,9 @@ const DIRECTIONAL_MAP: Record<string, string> = {
  *
  * @example
  * ```ts
- * DIRECTION_EXPANSIONS["ne"]
+ * import { DIRECTION_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(DIRECTION_EXPANSIONS["ne"]);
  * // → "Northeast"
  * ```
  */

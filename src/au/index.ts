@@ -14,7 +14,10 @@ import { validateAustralianAddress } from "./validate";
  *
  * @example
  * ```ts
- * parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia] })?.secUnitNum
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import { australia } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia] })?.secUnitNum);
  * // → "3"
  * ```
  */

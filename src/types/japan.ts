@@ -5,7 +5,10 @@
  *
  * @example
  * ```ts
- * findPrefecture("13")
+ * import { findPrefecture } from "@johnmorrisdotca/address-plus/jp";
+ * import type { JapanesePrefecture } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(findPrefecture("13"));
  * // → {"code":"13","name":"東京都","kana":"トウキョウト","romaji":"Tokyo-to"}
  * ```
  */
@@ -22,7 +25,10 @@ interface JapanesePrefecture {
  *
  * @example
  * ```ts
- * findMunicipalityByCode("13101")
+ * import { findMunicipalityByCode } from "@johnmorrisdotca/address-plus/jp";
+ * import type { JapaneseMunicipality } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(findMunicipalityByCode("13101"));
  * // → {"code":"13101","prefecture":"13","name":"千代田区","kana":"チヨダク","romaji":"Chiyoda-ku"}
  * ```
  */
@@ -40,7 +46,10 @@ interface JapaneseMunicipality {
  *
  * @example
  * ```ts
- * parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号")?.municipalityCode
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { JapaneseAddressFields } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号")?.municipalityCode);
  * // → "13101"
  * ```
  */

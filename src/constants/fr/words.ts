@@ -10,7 +10,9 @@
  *
  * @example
  * ```ts
- * FR_STREET_TYPES.Boulevard
+ * import { FR_STREET_TYPES } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_STREET_TYPES.Boulevard);
  * // → ["BD","BLD","BOUL","BVD","BLVD"]
  * ```
  */
@@ -62,7 +64,9 @@ const FR_STREET_TYPES: Readonly<Record<string, readonly string[]>> = {
  *
  * @example
  * ```ts
- * FR_NUMBER_EXTENSIONS.slice(0, 3)
+ * import { FR_NUMBER_EXTENSIONS } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_NUMBER_EXTENSIONS.slice(0, 3));
  * // → ["bis","ter","quater"]
  * ```
  */
@@ -74,7 +78,9 @@ const FR_NUMBER_EXTENSIONS: readonly string[] = ["bis", "ter", "quater", "quinqu
  *
  * @example
  * ```ts
- * FR_UNIT_TYPES.Appartement
+ * import { FR_UNIT_TYPES } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_UNIT_TYPES.Appartement);
  * // → ["APPT","APT","APP","APPART"]
  * ```
  */
@@ -94,7 +100,9 @@ const FR_UNIT_TYPES: Readonly<Record<string, readonly string[]>> = {
  *
  * @example
  * ```ts
- * FR_BUILDING_WORDS.Bâtiment
+ * import { FR_BUILDING_WORDS } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_BUILDING_WORDS.Bâtiment);
  * // → ["BAT","BATIMENT","BÂT"]
  * ```
  */

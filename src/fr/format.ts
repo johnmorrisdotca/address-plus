@@ -11,7 +11,12 @@ import type { ParsedAddress } from "../types/parsed-address";
  *
  * @example
  * ```ts
- * formatLaPoste(parseFrenchAddress("12 rue de la Paix, 75002 Paris"), { includeCountry: true }).lines
+ * import { formatLaPoste, parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+ * import type { LaPosteFormattingOptions } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * const parsedAddress1=parseFrenchAddress("12 rue de la Paix, 75002 Paris");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatLaPoste(parsedAddress1, { includeCountry: true }).lines);
  * // → ["12 RUE DE LA PAIX","75002 PARIS","FRANCE"]
  * ```
  */
@@ -45,7 +50,11 @@ const joined = (...words: (string | undefined)[]): string => words.filter(Boolea
  * @returns The lines, the same on one line, the delivery line (the number and street) and the last line.
  * @example
  * ```ts
- * formatLaPoste(parseFrenchAddress("Apt 12, Résidence Les Lilas, 4 bis av. des Écoles, 31000 Toulouse")).lines
+ * import { formatLaPoste, parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * const parsedAddress1=parseFrenchAddress("Apt 12, Résidence Les Lilas, 4 bis av. des Écoles, 31000 Toulouse");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatLaPoste(parsedAddress1).lines);
  * // → ["APPARTEMENT 12","RESIDENCE LES LILAS","4 BIS AVENUE DES ECOLES","31000 TOULOUSE"]
  * ```
  */

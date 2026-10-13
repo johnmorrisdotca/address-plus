@@ -9,7 +9,9 @@ import { normalizeRegion } from "../utils/normalize-region";
  *
  * @example
  * ```ts
- * POSTAL_CODE_TO_PROVINCE["V"]
+ * import { POSTAL_CODE_TO_PROVINCE } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(POSTAL_CODE_TO_PROVINCE["V"]);
  * // → "BC"
  * ```
  */
@@ -60,7 +62,9 @@ const POSTAL_CODE_TO_PROVINCE: Record<string, string> = {
  *
  * @example
  * ```ts
- * TERRITORY_POSTAL_RANGES.find((range) => range.pattern.test("X0A"))?.province
+ * import { TERRITORY_POSTAL_RANGES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(TERRITORY_POSTAL_RANGES.find((range) => range.pattern.test("X0A"))?.province);
  * // → "NU"
  * ```
  */
@@ -83,7 +87,9 @@ const TERRITORY_POSTAL_RANGES: Array<{ pattern: RegExp; province: string }> = [
  * @returns The two-letter code, or `null` for a code that is not Canadian.
  * @example
  * ```ts
- * getProvinceFromPostalCode("H3G 1P1")
+ * import { getProvinceFromPostalCode } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getProvinceFromPostalCode("H3G 1P1"));
  * // → "QC"
  * ```
  */
@@ -119,7 +125,9 @@ function getProvinceFromPostalCode(postalCode: string): string | null {
  *
  * @example
  * ```ts
- * TERRITORY_POSTAL_PREFIXES["NU"]
+ * import { TERRITORY_POSTAL_PREFIXES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(TERRITORY_POSTAL_PREFIXES["NU"]);
  * // → ["X0A","X0B","X0C"]
  * ```
  */
@@ -137,7 +145,9 @@ const TERRITORY_POSTAL_PREFIXES: Record<string, string[]> = {
  * @returns The prefixes, a letter or, for the territories, three characters; an empty array for an unknown code.
  * @example
  * ```ts
- * getPostalPrefixesForProvince("NU")
+ * import { getPostalPrefixesForProvince } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getPostalPrefixesForProvince("NU"));
  * // → ["X0A","X0B","X0C"]
  * ```
  */

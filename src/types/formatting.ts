@@ -6,7 +6,12 @@
  *
  * @example
  * ```ts
- * formatAddress(parseLocation("123 Main Street, Anytown, NY 12345"), { upperCase: true }).singleLine
+ * import { formatAddress, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { AddressFormattingOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main Street, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatAddress(parsedAddress1, { upperCase: true }).singleLine);
  * // → "123 MAIN ST, ANYTOWN NY 12345"
  * ```
  */
@@ -26,7 +31,12 @@ interface AddressFormattingOptions {
  *
  * @example
  * ```ts
- * formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"), { includeLastLine: false }).lines
+ * import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { USPSFormattingOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatUSPS(parsedAddress1, { includeLastLine: false }).lines);
  * // → ["123 MAIN ST"]
  * ```
  */
@@ -43,7 +53,12 @@ interface USPSFormattingOptions {
  *
  * @example
  * ```ts
- * formatCanadaPost(parseLocation("100 Queen St W, Toronto, ON M5H 2N2"), { includeDeliveryLine: false }).lines
+ * import { formatCanadaPost, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { CanadaPostFormattingOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("100 Queen St W, Toronto, ON M5H 2N2");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatCanadaPost(parsedAddress1, { includeDeliveryLine: false }).lines);
  * // → ["TORONTO ON M5H 2N2"]
  * ```
  */
@@ -59,7 +74,12 @@ interface CanadaPostFormattingOptions {
  *
  * @example
  * ```ts
- * formatUSPS(parseLocation("123 Main St, Anytown, NY 12345"))
+ * import { formatUSPS, parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { FormattedAddress } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseLocation("123 Main St, Anytown, NY 12345");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatUSPS(parsedAddress1));
  * // → {"lines":["123 MAIN ST","ANYTOWN NY 12345"],"singleLine":"123 Main St, Anytown NY 12345","deliveryLine":"123 Main St","lastLine":"Anytown NY 12345","country":"US","format":"usps"}
  * ```
  */
@@ -85,7 +105,10 @@ interface FormattedAddress {
  *
  * @example
  * ```ts
- * Object.keys(getAddressAbbreviations())
+ * import { getAddressAbbreviations } from "@johnmorrisdotca/address-plus";
+ * import type { AddressAbbreviations } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(Object.keys(getAddressAbbreviations()));
  * // → ["streetTypes","directions","states","provinces","unitTypes"]
  * ```
  */

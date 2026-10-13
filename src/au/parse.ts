@@ -263,7 +263,9 @@ const streetText = (result: ParsedAddress): string =>
  * @returns The parts found, with `country: "AU"`, or `null` when the text is empty or has nothing but a state.
  * @example
  * ```ts
- * parseAustralianAddress("Unit 3/12 Smith St, Parramatta NSW 2150")
+ * import { parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(parseAustralianAddress("Unit 3/12 Smith St, Parramatta NSW 2150"));
  * // → {"secUnitType":"Unit","secUnitNum":"3","number":"12","street":"Smith","type":"St","city":"Parramatta","state":"NSW","zip":"2150","zipValid":true,"country":"AU"}
  * ```
  */
@@ -378,7 +380,9 @@ const AUSTRALIA_AT_END = /[\s,](?:australia)\.?$/i;
  * @returns `true` when the address is Australian beyond doubt, `false` otherwise.
  * @example
  * ```ts
- * [looksAustralian("12 Smith St, Parramatta NSW 2150"), looksAustralian("123 Main St, Seattle, WA 9810")]
+ * import { looksAustralian } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log([looksAustralian("12 Smith St, Parramatta NSW 2150"), looksAustralian("123 Main St, Seattle, WA 9810")]);
  * // → [true,false]
  * ```
  */

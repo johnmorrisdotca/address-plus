@@ -29,7 +29,9 @@ import { formatAddress, formatCanadaPost, formatUSPS } from "./address-formattin
  * @returns The tidied address; the input, trimmed, when it cannot be parsed.
  * @example
  * ```ts
- * cleanAddress("350 FIFTH AVENUE, NEW YORK, NY 10118")
+ * import { cleanAddress } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(cleanAddress("350 FIFTH AVENUE, NEW YORK, NY 10118"));
  * // → "350 Fifth Ave, New York NY 10118"
  * ```
  */
@@ -46,7 +48,9 @@ function cleanAddress(addressString: string, options: CleanAddressOptions = {}):
  * @returns The tidied address, the input, whether anything changed, and a line for each change.
  * @example
  * ```ts
- * cleanAddressDetailed("742 evergreen terrace,springfield ,  il 62704").cleanedAddress
+ * import { cleanAddressDetailed } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(cleanAddressDetailed("742 evergreen terrace,springfield ,  il 62704").cleanedAddress);
  * // → "742 Evergreen Ter, Springfield IL 62704"
  * ```
  */

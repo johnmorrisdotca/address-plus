@@ -13,7 +13,9 @@ import type { ParsedAddress, ParsedIntersection, ParseOptions } from "../types";
  * @returns `true` when it holds something an address is made of.
  * @example
  * ```ts
- * hasValidAddressComponents("123 Main St, Anytown, NY 12345")
+ * import { hasValidAddressComponents } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(hasValidAddressComponents("123 Main St, Anytown, NY 12345"));
  * // → true
  * ```
  */
@@ -73,9 +75,11 @@ function hasValidAddressComponents(address: string): boolean {
  * @param options - `strict` keeps a malformed code out (see `ParseOptions`).
  * @example
  * ```ts
+ * import { setValidatedPostalCode } from "@johnmorrisdotca/address-plus";
+ *
  * const parsed = { city: "Toronto", state: "ON" };
  * setValidatedPostalCode(parsed, "m5h2n2", {});
- * parsed
+ * console.log(parsed);
  * // → {"city":"Toronto","state":"ON","zip":"M5H 2N2"}
  * ```
  */

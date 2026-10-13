@@ -555,7 +555,9 @@ function parseRomaji(text: string): ParsedAddress | null {
  * @returns `true` when the text should be read as Japanese.
  * @example
  * ```ts
- * looksJapanese("1-2-3 Marunouchi, Chiyoda-ku, Tokyo")
+ * import { looksJapanese } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(looksJapanese("1-2-3 Marunouchi, Chiyoda-ku, Tokyo"));
  * // → true
  * ```
  */
@@ -610,7 +612,9 @@ function snakeCased(address: ParsedAddress): ParsedAddress {
  * postal code).
  * @example
  * ```ts
- * parseJapaneseAddress("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階501号室")?.block
+ * import { parseJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(parseJapaneseAddress("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階501号室")?.block);
  * // → "1-2-3"
  * ```
  */

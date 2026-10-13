@@ -11,7 +11,12 @@ import type { ParsedAddress } from "../types/parsed-address";
  *
  * @example
  * ```ts
- * formatAustraliaPost(parseAustralianAddress("Unit 3, 12 Smith St, Parramatta NSW 2150"), { unitStyle: "slash" }).lines
+ * import { formatAustraliaPost, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ * import type { AustraliaPostFormattingOptions } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseAustralianAddress("Unit 3, 12 Smith St, Parramatta NSW 2150");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatAustraliaPost(parsedAddress1, { unitStyle: "slash" }).lines);
  * // → ["3/12 SMITH ST","PARRAMATTA NSW 2150"]
  * ```
  */
@@ -35,7 +40,11 @@ const joined = (...words: (string | undefined)[]): string => words.filter(Boolea
  * @returns The lines, the same on one line, the delivery line and the last line.
  * @example
  * ```ts
- * formatAustraliaPost(parseAustralianAddress("Level 6, 51 Jacobson Street, Brisbane Qld 4000")).lines
+ * import { formatAustraliaPost, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseAustralianAddress("Level 6, 51 Jacobson Street, Brisbane Qld 4000");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatAustraliaPost(parsedAddress1).lines);
  * // → ["LEVEL 6 51 JACOBSON ST","BRISBANE QLD 4000"]
  * ```
  */
@@ -82,7 +91,9 @@ function formatAustraliaPost(address: ParsedAddress, options: AustraliaPostForma
  * @returns The word.
  * @example
  * ```ts
- * expandAustralianStreetType("CRES")
+ * import { expandAustralianStreetType } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(expandAustralianStreetType("CRES"));
  * // → "Crescent"
  * ```
  */

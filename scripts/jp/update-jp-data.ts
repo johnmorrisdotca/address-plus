@@ -1,3 +1,4 @@
+import { refreshTableExamples, tableExampleLines } from "../table-docs.ts";
 // Builds the Japanese tables in src/constants/jp/ from two open datasets:
 //
 //   - Geolonia's 住所データ (MIT), https://github.com/geolonia/japanese-addresses: every prefecture
@@ -174,7 +175,7 @@ const tsdoc = (summary: string, example: string, answer: string): string => {
     " *",
     " * @example",
     " * ```ts",
-    ` * ${example}`,
+    ...tableExampleLines(example).map((line) => ` *${line ? " " + line : ""}`),
     ` * // → ${answer}`,
     " * ```",
     " */",
@@ -256,7 +257,14 @@ const main = async (): Promise<void> => {
   );
 };
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv.includes("--docs-only")) {
+  refreshTableExamples([
+    "src/constants/jp/municipalities.data.ts",
+    "src/constants/jp/postal-prefixes.data.ts",
+    "src/constants/jp/prefectures.data.ts",
+  ]);
+} else
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

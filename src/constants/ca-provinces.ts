@@ -7,7 +7,9 @@ import type { Region } from "../types/region.js";
  *
  * @example
  * ```ts
- * CA_PROVINCE_NAMES_EN["british columbia"]
+ * import { CA_PROVINCE_NAMES_EN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_PROVINCE_NAMES_EN["british columbia"]);
  * // → "BC"
  * ```
  */
@@ -32,7 +34,9 @@ const CA_PROVINCE_NAMES_EN: Record<string, string> = {
  *
  * @example
  * ```ts
- * CA_PROVINCE_NAMES_FR["colombie-britannique"]
+ * import { CA_PROVINCE_NAMES_FR } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_PROVINCE_NAMES_FR["colombie-britannique"]);
  * // → "BC"
  * ```
  */
@@ -57,7 +61,9 @@ const CA_PROVINCE_NAMES_FR: Record<string, string> = {
  *
  * @example
  * ```ts
- * CA_PROVINCE_NAMES["québec"]
+ * import { CA_PROVINCE_NAMES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_PROVINCE_NAMES["québec"]);
  * // → "QC"
  * ```
  */
@@ -72,7 +78,9 @@ const CA_PROVINCE_NAMES: Record<string, string> = {
  *
  * @example
  * ```ts
- * CA_PROVINCE_ALTERNATIVES["pq"]
+ * import { CA_PROVINCE_ALTERNATIVES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_PROVINCE_ALTERNATIVES["pq"]);
  * // → "QC"
  * ```
  */
@@ -128,7 +136,9 @@ const CA_PROVINCE_ALTERNATIVES: Record<string, string> = {
  *
  * @example
  * ```ts
- * CA_PROVINCES["nfld"]
+ * import { CA_PROVINCES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_PROVINCES["nfld"]);
  * // → "NL"
  * ```
  */
@@ -143,7 +153,9 @@ const CA_PROVINCES: Record<string, string> = {
  *
  * @example
  * ```ts
- * CA_REGIONS.filter((region) => region.abbr === "QC").map((region) => region.name)
+ * import { CA_REGIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_REGIONS.filter((region) => region.abbr === "QC").map((region) => region.name));
  * // → ["quebec","québec","pq","que"]
  * ```
  */
@@ -158,7 +170,9 @@ const CA_REGIONS: Region[] = Object.entries(CA_PROVINCES).map(([name, abbr]) => 
  *
  * @example
  * ```ts
- * PROVINCE_EXPANSIONS_EN["qc"]
+ * import { PROVINCE_EXPANSIONS_EN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(PROVINCE_EXPANSIONS_EN["qc"]);
  * // → "quebec"
  * ```
  */
@@ -171,7 +185,9 @@ const PROVINCE_EXPANSIONS_EN: Record<string, string> = Object.fromEntries(
  *
  * @example
  * ```ts
- * PROVINCE_EXPANSIONS_FR["qc"]
+ * import { PROVINCE_EXPANSIONS_FR } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(PROVINCE_EXPANSIONS_FR["qc"]);
  * // → "québec"
  * ```
  */
@@ -185,7 +201,9 @@ const PROVINCE_EXPANSIONS_FR: Record<string, string> = Object.fromEntries(
  *
  * @example
  * ```ts
- * PROVINCE_EXPANSIONS["on"]
+ * import { PROVINCE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(PROVINCE_EXPANSIONS["on"]);
  * // → "ontario"
  * ```
  */

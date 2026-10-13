@@ -22,7 +22,9 @@ const ElementBase: typeof HTMLElement =
 /** Seven built-in field countries; auto detects among them.
  * @example
  * ```ts
- * ADDRESS_FIELD_COUNTRIES.length
+ * import { ADDRESS_FIELD_COUNTRIES } from "@johnmorrisdotca/address-plus/element";
+ *
+ * console.log(ADDRESS_FIELD_COUNTRIES.length);
  * // → 7
  * ```
  */
@@ -30,7 +32,9 @@ const ADDRESS_FIELD_COUNTRIES = FIELD_COUNTRIES;
 /** Native parser options checked by builder coverage.
  * @example
  * ```ts
- * ADDRESS_FIELD_PARSE_KEYS.includes("strict")
+ * import { ADDRESS_FIELD_PARSE_KEYS } from "@johnmorrisdotca/address-plus/element";
+ *
+ * console.log(ADDRESS_FIELD_PARSE_KEYS.includes("strict"));
  * // → true
  * ```
  */
@@ -38,7 +42,9 @@ const ADDRESS_FIELD_PARSE_KEYS = FIELD_PARSE_KEYS;
 /** Native validator options checked by builder coverage.
  * @example
  * ```ts
- * ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode")
+ * import { ADDRESS_FIELD_VALIDATION_KEYS } from "@johnmorrisdotca/address-plus/element";
+ *
+ * console.log(ADDRESS_FIELD_VALIDATION_KEYS.includes("requirePostalCode"));
  * // → true
  * ```
  */
@@ -46,7 +52,10 @@ const ADDRESS_FIELD_VALIDATION_KEYS = FIELD_VALIDATION_KEYS;
 /** Full native settings and a private callback; raw addresses never enter public events.
  * @example
  * ```ts
- * ADDRESS_FIELD_PARSE_KEYS.includes("countries")
+ * import { ADDRESS_FIELD_PARSE_KEYS } from "@johnmorrisdotca/address-plus/element";
+ * import type { AddressFieldOptions } from "@johnmorrisdotca/address-plus/element";
+ *
+ * console.log(ADDRESS_FIELD_PARSE_KEYS.includes("countries"));
  * // → true
  * ```
  */
@@ -61,7 +70,9 @@ interface AddressFieldOptions {
  * The raw value is submitted under name; address and validation are local getters.
  * @example
  * ```ts
- * typeof AddressField
+ * import { AddressField } from "@johnmorrisdotca/address-plus/element";
+ *
+ * console.log(typeof AddressField);
  * // → "function"
  * ```
  */
@@ -391,8 +402,10 @@ class AddressField extends ElementBase {
  * @returns Nothing; existing definitions are preserved.
  * @example
  * ```ts
+ * import { defineField } from "@johnmorrisdotca/address-plus/element";
+ *
  * defineField();
- * typeof defineField
+ * console.log(typeof defineField);
  * // → "function"
  * ```
  */

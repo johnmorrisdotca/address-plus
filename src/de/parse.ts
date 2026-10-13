@@ -301,7 +301,9 @@ function ordered(result: ParsedAddress): ParsedAddress {
  * address.
  * @example
  * ```ts
- * parseGermanAddress("c/o Weber, Hinterhaus, Hauptstraße 12a, 10115 Berlin")
+ * import { parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(parseGermanAddress("c/o Weber, Hinterhaus, Hauptstraße 12a, 10115 Berlin"));
  * // → {"careOf":"Weber","building":"Hinterhaus","street":"Hauptstraße","number":"12A","city":"Berlin","state":"BE","zip":"10115","zipValid":true,"country":"DE"}
  * ```
  */
@@ -383,7 +385,9 @@ function hasGermanStreetShape(part: string): boolean {
  * @returns `true` when the address is German beyond doubt, `false` otherwise.
  * @example
  * ```ts
- * [looksGerman("Hauptstraße 12, 10115 Berlin"), looksGerman("123 Main St, Seattle, WA 98101")]
+ * import { looksGerman } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log([looksGerman("Hauptstraße 12, 10115 Berlin"), looksGerman("123 Main St, Seattle, WA 98101")]);
  * // → [true,false]
  * ```
  */

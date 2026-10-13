@@ -33,7 +33,11 @@ const CROWN_DEPENDENCY_NAMES: Readonly<Record<string, string>> = {
  * @returns The errors and warnings, each with its field, code and message.
  * @example
  * ```ts
- * validateUKAddress(parseUKAddress("1 High Street, London EC9Z 1AA")).warnings.map((one) => one.code)
+ * import { parseUKAddress, validateUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * const parsedAddress1=parseUKAddress("1 High Street, London EC9Z 1AA");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateUKAddress(parsedAddress1).warnings.map((one) => one.code));
  * // → ["INVALID_POSTAL_FORMAT"]
  * ```
  */

@@ -12,7 +12,9 @@ import { AU_STATES } from "./states.data";
  *
  * @example
  * ```ts
- * AU_POSTCODE_RANGES.filter((range) => range.state === "ACT").map((range) => `${range.from}-${range.to}`)
+ * import { AU_POSTCODE_RANGES } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(AU_POSTCODE_RANGES.filter((range) => range.state === "ACT").map((range) => `${range.from}-${range.to}`));
  * // → ["0200-0299","2600-2618","2900-2920"]
  * ```
  */
@@ -50,7 +52,9 @@ function rangeOf(postcode: string): AustralianPostcodeRange | undefined {
  * @returns The state's code, or `undefined` when the text is not four digits or no block holds it.
  * @example
  * ```ts
- * getStateFromAustralianPostcode("2620")
+ * import { getStateFromAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(getStateFromAustralianPostcode("2620"));
  * // → "NSW"
  * ```
  */
@@ -69,7 +73,9 @@ function getStateFromAustralianPostcode(postcode: string): AustralianStateCode |
  * @returns The states' codes; an empty array when the postcode is not in any block.
  * @example
  * ```ts
- * getStatesForAustralianPostcode("0872")
+ * import { getStatesForAustralianPostcode } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(getStatesForAustralianPostcode("0872"));
  * // → ["NT","SA","WA"]
  * ```
  */
@@ -90,7 +96,9 @@ function getStatesForAustralianPostcode(postcode: string): AustralianStateCode[]
  * @returns The state, or `null` when nothing matches.
  * @example
  * ```ts
- * findAustralianState("n.s.w.")?.name
+ * import { findAustralianState } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(findAustralianState("n.s.w.")?.name);
  * // → "New South Wales"
  * ```
  */
@@ -118,7 +126,9 @@ function findAustralianState(text: string): AustralianState | null {
  * @returns The blocks, in order; an empty array for something that is not a state.
  * @example
  * ```ts
- * getPostcodeRangesForAustralianState("Victoria").map((range) => `${range.from}-${range.to}`)
+ * import { getPostcodeRangesForAustralianState } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(getPostcodeRangesForAustralianState("Victoria").map((range) => `${range.from}-${range.to}`));
  * // → ["3000-3999","8000-8999"]
  * ```
  */

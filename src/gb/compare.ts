@@ -47,7 +47,13 @@ function normalize(field: keyof ParsedAddress, value: string | undefined): strin
  * @returns Whether they are the same delivery point, and each field that differs.
  * @example
  * ```ts
- * compareUKAddresses(parseUKAddress("10 Downing Street, London SW1A 2AA"), parseUKAddress("10 DOWNING ST, LONDON, SW1A2AA")).isSame
+ * import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * const parsedAddress1=parseUKAddress("10 Downing Street, London SW1A 2AA");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseUKAddress("10 DOWNING ST, LONDON, SW1A2AA");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareUKAddresses(parsedAddress1, parsedAddress2).isSame);
  * // → true
  * ```
  */

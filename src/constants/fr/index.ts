@@ -25,7 +25,9 @@ function knownPostcodes(): Set<string> {
  * @returns `true` when it is five digits.
  * @example
  * ```ts
- * ["75008", "2000", "7500a", " 13001 "].map(isValidFrenchPostcode)
+ * import { isValidFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(["75008", "2000", "7500a", " 13001 "].map(isValidFrenchPostcode));
  * // → [true,false,false,true]
  * ```
  */
@@ -42,7 +44,9 @@ function isValidFrenchPostcode(postcode: string): boolean {
  * @returns `true` when La Poste's base lists it.
  * @example
  * ```ts
- * ["75008", "75099", "98000", "00000"].map(isKnownFrenchPostcode)
+ * import { isKnownFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(["75008", "75099", "98000", "00000"].map(isKnownFrenchPostcode));
  * // → [true,false,true,false]
  * ```
  */
@@ -71,7 +75,9 @@ function placeOf(postcode: string): string {
  * @returns The parts, or `null` when it is not five digits.
  * @example
  * ```ts
- * parseFrenchPostcode("98714")
+ * import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(parseFrenchPostcode("98714"));
  * // → {"postcode":"98714","place":"987","country":"PF","known":true}
  * ```
  */
@@ -100,7 +106,9 @@ function parseFrenchPostcode(postcode: string): FrenchPostcode | null {
  * has, or text that is not a postcode.
  * @example
  * ```ts
- * ["75008", "20190", "20200", "97400", "98714", "98000"].map(getDepartmentFromFrenchPostcode)
+ * import { getDepartmentFromFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(["75008", "20190", "20200", "97400", "98714", "98000"].map(getDepartmentFromFrenchPostcode));
  * // → ["75","2A","2B","974",null,null]
  * ```
  */
@@ -116,7 +124,9 @@ function getDepartmentFromFrenchPostcode(postcode: string): string | undefined {
  * @returns The department, or `null` when nothing matches.
  * @example
  * ```ts
- * findFrenchDepartment("haute-corse")?.code
+ * import { findFrenchDepartment } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(findFrenchDepartment("haute-corse")?.code);
  * // → "2B"
  * ```
  */

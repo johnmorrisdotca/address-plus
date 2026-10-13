@@ -9,7 +9,9 @@
  *
  * @example
  * ```ts
- * CA_STREET_TYPES["croissant"]
+ * import { CA_STREET_TYPES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CA_STREET_TYPES["croissant"]);
  * // → "crois"
  * ```
  */

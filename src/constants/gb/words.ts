@@ -9,7 +9,9 @@
  *
  * @example
  * ```ts
- * GB_THOROUGHFARE_DESCRIPTORS.Road
+ * import { GB_THOROUGHFARE_DESCRIPTORS } from "@johnmorrisdotca/address-plus/gb";
+ *
+ * console.log(GB_THOROUGHFARE_DESCRIPTORS.Road);
  * // → ["RD"]
  * ```
  */

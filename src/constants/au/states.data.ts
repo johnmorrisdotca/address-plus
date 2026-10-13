@@ -10,7 +10,9 @@ import type { AustralianState } from "../../types/australia";
  *
  * @example
  * ```ts
- * AU_STATES.map((state) => state.code)
+ * import { AU_STATES } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(AU_STATES.map((state) => state.code));
  * // → ["ACT","NSW","NT","QLD","SA","TAS","VIC","WA"]
  * ```
  */

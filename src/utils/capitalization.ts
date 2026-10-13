@@ -14,7 +14,9 @@ function capitalize(str: string): string {
  * @returns The text with each word's first letter in capitals and the rest as written.
  * @example
  * ```ts
- * capitalizeWords("new york city")
+ * import { capitalizeWords } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(capitalizeWords("new york city"));
  * // → "New York City"
  * ```
  */
@@ -73,7 +75,9 @@ function titleWord(word: string, keepParticle: boolean): string {
  * @returns The name capitalized.
  * @example
  * ```ts
- * capitalizeStreetName("o'brien")
+ * import { capitalizeStreetName } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(capitalizeStreetName("o'brien"));
  * // → "O'Brien"
  * ```
  */

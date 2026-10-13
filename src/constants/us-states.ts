@@ -9,7 +9,9 @@ import { CA_PROVINCE_ALTERNATIVES, CA_PROVINCE_NAMES } from "./ca-provinces.js";
  *
  * @example
  * ```ts
- * US_STATE_NAMES["new york"]
+ * import { US_STATE_NAMES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(US_STATE_NAMES["new york"]);
  * // → "NY"
  * ```
  */
@@ -77,7 +79,9 @@ const US_STATE_NAMES: Record<string, string> = {
  *
  * @example
  * ```ts
- * US_STATE_ALTERNATIVES["calif"]
+ * import { US_STATE_ALTERNATIVES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(US_STATE_ALTERNATIVES["calif"]);
  * // → "CA"
  * ```
  */
@@ -232,7 +236,9 @@ const US_STATE_ALTERNATIVES: Record<string, string> = {
  *
  * @example
  * ```ts
- * US_STATES["mass"]
+ * import { US_STATES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(US_STATES["mass"]);
  * // → "MA"
  * ```
  */
@@ -247,7 +253,9 @@ const US_STATES: Record<string, string> = {
  *
  * @example
  * ```ts
- * US_REGIONS.find((region) => region.abbr === "WA")?.name
+ * import { US_REGIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(US_REGIONS.find((region) => region.abbr === "WA")?.name);
  * // → "washington"
  * ```
  */
@@ -262,7 +270,9 @@ const US_REGIONS: Region[] = Object.entries(US_STATES).map(([name, abbr]) => ({
  *
  * @example
  * ```ts
- * US_STATE_EXPANSIONS["wa"]
+ * import { US_STATE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(US_STATE_EXPANSIONS["wa"]);
  * // → "washington"
  * ```
  */
@@ -277,7 +287,9 @@ const US_STATE_EXPANSIONS: Record<string, string> = Object.fromEntries(
  * @returns The code in lower case, or `undefined` for a name that is not a state or province.
  * @example
  * ```ts
- * normalizeStateProvinceName("Nova Scotia")
+ * import { normalizeStateProvinceName } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(normalizeStateProvinceName("Nova Scotia"));
  * // → "ns"
  * ```
  */

@@ -10,7 +10,13 @@ import { LATIN_LETTER, RURAL_TOWN } from "./patterns";
  *
  * @example
  * ```ts
- * formatJapanese(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { blockStyle: "markers", includePostalCode: false })
+ * import { formatJapanese } from "@johnmorrisdotca/address-plus/jp";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { JapaneseFormattingOptions } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatJapanese(parsedAddress1, { blockStyle: "markers", includePostalCode: false }));
  * // → "東京都千代田区丸の内1丁目2番3号"
  * ```
  */
@@ -25,7 +31,13 @@ interface JapaneseFormattingOptions {
  *
  * @example
  * ```ts
- * formatJapaneseEnglish(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { includeCountry: false })
+ * import { formatJapaneseEnglish } from "@johnmorrisdotca/address-plus/jp";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { JapaneseEnglishFormattingOptions } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatJapaneseEnglish(parsedAddress1, { includeCountry: false }));
  * // → "1-2-3 丸の内, Chiyoda-ku, Tokyo 100-0005"
  * ```
  */
@@ -89,7 +101,12 @@ function townWithDirections(address: ParsedAddress): string | undefined {
  * when the address has none of the parts.
  * @example
  * ```ts
- * formatJapanese(parseLocation("〒100-0005 東京都千代田区丸の内1-2-3"), { blockStyle: "markers", multiline: false })
+ * import { formatJapanese } from "@johnmorrisdotca/address-plus/jp";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("〒100-0005 東京都千代田区丸の内1-2-3");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatJapanese(parsedAddress1, { blockStyle: "markers", multiline: false }));
  * // → "〒100-0005 東京都千代田区丸の内1丁目2番3号"
  * ```
  */
@@ -134,7 +151,12 @@ function municipalityInEnglishOrder(romaji: string): string {
  * @returns The address as one line, its parts joined by commas.
  * @example
  * ```ts
- * formatJapaneseEnglish(parseLocation("1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005"))
+ * import { formatJapaneseEnglish } from "@johnmorrisdotca/address-plus/jp";
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ *
+ * const parsedAddress1=parseLocation("1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatJapaneseEnglish(parsedAddress1));
  * // → "1-2-3 Marunouchi, Chiyoda-ku, Tokyo 100-0005, Japan"
  * ```
  */

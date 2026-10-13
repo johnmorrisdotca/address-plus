@@ -7,7 +7,9 @@
  *
  * @example
  * ```ts
- * PO_BOX_PATTERNS.US_PO_BOX.exec("PO Box 123, Springfield, IL 62701")?.slice(1)
+ * import { PO_BOX_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(PO_BOX_PATTERNS.US_PO_BOX.exec("PO Box 123, Springfield, IL 62701")?.slice(1));
  * // → ["123","Springfield","IL","62701"]
  * ```
  */
@@ -33,7 +35,9 @@ const PO_BOX_PATTERNS = {
  *
  * @example
  * ```ts
- * INTERSECTION_PATTERNS.CITY_WITH_COMMA.exec("Pine St, Tacoma")?.[1]
+ * import { INTERSECTION_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(INTERSECTION_PATTERNS.CITY_WITH_COMMA.exec("Pine St, Tacoma")?.[1]);
  * // → "Tacoma"
  * ```
  */
@@ -58,7 +62,9 @@ const INTERSECTION_PATTERNS = {
  *
  * @example
  * ```ts
- * COMMON_PARSER_PATTERNS.ZIP_AT_END("(\\d{5})").exec("Tacoma WA 98402")?.[1]
+ * import { COMMON_PARSER_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(COMMON_PARSER_PATTERNS.ZIP_AT_END("(\\d{5})").exec("Tacoma WA 98402")?.[1]);
  * // → "98402"
  * ```
  */

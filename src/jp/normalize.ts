@@ -42,7 +42,9 @@ function kanjiNumeralValue(numeral: string): string {
  * @returns The text with those numerals as digits.
  * @example
  * ```ts
- * kanjiNumeralsToDigits("二丁目十五番")
+ * import { kanjiNumeralsToDigits } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(kanjiNumeralsToDigits("二丁目十五番"));
  * // → "2丁目15番"
  * ```
  */
@@ -61,7 +63,9 @@ function kanjiNumeralsToDigits(text: string): string {
  * @returns The text made uniform.
  * @example
  * ```ts
- * normalizeJapaneseAddressText("〒１００-０００５ 東京都千代田区丸の内一丁目二番三号")
+ * import { normalizeJapaneseAddressText } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(normalizeJapaneseAddressText("〒１００-０００５ 東京都千代田区丸の内一丁目二番三号"));
  * // → "〒100-0005 東京都千代田区丸の内1丁目2番3号"
  * ```
  */

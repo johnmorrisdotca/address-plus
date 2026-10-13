@@ -7,7 +7,9 @@
  *
  * @example
  * ```ts
- * ({ name: "a ZIP code", input: "98101", expected: "WA" }).expected
+ * import type { TestCaseBase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ name: "a ZIP code", input: "98101", expected: "WA" }).expected);
  * // → "WA"
  * ```
  */
@@ -30,7 +32,9 @@ interface TestFileSchema {
  *
  * @example
  * ```ts
- * ({ input: "123 Main St, Anytown, NY 12345", expected: { number: "123", state: "NY" } }).expected.state
+ * import type { AddressParsingTestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: "123 Main St, Anytown, NY 12345", expected: { number: "123", state: "NY" } }).expected.state);
  * // → "NY"
  * ```
  */
@@ -60,7 +64,9 @@ interface AddressParsingTestCase extends TestCaseBase {
  *
  * @example
  * ```ts
- * ({ input: "123 main st", expected: "123 Main St" }).expected
+ * import type { AddressFormattingTestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: "123 main st", expected: "123 Main St" }).expected);
  * // → "123 Main St"
  * ```
  */
@@ -79,7 +85,9 @@ interface AddressFormattingTestCase extends TestCaseBase {
  *
  * @example
  * ```ts
- * ({ input: "123 Main St", expected: { isValid: false } }).expected.isValid
+ * import type { AddressValidationTestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: "123 Main St", expected: { isValid: false } }).expected.isValid);
  * // → false
  * ```
  */
@@ -100,7 +108,9 @@ interface AddressValidationTestCase extends TestCaseBase {
  *
  * @example
  * ```ts
- * ({ input: ["123 Main St", "123 Main Street"], expected: { isSame: true } }).expected.isSame
+ * import type { AddressComparisonTestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: ["123 Main St", "123 Main Street"], expected: { isSame: true } }).expected.isSame);
  * // → true
  * ```
  */
@@ -122,7 +132,9 @@ interface AddressComparisonTestCase extends TestCaseBase {
  *
  * @example
  * ```ts
- * ({ input: "123 MAIN ST", expected: "123 Main St" }).expected
+ * import type { CleanAddressTestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: "123 MAIN ST", expected: "123 Main St" }).expected);
  * // → "123 Main St"
  * ```
  */
@@ -145,7 +157,9 @@ interface CleanAddressTestCase extends TestCaseBase {
  *
  * @example
  * ```ts
- * ({ input: ["123 Main St"], expected: { successful: 1 } }).expected.successful
+ * import type { BatchProcessingTestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: ["123 Main St"], expected: { successful: 1 } }).expected.successful);
  * // → 1
  * ```
  */
@@ -171,7 +185,9 @@ interface BatchProcessingTestCase extends TestCaseBase {
  *
  * @example
  * ```ts
- * ({ input: "98101", expected: "WA" }).input
+ * import type { TestCase } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ input: "98101", expected: "WA" }).input);
  * // → "98101"
  * ```
  */

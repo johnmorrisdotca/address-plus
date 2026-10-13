@@ -25,7 +25,11 @@ import type { ValidationOptions } from "../types/validation";
  * @returns The errors and warnings, each with its field, code and message.
  * @example
  * ```ts
- * validateGermanAddress(parseGermanAddress("Hauptstraße 12, 00000 Berlin")).warnings.map((one) => one.code)
+ * import { parseGermanAddress, validateGermanAddress } from "@johnmorrisdotca/address-plus/de";
+ *
+ * const parsedAddress1=parseGermanAddress("Hauptstraße 12, 00000 Berlin");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateGermanAddress(parsedAddress1).warnings.map((one) => one.code));
  * // → ["UNRECOGNIZED_POSTAL_CODE"]
  * ```
  */

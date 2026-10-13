@@ -35,7 +35,9 @@ const COMPLETENESS_WEIGHTS = {
  * suggestions, and the parsed address (`null` when it could not be parsed).
  * @example
  * ```ts
- * validateAddress("123 Main St, Seattle, NY 98101").warnings[0].code
+ * import { validateAddress } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(validateAddress("123 Main St, Seattle, NY 98101").warnings[0].code);
  * // → "POSTAL_REGION_MISMATCH"
  * ```
  */
@@ -142,7 +144,9 @@ function validateAddress(addressString: string, options: ValidationOptions = {})
  * `strictPostalValidation` turns them into errors.
  * @example
  * ```ts
- * isValidAddress("123 Main St, Seattle, NY 98101", { strictPostalValidation: true })
+ * import { isValidAddress } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(isValidAddress("123 Main St, Seattle, NY 98101", { strictPostalValidation: true }));
  * // → false
  * ```
  */
@@ -176,7 +180,9 @@ function hasStrictRequirements(options: ValidationOptions): boolean {
  * @returns The errors, each with its field, code and message; an empty array when there are none.
  * @example
  * ```ts
- * getValidationErrors("123 Main St, Seattle, NY 98101", { strictPostalValidation: true }).map((error) => error.code)
+ * import { getValidationErrors } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(getValidationErrors("123 Main St, Seattle, NY 98101", { strictPostalValidation: true }).map((error) => error.code));
  * // → ["POSTAL_REGION_MISMATCH"]
  * ```
  */

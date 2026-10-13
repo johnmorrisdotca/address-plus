@@ -10,7 +10,12 @@ import type { ParsedAddress } from "../types/parsed-address";
  *
  * @example
  * ```ts
- * formatDeutschePost(parseGermanAddress("Hauptstr. 12, 10115 Berlin"), { includeCountry: true }).lines
+ * import { formatDeutschePost, parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+ * import type { DeutschePostFormattingOptions } from "@johnmorrisdotca/address-plus/de";
+ *
+ * const parsedAddress1=parseGermanAddress("Hauptstr. 12, 10115 Berlin");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatDeutschePost(parsedAddress1, { includeCountry: true }).lines);
  * // → ["Hauptstr. 12","10115 Berlin","DEUTSCHLAND"]
  * ```
  */
@@ -49,7 +54,11 @@ function groupedBoxNumber(number: string): string {
  * @returns The lines, the same on one line, the delivery line (the street and its number) and the last line.
  * @example
  * ```ts
- * formatDeutschePost(parseGermanAddress("Hinterhaus, 2. OG, Kastanienallee 4 b, 10435 Berlin")).lines
+ * import { formatDeutschePost, parseGermanAddress } from "@johnmorrisdotca/address-plus/de";
+ *
+ * const parsedAddress1=parseGermanAddress("Hinterhaus, 2. OG, Kastanienallee 4 b, 10435 Berlin");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(formatDeutschePost(parsedAddress1).lines);
  * // → ["Hinterhaus","2. OG","Kastanienallee 4B","10435 Berlin"]
  * ```
  */

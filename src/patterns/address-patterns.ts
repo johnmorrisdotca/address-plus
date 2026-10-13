@@ -7,7 +7,9 @@
  *
  * @example
  * ```ts
- * new RegExp("^(?:" + UNIT_TYPE_KEYWORDS + ")$", "i").test("suite")
+ * import { UNIT_TYPE_KEYWORDS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(new RegExp("^(?:" + UNIT_TYPE_KEYWORDS + ")$", "i").test("suite"));
  * // → true
  * ```
  */
@@ -58,7 +60,9 @@ const WRITTEN_NUMBERS_FR =
  *
  * @example
  * ```ts
- * new RegExp("^(?:" + WRITTEN_NUMBERS + ")$", "i").test("one")
+ * import { WRITTEN_NUMBERS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(new RegExp("^(?:" + WRITTEN_NUMBERS + ")$", "i").test("one"));
  * // → true
  * ```
  */
@@ -69,7 +73,9 @@ const WRITTEN_NUMBERS = WRITTEN_NUMBERS_EN + "|" + WRITTEN_NUMBERS_FR;
  *
  * @example
  * ```ts
- * SECONDARY_UNIT_PATTERN.exec("123 Main St Apt 4")?.[2]
+ * import { SECONDARY_UNIT_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(SECONDARY_UNIT_PATTERN.exec("123 Main St Apt 4")?.[2]);
  * // → "Apt 4"
  * ```
  */
@@ -89,7 +95,9 @@ const UNIT_PART_PATTERN = new RegExp(
  *
  * @example
  * ```ts
- * STREET_TYPE_DETECTION_PATTERN.test("123 Main Street")
+ * import { STREET_TYPE_DETECTION_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(STREET_TYPE_DETECTION_PATTERN.test("123 Main Street"));
  * // → true
  * ```
  */
@@ -102,7 +110,9 @@ const STREET_TYPE_DETECTION_PATTERN =
  *
  * @example
  * ```ts
- * UNIT_TYPE_NUMBER_PATTERN.exec("Apt. #4B")?.slice(1, 3)
+ * import { UNIT_TYPE_NUMBER_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(UNIT_TYPE_NUMBER_PATTERN.exec("Apt. #4B")?.slice(1, 3));
  * // → ["Apt","4B"]
  * ```
  */
@@ -116,7 +126,9 @@ const UNIT_TYPE_NUMBER_PATTERN = new RegExp(
  *
  * @example
  * ```ts
- * PARENTHETICAL_PATTERN.exec("123 Main St (Rear)")?.[1]
+ * import { PARENTHETICAL_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(PARENTHETICAL_PATTERN.exec("123 Main St (Rear)")?.[1]);
  * // → "Rear"
  * ```
  */
@@ -127,7 +139,9 @@ const PARENTHETICAL_PATTERN = /\(([^)]+)\)/g;
  *
  * @example
  * ```ts
- * FACILITY_INDICATORS.includes("hospital")
+ * import { FACILITY_INDICATORS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(FACILITY_INDICATORS.includes("hospital"));
  * // → true
  * ```
  */
@@ -184,7 +198,9 @@ const FACILITY_PATTERNS_FR = [
  *
  * @example
  * ```ts
- * FACILITY_PATTERNS.some((pattern) => pattern.test("Empire State Building"))
+ * import { FACILITY_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(FACILITY_PATTERNS.some((pattern) => pattern.test("Empire State Building")));
  * // → true
  * ```
  */
@@ -195,7 +211,9 @@ const FACILITY_PATTERNS: RegExp[] = [...FACILITY_PATTERNS_EN, ...FACILITY_PATTER
  *
  * @example
  * ```ts
- * FACILITY_DELIMITER_PATTERN.test("City Hall - 100 Queen St W")
+ * import { FACILITY_DELIMITER_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(FACILITY_DELIMITER_PATTERN.test("City Hall - 100 Queen St W"));
  * // → true
  * ```
  */
@@ -206,7 +224,9 @@ const FACILITY_DELIMITER_PATTERN = /(?:[:;|\u2013\u2014-]|\s{2,})/;
  *
  * @example
  * ```ts
- * MUSIC_SQUARE_EAST_PATTERN.test("1 Music Square East")
+ * import { MUSIC_SQUARE_EAST_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(MUSIC_SQUARE_EAST_PATTERN.test("1 Music Square East"));
  * // → true
  * ```
  */

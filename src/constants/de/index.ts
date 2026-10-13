@@ -46,7 +46,9 @@ function stateRuns(): { start: number; state: GermanStateCode }[] {
  * @returns `true` when it is five digits.
  * @example
  * ```ts
- * ["10115", "1011", "1011a", " 80331 "].map(isValidGermanPostcode)
+ * import { isValidGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(["10115", "1011", "1011a", " 80331 "].map(isValidGermanPostcode));
  * // → [true,false,false,true]
  * ```
  */
@@ -63,7 +65,9 @@ function isValidGermanPostcode(postcode: string): boolean {
  * @returns `true` when the list has it.
  * @example
  * ```ts
- * ["10115", "80331", "00000", "99999"].map(isKnownGermanPostcode)
+ * import { isKnownGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(["10115", "80331", "00000", "99999"].map(isKnownGermanPostcode));
  * // → [true,true,false,false]
  * ```
  */
@@ -79,7 +83,9 @@ function isKnownGermanPostcode(postcode: string): boolean {
  * @returns The parts, or `null` when it is not five digits.
  * @example
  * ```ts
- * parseGermanPostcode("80331")
+ * import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(parseGermanPostcode("80331"));
  * // → {"postcode":"80331","state":"BY","known":true}
  * ```
  */
@@ -106,7 +112,9 @@ function parseGermanPostcode(postcode: string): GermanPostcode | null {
  * @returns The Land's code; `undefined` for a postcode GeoNames' list does not have, or text that is not a postcode.
  * @example
  * ```ts
- * ["80331", "10115", "20095", "00000"].map(getStateFromGermanPostcode)
+ * import { getStateFromGermanPostcode } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log(["80331", "10115", "20095", "00000"].map(getStateFromGermanPostcode));
  * // → ["BY","BE","HH",null]
  * ```
  */
@@ -122,7 +130,9 @@ function getStateFromGermanPostcode(postcode: string): GermanStateCode | undefin
  * @returns The Land, or `null` when nothing matches.
  * @example
  * ```ts
- * [findGermanState("Bayern")?.code, findGermanState("thueringen")?.code, findGermanState("Lower Saxony")?.code]
+ * import { findGermanState } from "@johnmorrisdotca/address-plus/de";
+ *
+ * console.log([findGermanState("Bayern")?.code, findGermanState("thueringen")?.code, findGermanState("Lower Saxony")?.code]);
  * // → ["BY","TH","NI"]
  * ```
  */

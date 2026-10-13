@@ -12,7 +12,12 @@ import type { ValidationError, ValidationOptions } from "./validation";
  *
  * @example
  * ```ts
- * validateAustralianAddress(parseAustralianAddress("1 Main St, Sydney VIC 2000")).warnings.map((one) => one.code)
+ * import { parseAustralianAddress, validateAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ * import type { CountryValidation } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseAustralianAddress("1 Main St, Sydney VIC 2000");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * console.log(validateAustralianAddress(parsedAddress1).warnings.map((one) => one.code));
  * // → ["POSTAL_REGION_MISMATCH"]
  * ```
  */
@@ -27,7 +32,14 @@ interface CountryValidation {
  *
  * @example
  * ```ts
- * compareUKAddresses(parseUKAddress("10 High Street, Bath BA1 1AA"), parseUKAddress("12 High St, Bath BA1 1AA")).differences
+ * import { compareUKAddresses, parseUKAddress } from "@johnmorrisdotca/address-plus/gb";
+ * import type { CountryDifference } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseUKAddress("10 High Street, Bath BA1 1AA");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseUKAddress("12 High St, Bath BA1 1AA");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareUKAddresses(parsedAddress1, parsedAddress2).differences);
  * // → [{"field":"number","first":"10","second":"12"}]
  * ```
  */
@@ -43,7 +55,14 @@ interface CountryDifference {
  *
  * @example
  * ```ts
- * compareAustralianAddresses(parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150"), parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150")).isSame
+ * import { compareAustralianAddresses, parseAustralianAddress } from "@johnmorrisdotca/address-plus/au";
+ * import type { CountryComparison } from "@johnmorrisdotca/address-plus/au";
+ *
+ * const parsedAddress1=parseAustralianAddress("3/12 Smith Street, Parramatta NSW 2150");
+ * if (!parsedAddress1) throw new Error("The example address did not parse.");
+ * const parsedAddress2=parseAustralianAddress("Unit 3, 12 Smith St, PARRAMATTA NSW 2150");
+ * if (!parsedAddress2) throw new Error("The example address did not parse.");
+ * console.log(compareAustralianAddresses(parsedAddress1, parsedAddress2).isSame);
  * // → true
  * ```
  */
@@ -59,7 +78,10 @@ interface CountryComparison {
  *
  * @example
  * ```ts
- * australia.codes
+ * import { australia } from "@johnmorrisdotca/address-plus/au";
+ * import type { CountryModule } from "@johnmorrisdotca/address-plus/au";
+ *
+ * console.log(australia.codes);
  * // → ["AU"]
  * ```
  */

@@ -11,7 +11,9 @@ import type { JapaneseMunicipality } from "../../types/japan";
  *
  * @example
  * ```ts
- * JP_MUNICIPALITIES.find((one) => one.code === "13101")?.name
+ * import { JP_MUNICIPALITIES } from "@johnmorrisdotca/address-plus/jp";
+ *
+ * console.log(JP_MUNICIPALITIES.find((one) => one.code === "13101")?.name);
  * // → "千代田区"
  * ```
  */

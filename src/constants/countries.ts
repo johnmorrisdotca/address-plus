@@ -5,7 +5,9 @@
  *
  * @example
  * ```ts
- * COUNTRIES.JAPAN
+ * import { COUNTRIES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(COUNTRIES.JAPAN);
  * // → "JP"
  * ```
  */
@@ -20,7 +22,10 @@ const COUNTRIES = {
  *
  * @example
  * ```ts
- * parseLocation("100 Queen St W, Toronto, ON M5H 2N2")?.country
+ * import { parseLocation } from "@johnmorrisdotca/address-plus";
+ * import type { CountryCode } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocation("100 Queen St W, Toronto, ON M5H 2N2")?.country);
  * // → "CA"
  * ```
  */

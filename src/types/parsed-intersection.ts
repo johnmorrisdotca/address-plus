@@ -3,7 +3,10 @@
  *
  * @example
  * ```ts
- * parseIntersection("Hollywood Blvd and Vine St, Los Angeles, CA")
+ * import { parseIntersection } from "@johnmorrisdotca/address-plus";
+ * import type { ParsedIntersection } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseIntersection("Hollywood Blvd and Vine St, Los Angeles, CA"));
  * // → {"state":"CA","city":"Los Angeles","street1":"Hollywood","type1":"Blvd","street2":"Vine","type2":"St"}
  * ```
  */

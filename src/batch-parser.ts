@@ -98,7 +98,9 @@ function processBatch<T>(
  * @returns One result per address, in the same order: the parts, or `null` where an address could not be read.
  * @example
  * ```ts
- * parseLocations(["100 Queen St W, Toronto, ON M5H 2N2", "大阪府大阪市北区梅田3-1-1"]).map((one) => one?.country)
+ * import { parseLocations } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocations(["100 Queen St W, Toronto, ON M5H 2N2", "大阪府大阪市北区梅田3-1-1"]).map((one) => one?.country));
  * // → ["CA","JP"]
  * ```
  */
@@ -119,7 +121,9 @@ function parseLocations(addresses: string[], options?: ParseOptions): (ParsedAdd
  * @returns One result per address, in the same order, `null` where an address could not be read.
  * @example
  * ```ts
- * parseAddresses(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).map((one) => one?.city)
+ * import { parseAddresses } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseAddresses(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).map((one) => one?.city));
  * // → ["Anytown","Springfield"]
  * ```
  */
@@ -140,7 +144,9 @@ function parseAddresses(addresses: string[], options?: ParseOptions): (ParsedAdd
  * @returns One result per address, in the same order, `null` where nothing could be read.
  * @example
  * ```ts
- * parseInformalAddresses(["Downtown near City Hall, Springfield IL 62701"]).map((one) => one?.zip)
+ * import { parseInformalAddresses } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseInformalAddresses(["Downtown near City Hall, Springfield IL 62701"]).map((one) => one?.zip));
  * // → ["62701"]
  * ```
  */
@@ -161,7 +167,9 @@ function parseInformalAddresses(addresses: string[], options?: ParseOptions): (P
  * @returns One result per intersection, in the same order, `null` where one could not be read.
  * @example
  * ```ts
- * parseIntersections(["Yonge St and Bloor St, Toronto, ON"]).map((one) => one?.street2)
+ * import { parseIntersections } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseIntersections(["Yonge St and Bloor St, Toronto, ON"]).map((one) => one?.street2));
  * // → ["Bloor"]
  * ```
  */
@@ -184,7 +192,9 @@ function parseIntersections(addresses: string[], options?: ParseOptions): (Parse
  * timing.
  * @example
  * ```ts
- * parseLocationsBatch(["100 Queen St W, Toronto, ON M5H 2N2", "", "大阪府大阪市北区梅田3-1-1"]).stats.successful
+ * import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseLocationsBatch(["100 Queen St W, Toronto, ON M5H 2N2", "", "大阪府大阪市北区梅田3-1-1"]).stats.successful);
  * // → 2
  * ```
  */
@@ -200,7 +210,9 @@ function parseLocationsBatch(addresses: string[], options?: BatchParseOptions): 
  * @returns The results in order (`null` for a failure), the errors, and the counts and timing.
  * @example
  * ```ts
- * parseAddressesBatch(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).stats.successful
+ * import { parseAddressesBatch } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseAddressesBatch(["10 Main St, Anytown, NY 12345", "PO Box 12, Springfield, IL 62701"]).stats.successful);
  * // → 2
  * ```
  */
@@ -216,7 +228,9 @@ function parseAddressesBatch(addresses: string[], options?: BatchParseOptions): 
  * @returns The results in order (`null` for a failure), the errors, and the counts and timing.
  * @example
  * ```ts
- * parseInformalAddressesBatch(["Main St, Anytown NY"]).stats.successful
+ * import { parseInformalAddressesBatch } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseInformalAddressesBatch(["Main St, Anytown NY"]).stats.successful);
  * // → 1
  * ```
  */
@@ -235,7 +249,9 @@ function parseInformalAddressesBatch(
  * @returns The results in order (`null` for a failure), the errors, and the counts and timing.
  * @example
  * ```ts
- * parseIntersectionsBatch(["Yonge St and Bloor St, Toronto, ON"]).stats.successful
+ * import { parseIntersectionsBatch } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(parseIntersectionsBatch(["Yonge St and Bloor St, Toronto, ON"]).stats.successful);
  * // → 1
  * ```
  */

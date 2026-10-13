@@ -5,7 +5,9 @@
  *
  * @example
  * ```ts
- * VALIDATION_PATTERNS.STARTS_WITH_NUMBER.test("123 Main St")
+ * import { VALIDATION_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(VALIDATION_PATTERNS.STARTS_WITH_NUMBER.test("123 Main St"));
  * // → true
  * ```
  */
@@ -29,7 +31,9 @@ const VALIDATION_PATTERNS = {
  *
  * @example
  * ```ts
- * GENERAL_DELIVERY_PATTERNS.STANDARD.test("General Delivery")
+ * import { GENERAL_DELIVERY_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(GENERAL_DELIVERY_PATTERNS.STANDARD.test("General Delivery"));
  * // → true
  * ```
  */
@@ -44,7 +48,9 @@ const GENERAL_DELIVERY_PATTERNS = {
  *
  * @example
  * ```ts
- * ZIP_VALIDATION_PATTERNS.POTENTIAL_ZIP.test("98101")
+ * import { ZIP_VALIDATION_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(ZIP_VALIDATION_PATTERNS.POTENTIAL_ZIP.test("98101"));
  * // → true
  * ```
  */
@@ -57,7 +63,9 @@ const ZIP_VALIDATION_PATTERNS = {
  *
  * @example
  * ```ts
- * FACILITY_DELIMITER_PATTERNS.PARENTHETICAL.test("(City Hall)")
+ * import { FACILITY_DELIMITER_PATTERNS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(FACILITY_DELIMITER_PATTERNS.PARENTHETICAL.test("(City Hall)"));
  * // → true
  * ```
  */
@@ -72,7 +80,9 @@ const FACILITY_DELIMITER_PATTERNS = {
  *
  * @example
  * ```ts
- * ISLAND_TYPE_PATTERN.test("Island")
+ * import { ISLAND_TYPE_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(ISLAND_TYPE_PATTERN.test("Island"));
  * // → true
  * ```
  */
@@ -83,7 +93,9 @@ const ISLAND_TYPE_PATTERN = /^(island|is\.?|isl\.?|isle\.?|ils\.?)$/i;
  *
  * @example
  * ```ts
- * CONNECTOR_WORDS.has("of")
+ * import { CONNECTOR_WORDS } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(CONNECTOR_WORDS.has("of"));
  * // → true
  * ```
  */
@@ -117,7 +129,9 @@ const CONNECTOR_WORDS = new Set([
  *
  * @example
  * ```ts
- * COMMON_STREET_NAMES_PATTERN.test("Main")
+ * import { COMMON_STREET_NAMES_PATTERN } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(COMMON_STREET_NAMES_PATTERN.test("Main"));
  * // → true
  * ```
  */

@@ -7,7 +7,9 @@
  *
  * @example
  * ```ts
- * ({ name: "brooklyn", parentCity: "new york", state: "NY", country: "US", type: "borough" }).type
+ * import type { SubRegion } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(({ name: "brooklyn", parentCity: "new york", state: "NY", country: "US", type: "borough" }).type);
  * // → "borough"
  * ```
  */

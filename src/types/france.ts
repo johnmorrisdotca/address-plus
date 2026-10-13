@@ -9,7 +9,10 @@
  *
  * @example
  * ```ts
- * parseFrenchAddress("Avenue Pouvanaa a Oopa, 98713 Papeete, Polynésie française")?.country
+ * import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+ * import type { FrenchPostalCountry } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(parseFrenchAddress("Avenue Pouvanaa a Oopa, 98713 Papeete, Polynésie française")?.country);
  * // → "PF"
  * ```
  */
@@ -21,7 +24,10 @@ type FrenchPostalCountry = "BL" | "FR" | "MC" | "MF" | "NC" | "PF" | "PM" | "WF"
  *
  * @example
  * ```ts
- * FR_DEPARTMENTS.find((department) => department.code === "75")
+ * import { FR_DEPARTMENTS } from "@johnmorrisdotca/address-plus/fr";
+ * import type { FrenchDepartment } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_DEPARTMENTS.find((department) => department.code === "75"));
  * // → {"code":"75","name":"Paris","region":"Île-de-France"}
  * ```
  */
@@ -37,7 +43,10 @@ interface FrenchDepartment {
  *
  * @example
  * ```ts
- * FR_COLLECTIVITIES.find((one) => one.code === "988")
+ * import { FR_COLLECTIVITIES } from "@johnmorrisdotca/address-plus/fr";
+ * import type { FrenchCollectivity } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(FR_COLLECTIVITIES.find((one) => one.code === "988"));
  * // → {"code":"988","country":"NC","name":"Nouvelle-Calédonie"}
  * ```
  */
@@ -54,7 +63,10 @@ interface FrenchCollectivity {
  *
  * @example
  * ```ts
- * parseFrenchPostcode("20200")
+ * import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+ * import type { FrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(parseFrenchPostcode("20200"));
  * // → {"postcode":"20200","place":"2B","country":"FR","known":true,"department":"2B"}
  * ```
  */
@@ -74,7 +86,10 @@ interface FrenchPostcode {
  *
  * @example
  * ```ts
- * parseFrenchAddress("12 bis rue de la Paix, 75002 Paris")?.numberExtension
+ * import { parseFrenchAddress } from "@johnmorrisdotca/address-plus/fr";
+ * import type { FrenchAddressFields } from "@johnmorrisdotca/address-plus/fr";
+ *
+ * console.log(parseFrenchAddress("12 bis rue de la Paix, 75002 Paris")?.numberExtension);
  * // → "bis"
  * ```
  */

@@ -7,7 +7,10 @@ import type { AddressFormattingOptions } from "./formatting";
  *
  * @example
  * ```ts
- * cleanAddress("123 main st, anytown, ny 12345", { standardizeCase: "upper" })
+ * import { cleanAddress } from "@johnmorrisdotca/address-plus";
+ * import type { CleanAddressOptions } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(cleanAddress("123 main st, anytown, ny 12345", { standardizeCase: "upper" }));
  * // → "123 MAIN ST, ANYTOWN NY 12345"
  * ```
  */
@@ -23,7 +26,10 @@ interface CleanAddressOptions extends AddressFormattingOptions {
  *
  * @example
  * ```ts
- * cleanAddressDetailed("123 main st, anytown, ny 12345").wasModified
+ * import { cleanAddressDetailed } from "@johnmorrisdotca/address-plus";
+ * import type { CleanAddressResult } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(cleanAddressDetailed("123 main st, anytown, ny 12345").wasModified);
  * // → true
  * ```
  */

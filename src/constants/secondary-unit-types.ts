@@ -6,7 +6,9 @@
  *
  * @example
  * ```ts
- * SECONDARY_UNIT_TYPES["ste"]
+ * import { SECONDARY_UNIT_TYPES } from "@johnmorrisdotca/address-plus";
+ *
+ * console.log(SECONDARY_UNIT_TYPES["ste"]);
  * // → "Suite"
  * ```
  */
