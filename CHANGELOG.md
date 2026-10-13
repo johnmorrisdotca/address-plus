@@ -5,6 +5,8 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 ## Unreleased
 ### Added
 
+- Add the bilingual documentation site, checked public examples, paired guides, local search and machine-readable pages.
+
 - Add Markdown and SQL downloads for bulk address tables, using the family’s shared escape-safe writers.
 
 - Add an optional form-associated `address-field` and `defineField`, with native parsing/validation for seven countries, reflected display/form settings, full parser/validator host options, local structured getters and ordinary form reset/disabled/validity support.

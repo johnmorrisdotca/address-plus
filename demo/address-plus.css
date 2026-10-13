@@ -558,3 +558,9 @@
     margin-right: 6px;
   }
 }
+
+header nav a[data-say="pageDocs"] {
+  inline-size: 8rem;
+  justify-content: center;
+  flex: none;
+}

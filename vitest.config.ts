@@ -10,7 +10,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/downloads.test.js", "scripts/**/*.test.mjs"],
+    include: [
+      "src/**/*.test.ts",
+      "src/**/*.spec.ts",
+      "src/downloads.test.js",
+      "src/docs-site.test.js",
+      "src/readme.test.js",
+      "scripts/**/*.test.mjs",
+    ],
     watch: false,
     coverage: {
       provider: "v8",

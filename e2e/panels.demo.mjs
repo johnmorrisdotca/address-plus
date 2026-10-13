@@ -1,6 +1,8 @@
 // The six panels: each answers its first example, then is typed in and pressed, and read in Japanese.
 import { expect, test } from "@playwright/test";
 
+import { apiOf } from "../scripts/api.mjs";
+
 import { at, open, tap, type } from "./demo.mjs";
 
 const answer = (page, name) => page.locator(at(`${name}-answer`));
@@ -219,18 +221,26 @@ test("a hostile paste is shown as text and never as markup", async ({ page }) =>
   expect(errors).toEqual([]);
 });
 
-test("the API reference lists every function with an example, in both languages", async ({ page }) => {
+test("the API index keeps function anchors and leads to checked examples in both languages", async ({ page }) => {
   const errors = await open(page, "", "api.html");
-  await expect(page.locator("#main-parseLocation")).toContainText("parseLocation(address: string");
-  await expect(page.locator("#main-parseLocation .api-example")).toContainText("// {");
-  await expect(page.locator("#jp-parseJapaneseAddress .api-example")).toContainText("東京都");
-  const bare = await page.evaluate(() =>
-    [...document.querySelectorAll('article[data-kind="function"]')]
-      .filter((one) => one.querySelector(".api-example") === null)
-      .map((one) => one.id),
+  await expect(page.locator("#main-parseLocation h3 a")).toHaveText("parseLocation");
+  const bare = apiOf().flatMap((entry) =>
+    entry.exports
+      .filter((item) => item.kind === "function" && !item.example)
+      .map((item) => `${entry.entry}:${item.name}`),
   );
   expect(bare).toEqual([]);
-  await page.locator('[data-lang="ja"]').click();
-  await expect(page.locator("header nav a").first()).toHaveText("デモ");
+  await page.locator("#jp-parseJapaneseAddress h3 a").click();
+  await expect(page.locator("main pre[data-lang=ts]")).toContainText("東京都");
+  await expect(page.locator("main .docs-output")).toContainText("1-2-3");
+  await page.goto("http://address-plus.test/api.html");
+  await page.locator("#main-parseLocation h3 a").click();
+  await expect(page.locator("main")).toContainText("parseLocation(address: string");
+  await expect(page.locator("main pre").first()).toContainText("@johnmorrisdotca/address-plus");
+  await expect(page.locator("main .docs-output")).toContainText("number");
+  await page.locator('header .lang a[data-lang="ja"]').click();
+  await expect(page.getByRole("link", { name: "デモ", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "デモ", exact: true }).click();
+  await expect(page.locator('[data-testid="parse-panel"]')).toBeVisible();
   expect(errors).toEqual([]);
 });

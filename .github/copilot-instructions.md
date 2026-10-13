@@ -18,7 +18,7 @@ applyTo: "**/*.{ts,tsx,js,jsx}"
 - ESLint 9 with the flat config in `eslint.config.js` (typescript-eslint recommended). Prettier formats, with `prettier-plugin-organize-imports` ordering imports.
 - `pnpm check` runs everything CI runs: lint, typecheck, test, build, test:types, schema:validate, test:package. Run it before pushing.
 - Never disable a lint rule to get green. If a rule is wrong for this repository, change it in `eslint.config.js` with a comment saying why.
-- Two entry points are built: the package root and `./jp`. The `/jp` bundle must not carry the US street-type tables (`pnpm test:package` checks).
+- Eight entry points are built: the root, `./jp`, `./au`, `./gb`, `./fr`, `./de`, `./element` and `./element/define`. The `/jp` bundle must not carry the US street-type tables (`pnpm test:package` checks).
 - Files named `*.data.ts` and `src/constants/sub-regions.ts` are generated (`pnpm data:jp`, `pnpm data:sub-regions`); never edit them by hand, change the generator in `scripts/`.
 - Releases: add entries under `## Unreleased` in `CHANGELOG.md`, then `pnpm release <version>` from a clean `main`, then push the commit and the `v<version>` tag. The tag publishes. See `AGENTS.md`.
 
@@ -37,7 +37,7 @@ applyTo: "**/*.{ts,tsx,js,jsx}"
 
 ## Comment Style & Documentation
 
-- **Every public export carries a TSDoc block** (`/** */`): a summary, an `@param` for each parameter, `@returns` saying what `null` or `undefined` means, and an `@example` in a fenced block whose last line is `// → <answer>`. Editors show it on hover from the published `.d.ts`. `pnpm docs:check` (part of `pnpm check`) fails on an export without one, on a missing `@param` or `@returns`, on a block the build drops, and on an example whose answer is not what the built package gives. The generated tables get theirs from their generator.
+- **Every public export carries a TSDoc block** (`/** */`): a summary, an `@param` for each parameter, `@returns` saying what `null` or `undefined` means, and an `@example` in a fenced block whose last line is `// → <answer>`. Editors show it on hover from the published `.d.ts`. `pnpm docs:legacy-check` (part of `pnpm check`) fails on an export without one, on a missing `@param` or `@returns`, on a block the build drops, and on an example whose answer is not what the built package gives. The generated tables get theirs from their generator.
 - **Everything else uses concise `//` single-line comments**, not JSDoc blocks, for brevity.
 - **Never use emoji, icons, or symbols** in comments, documentation, or any text output.
 - Place comments above the code they describe, not inline unless necessary.
@@ -126,3 +126,5 @@ applyTo: "**/*.{ts,tsx,js,jsx}"
 - **Always verify changes don't break existing functionality by running tests.**
 - **Use systematic approach when updating multiple files** - work through them methodically.
 - **Prioritize code clarity and maintainability** over brevity when they conflict.
+
+The documentation site also checks real package imports with `pnpm docs:check`. `pnpm check` retains both that strict check and the native expected-answer/declaration check.

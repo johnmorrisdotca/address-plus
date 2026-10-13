@@ -1,32 +1,48 @@
-# address-plus
+<h1 align="center">address-plus <sub>アドレスプラス</sub> — US and Canadian address parser</h1>
 
-**Try it:** [the demo](https://johnmorrisdotca.github.io/address-plus/), in your browser with nothing to install · [API reference](https://johnmorrisdotca.github.io/address-plus/api.html)
+**Try it:** [the demo](https://johnmorrisdotca.github.io/address-plus/), in your browser with nothing to install · [Documentation](https://johnmorrisdotca.github.io/address-plus/docs/) · [Getting started](https://johnmorrisdotca.github.io/address-plus/docs/guides/getting-started.html) · [API reference](https://johnmorrisdotca.github.io/address-plus/api.html)
 
 The demo parses, validates, formats, compares and cleans an address as you type; takes a pasted list of addresses from all seven countries and saves the results as CSV, JSON or text; takes a Japanese address apart, each part beside its reading and romaji; and runs the whole test corpus, 3,526 cases, in your browser, listing the few still wrong. Every panel copies its call as code or a link that opens the page as you left it. Nothing you type leaves the page.
+
+<p align="center"><img alt="TypeScript" src="https://img.shields.io/badge/types-TypeScript-2f5d4a"> <a href="https://johnmorrisdotca.github.io/address-plus/docs/api/main/index.html"><img alt="104.9 kB minified and gzipped" src="https://img.shields.io/badge/min%2Bgzip-104.9%20kB-2f5d4a"></a> <a href="https://www.npmjs.com/package/@johnmorrisdotca/address-plus#provenance"><img alt="Published with npm provenance" src="https://img.shields.io/badge/npm-provenance-2f5d4a"></a></p>
 
 <table align="center">
 <tr>
 <td align="center" valign="top">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-desk-dark.webp">
-<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-desk-light.webp" alt="The demo on a desk, in English: the header with its language chooser, the API reference link, five cloth patches and the Help switch, then panels in two columns. Parse shows 1600 Pennsylvania Ave NW, Washington, DC 20500 split into number 1600, street Pennsylvania, street type Ave, direction NW, city Washington, state DC, ZIP 20500 and country US, with the call parseLocation under it. Validate shows 123 Main St, Seattle, NY 98101 as valid with the warning POSTAL_REGION_MISMATCH: ZIP code 98101 belongs to WA, not NY" width="600">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-desk-light.webp" alt="The demo on a desk, in English: the header with its language chooser, the Docs and API reference links, five cloth patches and the Help switch, then panels in two columns. Parse shows 1600 Pennsylvania Ave NW, Washington, DC 20500 split into number 1600, street Pennsylvania, street type Ave, direction NW, city Washington, state DC, ZIP 20500 and country US, with the call parseLocation under it. Validate shows 123 Main St, Seattle, NY 98101 as valid with the warning POSTAL_REGION_MISMATCH: ZIP code 98101 belongs to WA, not NY" width="600">
 </picture>
 <br><em>The demo on a desk: each panel answers the example in its box, with the call that made it.</em>
 </td>
 <td align="center" valign="top">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-phone-dark.webp">
-<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-phone-light.webp" alt="The demo on a phone, in Japanese: the header with its language chooser, patches and Help switch, then the first panel, 住所の解析 (parseLocation), with the Japanese example 〒100-0005 東京都千代田区丸の内1丁目2番3号 typed in and its example buttons, the 日本語 one pressed" width="190">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-phone-light.webp" alt="The parse panel on a phone, in Japanese: 住所の解析 (parseLocation), with the example 〒100-0005 東京都千代田区丸の内1丁目2番3号, its 日本語 example button selected, and the structured native fields and call below it" width="190">
 </picture>
 <br><em>On a phone, in Japanese, in the device's light or dark.</em>
 </td>
 </tr>
 </table>
 
-A modern, TypeScript‑first address parser and normalizer for the US, Canada and Japan, with Australia, France, Germany and the United Kingdom as modules of their own. Supports USPS, Canada Post, Australia Post, La Poste, Deutsche Post and Royal Mail formats, Japanese addresses written in Japanese or in romaji, bilingual abbreviations, ZIP and postal codes, facility name detection, and parenthetical parsing. Lightweight, regex‑driven, and API‑compatible with parse-address for seamless upgrades.
+A modern, TypeScript‑first address parser and normalizer for the US, Canada and Japan, with Australia, France, Germany and the United Kingdom as modules of their own. Supports USPS, Canada Post, Australia Post, La Poste, Deutsche Post and Royal Mail formats, Japanese addresses written in Japanese or in romaji, bilingual abbreviations, ZIP and postal codes, facility name detection, and parenthetical parsing. Lightweight, regex‑driven, and API‑compatible with parse-address for compatible upgrades.
+
+## In 30 seconds
+
+```ts
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+console.log(parseLocation("1600 Pennsylvania Ave NW, Washington, DC 20500")?.state);
+```
+
+Parse locally, then choose the validator or formatter for your country. A parsed shape is not a delivery guarantee. The [getting started guide](docs/guides/getting-started.md) explains null results and country selection.
+
+## Who it is for
+
+For forms, imports and local tools that need structured address fields, known postal-region checks and country-specific formatting. Import only the country modules you need; the optional form field bundles all seven built-in countries. Parsing uses no hosted lookup service.
 
 ## Features
 
+### What's in it
 - **US Address Parsing**: Full USPS format support with street types, directionals, and secondary units
 - **Canadian Address Parsing**: Canada Post bilingual support (English/French)
 - **Japanese Address Parsing**: Addresses in Japanese (〒100-0005 東京都千代田区丸の内1丁目2番3号) or romaji (1-2-3 Marunouchi, Chiyoda-ku, Tokyo), with every prefecture and municipality and the prefecture each postal code delivers to
@@ -40,9 +56,22 @@ A modern, TypeScript‑first address parser and normalizer for the US, Canada an
 - **TypeScript First**: Full type definitions included
 - **Drop-in Replacement**: API compatible with parse-address; [Migrating from parse-address](docs/MIGRATING_FROM_PARSE_ADDRESS.md) maps every call and field and lists where the answers differ on purpose
 
-## Installation
+## Use it in your project
 
-```bash
+### Install under another name
+
+```sh
+npm install address-parser@npm:@johnmorrisdotca/address-plus
+```
+
+```ts no-check
+import { parseLocation } from "address-parser";
+console.log(parseLocation("123 Main St, New York, NY 10001")?.zip);
+```
+
+### Install
+
+```sh
 # npm
 npm install @johnmorrisdotca/address-plus
 
@@ -53,8 +82,7 @@ pnpm add @johnmorrisdotca/address-plus
 yarn add @johnmorrisdotca/address-plus
 ```
 
-
-## Address field for a form
+### Address field for a form
 
 Use the [embed builder](https://johnmorrisdotca.github.io/address-plus/builder.html)
 for a live preview and framework/HTML snippets. Import
@@ -66,11 +94,11 @@ the core and individual country imports remain separate. Read the
 [field guide](docs/embeds.md) for host options, form reset/validity and private
 frame messages. Validation checks format, not whether mail can be delivered.
 
-## Usage
+### Usage
 
-### JavaScript (ES6+)
+#### JavaScript (ES6+)
 
-```javascript
+```js
 import { parseLocation, parseIntersection } from "@johnmorrisdotca/address-plus";
 
 // Parse a standard address
@@ -112,9 +140,9 @@ console.log(intersection);
 // }
 ```
 
-### TypeScript
+#### TypeScript
 
-```typescript
+```ts
 import { parseLocation, parseIntersection, type ParsedAddress, type ParsedIntersection } from "@johnmorrisdotca/address-plus";
 
 // Typed address parsing
@@ -147,9 +175,9 @@ console.log(canadianAddress);
 // }
 ```
 
-### Node.js (CommonJS)
+#### Node.js (CommonJS)
 
-```javascript
+```js
 const { parseLocation, parseIntersection } = require("@johnmorrisdotca/address-plus");
 
 // Parse addresses in Node.js
@@ -178,53 +206,11 @@ const parsed = addresses.map((addr) => parseLocation(addr));
 console.log(parsed);
 ```
 
-## Migrating from parse-address
-
-Replace the package and keep your calls: `parseLocation`, `parseAddress`, `parseIntersection` and `parseInformalAddress` have the same names and return the same fields, and `{ useSnakeCase: true }` gives parse-address's `sec_unit_type` and `sec_unit_num`. [Migrating from parse-address](docs/MIGRATING_FROM_PARSE_ADDRESS.md) maps every call and field, shows side by side each answer that differs on purpose (a unit designator in full, a fraction kept with the number, Canada's unit-civic pairs), and notes the one function that reads less than parse-address's (`parseInformalAddress`; call `parseLocation` instead).
-
-## Address Components
-
-The parser returns structured objects with the following possible fields:
-
-### Standard Address Fields
-
-| Field           | Description                  | Example                                           |
-| --------------- | ---------------------------- | ------------------------------------------------- |
-| `number`        | House/building number        | `"123"`, `"123 1/2"`, `"N95W18855"`               |
-| `prefix`        | Directional prefix           | `"N"`, `"SE"`, `"NW"`                             |
-| `street`        | Street name                  | `"Main"`, `"Broadway"`, `"Martin Luther King Jr"` |
-| `type`          | Street type (abbreviated)    | `"St"`, `"Ave"`, `"Blvd"`, `"Dr"`                 |
-| `suffix`        | Directional suffix           | `"N"`, `"SW"`, `"E"`                              |
-| `sec_unit_type` | Secondary unit type          | `"Apt"`, `"Suite"`, `"Unit"`, `"#"`               |
-| `sec_unit_num`  | Secondary unit number        | `"4B"`, `"100"`, `"C-22"`                         |
-| `city`          | City name                    | `"New York"`, `"Los Angeles"`                     |
-| `state`         | State/province (abbreviated) | `"NY"`, `"CA"`, `"QC"`, `"ON"`                    |
-| `zip`           | ZIP/postal code              | `"10001"`, `"90210"`, `"H3C 1G1"`                 |
-| `plus4`         | ZIP+4 extension              | `"1234"`                                          |
-| `country`       | Country code                 | `"US"`, `"CA"`                                    |
-| `place`         | Facility/landmark name       | `"Empire State Building"`, `"Central Park"`       |
-
-### Intersection Fields
-
-| Field     | Description        | Example      |
-| --------- | ------------------ | ------------ |
-| `street1` | First street name  | `"Main"`     |
-| `type1`   | First street type  | `"St"`       |
-| `street2` | Second street name | `"Broadway"` |
-| `type2`   | Second street type | `"Ave"`      |
-| `city`    | City name          | `"New York"` |
-| `state`   | State/province     | `"NY"`       |
-| `zip`     | ZIP/postal code    | `"10001"`    |
-
-### Record-list downloads
-
-The demo saves bulk address tables as Markdown tables or executable SQL beside CSV and JSON. See [formats and database import](docs/list-downloads.md), including the MySQL settings.
-
 ## Examples
 
 ### US Addresses
 
-```javascript
+```js
 // Basic address
 parseLocation("123 Main Street, Anytown, NY 12345");
 
@@ -246,7 +232,7 @@ parseLocation("Starbucks, 1234 Coffee Lane, Seattle WA 98101");
 
 ### Canadian Addresses
 
-```javascript
+```js
 // English format
 parseLocation("123 Main Street, Toronto ON M5V 1A1");
 
@@ -259,14 +245,94 @@ parseLocation("789 Avenue des Pins Ouest, Montréal QC H2W 1S6");
 
 ### Intersections
 
-```javascript
+```js
 // Various intersection formats
 parseIntersection("Main St & Broadway");
 parseIntersection("5th Street and Park Avenue");
 parseIntersection("Highway 101 & Interstate 280");
 ```
 
-## API Reference
+### Parse a list
+
+```ts
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+const batch=parseLocationsBatch(["123 Main St, New York, NY 10001", ""]);
+console.log(batch.results.length,batch.errors.length);
+```
+
+### Use a country module
+
+```ts
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+import { france } from "@johnmorrisdotca/address-plus/fr";
+console.log(parseLocation("12 bis rue de la Paix, 75002 Paris",{countries:[france]})?.numberExtension);
+```
+
+### Show an address field
+
+```html
+<script type="module">
+  import "@johnmorrisdotca/address-plus/element/define";
+</script>
+<form><address-field name="shipping-address" country="CA" required></address-field></form>
+```
+
+### React with the native element
+
+```jsx no-check
+import { createElement } from "react";
+import "@johnmorrisdotca/address-plus/element/define";
+export function ShippingAddress(){return createElement("address-field",{name:"shipping-address",country:"CA",required:""});}
+```
+
+### Vue with the native element
+
+```vue
+<script setup>
+import "@johnmorrisdotca/address-plus/element/define";
+</script>
+<template><address-field name="shipping-address" country="CA" required /></template>
+```
+
+Configure Vue's `compilerOptions.isCustomElement` to recognize `address-field`. Keep raw values in trusted form/host code; public field events contain counts and status.
+
+### Svelte with the native element
+
+```svelte
+<script>
+  import "@johnmorrisdotca/address-plus/element/define";
+</script>
+<address-field name="shipping-address" country="CA" required></address-field>
+```
+
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/parse-desk-dark.webp">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/parse-desk-light.webp" alt="The parse panel showing structured fields for a US address" width="600">
+</picture>
+<br><em>The parse panel keeps input, fields and the native call together.</em>
+
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/validate-desk-dark.webp">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/validate-desk-light.webp" alt="The validation panel showing known postal-region findings" width="600">
+</picture>
+<br><em>The validator distinguishes errors from warnings.</em>
+
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/format-desk-dark.webp">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/format-desk-light.webp" alt="The format panel showing native postal address lines" width="600">
+</picture>
+<br><em>The formatter chooses the selected country’s postal layout.</em>
+
+
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/compare-desk-dark.webp">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/compare-desk-light.webp" alt="The compare panel showing native similarity and field differences for two addresses" width="600">
+</picture>
+<br><em>The compare panel keeps each input and the detailed native verdict visible.</em>
+
+## API
+
+The [documentation](https://johnmorrisdotca.github.io/address-plus/docs/) supplies paired guides, checked imports, local search and individual export pages. The [API index](https://johnmorrisdotca.github.io/address-plus/api.html) retains its old anchors.
 
 Every export of every entry point (`@johnmorrisdotca/address-plus`, `/jp`, `/au` and `/gb`), with its signature, what it does, each parameter, what it returns and a worked example, is in the [full API reference](docs/api.md), also on the [demo site](https://johnmorrisdotca.github.io/address-plus/api.html). The same TSDoc ships in the type definitions, so your editor shows it on hover. The two main functions are described here.
 
@@ -294,13 +360,55 @@ Parses a street intersection string into structured components.
 
 - `ParsedIntersection | null`: Parsed intersection object or null if parsing fails
 
-## ZIP Code & Postal Code Handling
+### Migrating from parse-address
+
+Replace the package and keep your calls: `parseLocation`, `parseAddress`, `parseIntersection` and `parseInformalAddress` have the same names and return the same fields, and `{ useSnakeCase: true }` gives parse-address's `sec_unit_type` and `sec_unit_num`. [Migrating from parse-address](docs/MIGRATING_FROM_PARSE_ADDRESS.md) maps every call and field, shows side by side each answer that differs on purpose (a unit designator in full, a fraction kept with the number, Canada's unit-civic pairs), and notes the one function that reads less than parse-address's (`parseInformalAddress`; call `parseLocation` instead).
+
+### Address Components
+
+The parser returns structured objects with the following possible fields:
+
+#### Standard Address Fields
+
+| Field           | Description                  | Example                                           |
+| --------------- | ---------------------------- | ------------------------------------------------- |
+| `number`        | House/building number        | `"123"`, `"123 1/2"`, `"N95W18855"`               |
+| `prefix`        | Directional prefix           | `"N"`, `"SE"`, `"NW"`                             |
+| `street`        | Street name                  | `"Main"`, `"Broadway"`, `"Martin Luther King Jr"` |
+| `type`          | Street type (abbreviated)    | `"St"`, `"Ave"`, `"Blvd"`, `"Dr"`                 |
+| `suffix`        | Directional suffix           | `"N"`, `"SW"`, `"E"`                              |
+| `sec_unit_type` | Secondary unit type          | `"Apt"`, `"Suite"`, `"Unit"`, `"#"`               |
+| `sec_unit_num`  | Secondary unit number        | `"4B"`, `"100"`, `"C-22"`                         |
+| `city`          | City name                    | `"New York"`, `"Los Angeles"`                     |
+| `state`         | State/province (abbreviated) | `"NY"`, `"CA"`, `"QC"`, `"ON"`                    |
+| `zip`           | ZIP/postal code              | `"10001"`, `"90210"`, `"H3C 1G1"`                 |
+| `plus4`         | ZIP+4 extension              | `"1234"`                                          |
+| `country`       | Country code                 | `"US"`, `"CA"`                                    |
+| `place`         | Facility/landmark name       | `"Empire State Building"`, `"Central Park"`       |
+
+#### Intersection Fields
+
+| Field     | Description        | Example      |
+| --------- | ------------------ | ------------ |
+| `street1` | First street name  | `"Main"`     |
+| `type1`   | First street type  | `"St"`       |
+| `street2` | Second street name | `"Broadway"` |
+| `type2`   | Second street type | `"Ave"`      |
+| `city`    | City name          | `"New York"` |
+| `state`   | State/province     | `"NY"`       |
+| `zip`     | ZIP/postal code    | `"10001"`    |
+
+#### Record-list downloads
+
+The demo saves bulk address tables as Markdown tables or executable SQL beside CSV and JSON. See [formats and database import](docs/list-downloads.md), including the MySQL settings.
+
+### ZIP Code & Postal Code Handling
 
 The parser extracts ZIP/postal codes from addresses and provides validation information:
 
-### US ZIP Codes
+#### US ZIP Codes
 
-```javascript
+```js
 // Standard 5-digit ZIP
 parseLocation("123 Main St, New York NY 12345");
 // { zip: '12345', zipValid: true, ... }
@@ -321,9 +429,9 @@ parseLocation("123 Main St, New York NY 1234567");
 // { zip: '1234567', zipValid: false, ... }
 ```
 
-### Canadian Postal Codes
+#### Canadian Postal Codes
 
-```javascript
+```js
 // Standard format with space (A1A 1A1)
 parseLocation("123 Main St, Toronto ON M5V 1A1");
 // { zip: 'M5V 1A1', zipValid: true, country: 'CA', ... }
@@ -341,7 +449,7 @@ parseLocation("123 Main St, Toronto ON ABC123");
 // { zip: 'ABC123', zipValid: false, country: 'CA', ... }
 ```
 
-### Validation Fields
+#### Validation Fields
 
 The parser provides these validation-related fields:
 
@@ -352,7 +460,7 @@ The parser provides these validation-related fields:
 | `zipValid` | Whether ZIP/postal follows standard format | `true`, `false`                 |
 | `country`  | Detected country based on format           | `"US"`, `"CA"`                  |
 
-### Format Standards
+#### Format Standards
 
 **Valid US ZIP formats:**
 
@@ -370,11 +478,11 @@ The parser provides these validation-related fields:
 - Parsing addresses with typos or non-standard formatting
 - Flexible input handling while maintaining validation awareness
 
-### Which Region A Code Belongs To
+#### Which Region A Code Belongs To
 
 A Canadian postal code's first letter, and a US ZIP code's first three digits, name the province or state they belong to. The lookups go both ways:
 
-```javascript
+```js
 import {
   getProvinceFromPostalCode,
   getStateFromZip,
@@ -395,16 +503,16 @@ getZipPrefixesForState("GU"); // ['96910', …, '96932'] (five digits where a re
 
 `validateAddress` uses them: an address whose code belongs to another region gets a `POSTAL_REGION_MISMATCH` warning, or an error with `strictPostalValidation: true`.
 
-```javascript
+```js
 validateAddress("1 Main St, Beverly Hills, NY 90210").warnings;
 // [{ field: 'zip', code: 'POSTAL_REGION_MISMATCH', message: 'ZIP code 90210 belongs to CA, not NY', severity: 'warning' }]
 ```
 
-## Japanese Addresses
+### Japanese Addresses
 
 `parseLocation` reads a Japanese address written either way it is usually written, and returns the same fields for both:
 
-```javascript
+```js
 import { parseLocation } from "@johnmorrisdotca/address-plus";
 
 // In Japanese, from the largest part to the smallest
@@ -440,7 +548,7 @@ The parser reads what people actually type:
 - romaji with or without macrons, with `-to`, `-do`, `-fu`, `-ken`, `Prefecture`, `Pref.`, `City` or `Metropolis`, in English order or Japanese order, on one line or several;
 - a building, its floor (`5階`, `5F`, `地下1階`) and its room (`501号室`, or `501号` after a building name).
 
-### Fields
+#### Fields
 
 | Field                | Example                       | Meaning                                                       |
 | -------------------- | ----------------------------- | ------------------------------------------------------------- |
@@ -479,9 +587,9 @@ The shared fields are filled too, so the rest of the library treats the address 
 
 `{ useSnakeCase: true }` gives the Japanese fields in snake_case as well: `postal_code`, `prefecture_code`, `municipality_romaji`.
 
-### Formatting
+#### Formatting
 
-```javascript
+```js
 import { formatJapanese, formatJapaneseEnglish, parseLocation } from "@johnmorrisdotca/address-plus";
 
 const address = parseLocation("〒100-0005 東京都千代田区丸の内1丁目2番3号 サンプルビル5階");
@@ -502,7 +610,7 @@ formatJapaneseEnglish(parseLocation("Sample Bldg 5F, 1-2-3 Marunouchi, Chiyoda-k
 
 `formatJapanese` writes the prefecture and municipality in kanji from the tables. A town or building parsed from romaji is kept in romaji and set off with spaces, so the scripts do not run together: `東京都千代田区 Marunouchi 1-2-3`, then `Sample Bldg 5階`. With `blockStyle: "markers"`, a block in a town of numbered blocks (住居表示) is written `1丁目2番3号` or `4番2号`, a lone number `488番地`, and a land lot (地番) with no chome, in a town named with 大字 or 字 or with a first number of 100 or more, `12番地3`, since a 号 there would be wrong.
 
-### Validation
+#### Validation
 
 `validateAddress` checks a Japanese address against the tables:
 
@@ -515,7 +623,7 @@ formatJapaneseEnglish(parseLocation("Sample Bldg 5F, 1-2-3 Marunouchi, Chiyoda-k
 | `UNRECOGNIZED_MUNICIPALITY`        | warning                                               | The municipality is not in the tables                        |
 | `AMBIGUOUS_MUNICIPALITY`           | warning                                               | Two prefectures have a municipality of that name (府中市), and neither a prefecture nor a postal code says which |
 
-```javascript
+```js
 validateAddress("〒530-0001 東京都千代田区丸の内1-2-3").warnings;
 // [{ field: 'zip', code: 'POSTAL_REGION_MISMATCH', message: 'Postal code 530-0001 belongs to 大阪府, not 東京都', severity: 'warning' }]
 
@@ -525,9 +633,9 @@ validateAddress("東京都大阪市北区梅田1-1").warnings;
 
 When the prefecture written and the municipality disagree, the parser keeps both as written and leaves the judgement to validation. The municipality findings stay warnings even in strict mode, since the tables can trail a merger of municipalities.
 
-### Lookups
+#### Lookups
 
-```javascript
+```js
 import {
   findMunicipalitiesByName,
   findMunicipalitiesByRomaji,
@@ -545,18 +653,18 @@ findMunicipalitiesByName("府中市"); // [Tokyo's 府中市, Hiroshima's 府中
 
 The tables are exported as `JP_PREFECTURES`, `JP_MUNICIPALITIES`, `JP_DESIGNATED_CITIES` (the twenty cities with wards, which the parser accepts without a ward), `JP_POSTAL_PREFIXES` and `JP_POSTAL_EXCEPTIONS` (the 236 codes that belong to another prefecture than the rest of their three-digit prefix).
 
-### Japan Only
+#### Japan Only
 
 `@johnmorrisdotca/address-plus/jp` is the Japanese module on its own: the parser, the formatters, `validateJapaneseAddress`, the lookups and the tables, without the US and Canadian parser.
 
-```javascript
+```js
 import { formatJapaneseEnglish, parseJapaneseAddress } from "@johnmorrisdotca/address-plus/jp";
 
 formatJapaneseEnglish(parseJapaneseAddress("2-1 Kasumigaseki 1-chome, Chiyoda-ku, Tokyo"));
 // 1-2-1 Kasumigaseki, Chiyoda-ku, Tokyo, Japan
 ```
 
-### Data
+#### Data
 
 The tables in `src/constants/jp/` are generated, and `pnpm data:jp` regenerates them:
 
@@ -566,13 +674,13 @@ The tables in `src/constants/jp/` are generated, and `pnpm data:jp` regenerates 
 
 Geolonia's data predates Hamamatsu's reorganisation of its wards on 1 January 2024, so its new wards `中央区`, `浜名区` and `天竜区` are not yet in the tables: `浜松市中央区元城町103-2` is read as 浜松市 (22130) with the town `中央区元城町`.
 
-## Australian, French, German and British Addresses
+### Australian, French, German and British Addresses
 
 Australia, France, Germany and the United Kingdom are modules of their own, so they cost only the callers who import them. Each has
 its own parser, validator, formatter and comparer, and a module object to hand to `parseLocation` and
 `validateAddress`, which then read its addresses beside the US, Canadian and Japanese ones:
 
-```javascript
+```js
 import { parseLocation, validateAddress } from "@johnmorrisdotca/address-plus";
 import { australia } from "@johnmorrisdotca/address-plus/au";
 import { france } from "@johnmorrisdotca/address-plus/fr";
@@ -614,9 +722,9 @@ number, so the two never meet. Without `countries`, nothing changes. When the co
 it: the hint is the reliable path. [docs/COUNTRIES.md](docs/COUNTRIES.md) has the design, the detection rules, the
 fields each country fills and where its data comes from.
 
-### Australia
+#### Australia
 
-```javascript
+```js
 import {
   formatAustraliaPost,
   getStatesForAustralianPostcode,
@@ -639,9 +747,9 @@ blocks for each state, and lets a postcode that crosses a border (from the Austr
 Areas, CC BY 4.0) pass with either state. The formatter writes Australia Post's layout: the last two lines in capitals,
 the unit and level before the number.
 
-### The United Kingdom
+#### The United Kingdom
 
-```javascript
+```js
 import {
   formatRoyalMail,
   getNationFromUKPostcode,
@@ -663,9 +771,9 @@ its area, and in Great Britain its district against Ordnance Survey's Code-Point
 © Royal Mail copyright and database right 2026). Northern Ireland's districts are not in the open data, so a BT postcode
 is checked to its area only.
 
-### France
+#### France
 
-```javascript
+```js
 import {
   formatLaPoste,
   getDepartmentFromFrenchPostcode,
@@ -698,9 +806,9 @@ punctuation (`keepAccents: true` keeps the accents). The 101 departments and the
 2.0). No commune name or street name of France is in the package: the commune beside a postcode is not checked against
 it, and a street is whatever follows the type of voie.
 
-### Germany
+#### Germany
 
-```javascript
+```js
 import {
   formatDeutschePost,
   getStateFromGermanPostcode,
@@ -730,13 +838,13 @@ The corpora (`test-data/corpus/au/`, 266 cases, `test-data/corpus/de/`, 151, `te
 `test-data/corpus/gb/`, 190, with libpostal's British, French and German fixtures written again as original addresses) are described in
 [docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md).
 
-## Batch Processing
+### Batch Processing
 
 Process multiple addresses efficiently with built-in batch functions:
 
-### Simple Batch Functions
+#### Simple Batch Functions
 
-```javascript
+```js
 import { parseLocations, parseAddresses, parseIntersections } from "@johnmorrisdotca/address-plus";
 
 // Process multiple addresses (returns array of results)
@@ -758,9 +866,9 @@ const intersections = ["Main St & Broadway, New York, NY", "5th Street and Park 
 const intersectionResults = parseIntersections(intersections);
 ```
 
-### Advanced Batch Functions (with Statistics)
+#### Advanced Batch Functions (with Statistics)
 
-```javascript
+```js
 import { parseLocationsBatch, parseAddressesBatch } from "@johnmorrisdotca/address-plus";
 
 const addresses = [
@@ -798,9 +906,9 @@ console.log(result.errors);
 // ]
 ```
 
-### Batch Options
+#### Batch Options
 
-```javascript
+```js
 // Stop processing on first error
 const result = parseLocationsBatch(addresses, {
   stopOnError: true,
@@ -813,7 +921,7 @@ const result = parseLocationsBatch(addresses, {
 });
 ```
 
-### Available Batch Functions
+#### Available Batch Functions
 
 | Function                                           | Input Type | Output Type                            | Description              |
 | -------------------------------------------------- | ---------- | -------------------------------------- | ------------------------ |
@@ -826,9 +934,9 @@ const result = parseLocationsBatch(addresses, {
 | `parseInformalAddressesBatch(addresses, options?)` | `string[]` | `BatchParseResult<ParsedAddress>`      | With statistics          |
 | `parseIntersectionsBatch(addresses, options?)`     | `string[]` | `BatchParseResult<ParsedIntersection>` | With statistics          |
 
-### BatchParseResult Type
+#### BatchParseResult Type
 
-```typescript
+```ts
 interface BatchParseResult<T> {
   results: (T | null)[]; // Array of parsed results (null for failures)
   errors: BatchParseError[]; // Array of error details
@@ -851,7 +959,7 @@ interface BatchParseStats {
 }
 ```
 
-### Performance Benefits
+#### Performance Benefits
 
 Batch processing provides several advantages over individual parsing:
 
@@ -861,56 +969,63 @@ Batch processing provides several advantages over individual parsing:
 - **Built-in error tracking**: Automatic error collection and reporting
 - **Performance metrics**: Built-in timing and statistics
 
-## Quality Assurance
+## Theming
+
+The optional field follows `theme="auto"`, `light` or `dark`, and supports native size, width, label and language settings. Core parser results are plain data and have no presentation theme. The [field guide](docs/guides/form-field-and-embeds.md) and [native embed reference](docs/embeds.md) describe attributes and host options.
+
+## Limits
+
+Parsing and known postal-data checks do not establish deliverability or occupancy. A region warning is distinct from a fatal parse error. Country tables retain their documented upstream coverage; the parser does not make external lookups. Batch performance statistics include runtime timing rather than a promise of constant latency.
+
+### Quality Assurance
 
 - **Comprehensive test suite**: Vitest runs every parsing scenario from JSON test data, for the US, Canada and each other country
 - **Multi-format support**: Extensive test coverage for US, Canadian and Japanese addresses, including every Japanese prefecture and municipality and 1,000 generated Japanese records from REST in Pieces
 - **Address corpora**: 3,526 cases from USPS Publication 28, Canada Post's guidelines, Australia Post's, La Poste's, Deutsche Post's and Royal Mail's rules, libpostal, parse-address's shapes and Geolonia's Japanese test addresses, with every case still wrong listed and explained in [docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md)
-- **Documented examples that run**: every export's TSDoc example is run against the built package by `pnpm docs:check`
+- **Documented examples that run**: every export's TSDoc example is run against the built package by `pnpm docs:check`, with expected answers and declaration comments held by `pnpm docs:legacy-check`
 - **Edge case testing**: Validation of complex parsing scenarios and error conditions
 - **Type tests**: `tsd` checks the published type definitions
 - **Package check**: `pnpm test:package` packs the built package, installs it in a clean project, and proves that `require`, `import` and the types work for each entry point
 - **Real-world data validation**: Tests based on actual address formats and variations
 
-## Performance
+### Performance
 
 - **One small dependency**: `fast-levenshtein`, for fuzzy state and province names; hikidashi is bundled in
-- **Size**: the whole library, minified for the browser with every table (US, Canada, and Japan's 1,894 municipalities and its postal prefixes), is about 600 KB, 107 KB gzipped; the `/jp` entry point and tree-shaking take what a caller does not use. `/au` is 16 KB (7 KB gzipped), `/de` 26 KB (12 KB gzipped), `/fr` 28 KB (9 KB gzipped) and `/gb` 20 KB (9 KB gzipped), and none is in the main entry point
+- **Size**: the root is 104.9 kB minified and gzipped; `/jp` is 60.5 kB, `/au` 7.1 kB, `/gb` 8.6 kB, `/de` 12.1 kB and `/fr` 9.2 kB. The optional field and its registration entry are each 132.7 kB and bundle all seven countries. The country modules remain outside the root; [the measured sizes](docs/bundle-size.json) are refreshed with `pnpm size --write`
 - **Fast**: Regex-based parsing optimized for performance
 - **Memory efficient**: Minimal object allocation
 
-## Browser Support
+## Accessibility
+
+The native field uses a labelled text input and participates in form validity, reset and disabled state. The demo's controls have visible labels, keyboard interaction and live answers. Core data/functions have no UI; a custom host must provide its own labels, focus and error announcements. The [field guide](docs/guides/form-field-and-embeds.md) explains fallback behavior.
+
+## Browser support
 
 The build targets ES2022, so it runs in any current browser with ES2022 support (Chrome 94, Firefox 93,
 Safari 15, Edge 94 or newer) and in Node.js 24 or newer.
 
-## License
+## Languages
 
-MIT License - see [LICENSE](LICENSE) file for details.
+The demo and docs have English and Japanese interfaces. Canadian parsing includes English/French abbreviations, and Japanese inputs can use Japanese script, romaji and full-width digits. Country modules keep native postal names. Added Japanese documentation needs review before release.
 
-## Contributing
+## Roadmap
 
-Contributions are welcome! Please read our contributing guidelines and submit pull requests to our repository.
+Keep the existing country entries isolated and maintain the documented parser, validator and formatter contracts. New country data or changed normalization rules need their own fixtures and release review. This branch adds documentation without changing parser behavior or releasing a version.
 
-### Development
+## Architecture
 
-The project needs Node.js 24 (see `.nvmrc`) and pnpm 10.
+The [architecture guide](docs/guides/architecture.md) explains the root parser, optional country modules, generated tables, form field and checks. Detailed [country extension](docs/COUNTRIES.md) and [test coverage](docs/TEST_COVERAGE.md) documents remain available.
 
-```bash
-pnpm install
-pnpm check     # lint, typecheck, test, build, type tests, schema validation, package check
-pnpm test      # the Vitest suite alone
-pnpm lint:fix  # ESLint and Prettier, fixing what they can
-```
+## The name
 
-`pnpm release <version>` cuts a release: it moves the changelog's `Unreleased` entries under the new version, commits, and tags it. Pushing the tag publishes it. `AGENTS.md` describes the whole procedure.
+address-plus extends the parse-address style with typed results, validation, formatting, comparison and country modules. アドレスプラス is the Japanese reading used by the shared family pages.
 
-## Related Projects
+## Where it comes from, and where it is used
 
 - [REST in Pieces](https://github.com/spxis/rest-in-pieces) - A fake-data REST service that uses address-plus to write invented addresses in seven countries, each in its post's own format with a postcode that exists in the right region, and to validate and format addresses sent to it
 - [parse-address](https://github.com/scaleway/parse-address) - Original inspiration and API compatibility target
 
-## The family
+### The family
 
 <!-- family:start (made by scripts/family-readme.mjs from scripts/family-template.mjs; change those, not this) -->
 address-plus is one of twenty-eight packages, each made for the same site, each at
@@ -968,3 +1083,41 @@ address-plus is one of twenty-eight packages, each made for the same site, each 
 
 **This package is address-plus.** The demos of all twenty-eight share one header and footer, so each links the rest.
 <!-- family:end -->
+
+## Development
+
+The project needs Node.js 24 (see `.nvmrc`) and pnpm 10.
+
+```sh
+pnpm install
+pnpm check     # lint, typecheck, test, build, type tests, schema validation, package check
+pnpm test      # the Vitest suite alone
+pnpm lint:fix  # ESLint and Prettier, fixing what they can
+```
+
+`pnpm release <version>` cuts a release: it moves the changelog's `Unreleased` entries under the new version, commits, and tags it. Pushing the tag publishes it. `AGENTS.md` describes the whole procedure.
+
+```sh
+pnpm docs:site
+pnpm docs:check
+pnpm docs:legacy-check
+pnpm docs:make
+pnpm size --write
+pnpm test:demo
+```
+
+The shared generator runs imported examples. The native legacy check still holds every expected-answer comment and published declaration to the built package. `docs:make` refreshes the original complete Markdown API. Generated table comments can be refreshed offline with each writer's `--docs-only` option; no source data or upstream metadata is changed by that path.
+
+## Contributing
+
+Contributions are welcome. Please read our contributing guidelines and submit pull requests to our repository.
+
+Read [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md), preserve country isolation and keep docs/examples current with each change.
+
+## Changes
+
+The [changelog](CHANGELOG.md) records shipped behavior and the current Unreleased documentation work. Versioning and publication follow the existing release procedure.
+
+## Licence
+
+MIT License - see [LICENSE](LICENSE) file for details.

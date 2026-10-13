@@ -15,3 +15,11 @@ scripts/family-readme.mjs
 # Shared family download files are byte-identical and checked by their hash test.
 demo/downloads.js
 src/downloads.test.js
+
+# Shared documentation files are copied unchanged and verified by hash.
+scripts/docs-site.mjs
+scripts/readme-lint.mjs
+src/docs-site.test.js
+src/readme.test.js
+e2e/docs-site.demo.mjs
+.docs-examples/

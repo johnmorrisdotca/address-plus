@@ -80,3 +80,9 @@ main {
   border-radius: 12px;
   padding: 12px;
 }
+
+header nav a[data-say="pageDocs"] {
+  inline-size: 8rem;
+  justify-content: center;
+  flex: none;
+}

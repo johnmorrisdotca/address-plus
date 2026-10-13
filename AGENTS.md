@@ -9,13 +9,13 @@
 - Vitest 5 for unit tests, `tsd` for the published type definitions.
 - ESLint 9 with the flat config in `eslint.config.js` (typescript-eslint's recommended rules), and Prettier with `prettier-plugin-organize-imports` (`.prettierrc.json`, `.prettierignore`). Prettier orders the imports; ESLint does not.
 - Style: double quotes, 120 columns, 2 spaces, `//` comments that say why, no emoji anywhere, exports gathered at the end of a file. A name starting with `_` may be unused.
-- Every public export has a TSDoc block (`/** */`) with a summary, `@param`, `@returns` and an `@example` ending in `// → <answer>`; `pnpm docs:check` holds each answer to the built package and checks the blocks reach `dist/*.d.ts`. The API reference (`docs/api.md`, `api.html`) is made from them.
+- Every public export has a TSDoc block (`/** */`) with a summary, `@param`, `@returns` and an `@example` ending in `// → <answer>`; `pnpm docs:legacy-check` holds each answer to the built package and checks the blocks reach `dist/*.d.ts`. The API reference (`docs/api.md`, `api.html`) is made from them.
 
 ## Commands
 
 | Command                  | What it does                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| `pnpm check`             | Everything CI runs, in this order: lint, typecheck, test, build, docs:check, test:types, schema:validate, test:package |
+| `pnpm check`             | Everything CI runs, in this order: lint, typecheck, test, build, docs:check, docs:legacy-check, test:types, schema:validate, test:package |
 | `pnpm lint`              | ESLint, then `prettier --check .`; `pnpm lint:fix` fixes what it can                                       |
 | `pnpm typecheck`         | `tsc -p tsconfig.check.json`: `src/**` including the tests, and `scripts/**/*.ts`                          |
 | `pnpm test`              | Vitest, once (`pnpm test:watch` to watch, `pnpm test:coverage` for coverage)                               |
@@ -23,7 +23,7 @@
 | `pnpm test:types`        | `tsd` on `src/__tests__/types.test-d.ts`; needs `dist/index.d.ts`, so build first                          |
 | `pnpm schema:validate`   | Validates every JSON file in `test-data/` against the schemas in `schemas/`                                |
 | `pnpm test:package`      | `scripts/check-package.mjs`; packs the built package and proves it works as a user installs it             |
-| `pnpm docs:check`        | `scripts/check-docs.mjs`: every export has TSDoc and an example whose answer the built package gives; needs `dist/` |
+| `pnpm docs:legacy-check`        | `scripts/check-docs.mjs`: every export has TSDoc and an example whose answer the built package gives; needs `dist/` |
 | `pnpm docs:make`         | Writes `docs/api.md`, the API reference, from the TSDoc                                                    |
 | `pnpm data:jp`           | Regenerates the Japanese data tables (documented in `scripts/README.md`)                                   |
 | `pnpm data:sub-regions`  | Regenerates `src/constants/sub-regions.ts` from the Census and Statistics Canada                           |
@@ -34,7 +34,7 @@ Run `pnpm check` before every push. It must pass with nothing disabled: do not t
 
 ## Layout
 
-- Six entry points, all built by tsup: `src/index.ts` is the package root, `src/jp/index.ts` is `@johnmorrisdotca/address-plus/jp`, and `src/au/index.ts`, `src/de/index.ts`, `src/fr/index.ts` and `src/gb/index.ts` are the country modules `/au`, `/de`, `/fr` and `/gb`. The `/jp` bundle must not carry the US street-type tables, and `/au`, `/de`, `/fr` and `/gb` must carry none of the US, Canadian or Japanese tables nor each other's; `pnpm test:package` fails if they do. Keep those modules from importing anything that pulls in another country's tables. The main entry point never imports a country module: it takes them in the `countries` option (`src/country/pick.ts`). `docs/COUNTRIES.md` says how to add a country.
+- Eight entry points, all built by tsup: `src/index.ts` is the package root, `src/jp/index.ts` is `@johnmorrisdotca/address-plus/jp`, and `src/au/index.ts`, `src/de/index.ts`, `src/fr/index.ts` and `src/gb/index.ts` are the country modules `/au`, `/de`, `/fr` and `/gb`. The `/jp` bundle must not carry the US street-type tables, and `/au`, `/de`, `/fr` and `/gb` must carry none of the US, Canadian or Japanese tables nor each other's; `pnpm test:package` fails if they do. Keep those modules from importing anything that pulls in another country's tables. The main entry point never imports a country module: it takes them in the `countries` option (`src/country/pick.ts`). `docs/COUNTRIES.md` says how to add a country.
 - `src/parser.ts` and `src/parsers/` parse; `src/constants/` holds the tables; `src/patterns/` holds every regular expression; `src/utils/` holds shared helpers; `src/types/` holds the types.
 - Tests are in `src/__tests__/`. Their data is JSON in `test-data/`, one folder per area, validated against `schemas/`. Test-only scripts live in `scripts/*.test.mjs`.
 - `scripts/*.js` (the old debug scripts) are not linted; leave them alone.
@@ -55,3 +55,9 @@ Never change the version by hand, and never publish from a laptop: the tag does 
 ## Commits
 
 Plain-English messages that say what changed and why. No AI attribution of any kind: no co-author trailer, no "generated with" line, no mention of an assistant.
+
+## Documentation site
+
+`pnpm docs:check` builds and strictly checks imported API/guide examples. `pnpm docs:legacy-check` retains expected-answer and published-declaration checks. `pnpm docs:site` adds the bilingual site, preserved API anchors, local search and llms files after `pnpm site`. `pnpm docs:make` retains the full Markdown reference. The two optional field entries are `/element` and `/element/define`. Shared docs/README files remain unchanged and are excluded from local reformatting because their hashes are checked.
+
+The JP and country writers accept `--docs-only` to refresh stored public-table examples without fetching or changing source data or metadata. Normal data generation continues to own those files.

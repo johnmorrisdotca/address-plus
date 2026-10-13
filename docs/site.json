@@ -1,0 +1,46 @@
+{
+  "job": "US and Canadian address parser",
+  "pitch": {
+    "en": "Parse, validate, format and compare addresses locally, add country modules and mount an optional native form field.",
+    "ja": "住所を端末の中で解析・確認・整形・比較し、国のモジュールや任意のフォームの入力欄を使えます。"
+  },
+  "name": {
+    "en": "address-plus extends the parse-address style with typed results, validation, formatting and country modules.",
+    "ja": "address-plusは、parse-addressの使い方を広げ、型付きの結果、確認、書式、国のモジュールを加えます。"
+  },
+  "icon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232f5d4a'/%3E%3Crect x='20' y='28' width='60' height='44' rx='5' fill='none' stroke='%23f3efe4' stroke-width='5'/%3E%3Cpath d='M22 31 50 54 78 31' fill='none' stroke='%23f3efe4' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E",
+  "entries": {
+    ".": {
+      "en": "Parsing, formatting and shared types",
+      "ja": "解析・書式・共通の型"
+    },
+    "./jp": {
+      "en": "Japanese addresses",
+      "ja": "日本の住所"
+    },
+    "./au": {
+      "en": "Australian country module",
+      "ja": "オーストラリアのモジュール"
+    },
+    "./gb": {
+      "en": "British country module",
+      "ja": "英国のモジュール"
+    },
+    "./de": {
+      "en": "German country module",
+      "ja": "ドイツのモジュール"
+    },
+    "./fr": {
+      "en": "French country module",
+      "ja": "フランスのモジュール"
+    },
+    "./element": {
+      "en": "Form-associated address field",
+      "ja": "フォームの住所入力欄"
+    },
+    "./element/define": {
+      "en": "Register the address field",
+      "ja": "住所入力欄を登録する"
+    }
+  }
+}

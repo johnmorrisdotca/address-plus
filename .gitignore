@@ -18,3 +18,4 @@ tsconfig.tsbuildinfo
 site/
 test-results/
 playwright-report/
+.docs-examples/

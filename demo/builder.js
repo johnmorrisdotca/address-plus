@@ -10,6 +10,8 @@ import {
 const words = {
   en: {
     ...FAMILY_EMBED_BUILDER_WORDS.en,
+    pageDocs: "Docs",
+    pageApi: "API reference",
     pitch: "Choose a country, preview a form field and copy the embed code. Addresses you enter stay in the field.",
     name: "Address Plus parses and checks addresses in seven countries.",
     nameLink: "About the package",
@@ -22,6 +24,8 @@ const words = {
   },
   ja: {
     ...FAMILY_EMBED_BUILDER_WORDS.ja,
+    pageDocs: "ドキュメント",
+    pageApi: "API（英語）",
     pitch:
       "国を選び、フォームの入力欄をプレビューで確認して、埋め込むコードをコピーできます。入力した住所は入力欄の中だけで扱います。",
     name: "Address Plusは7か国の住所を解析・確認します。",
@@ -147,7 +151,14 @@ for (const name of ADDRESS_FIELD_VALIDATION_KEYS)
   if (name !== "country")
     leftOut[`validation.${name}`] = "Advanced native requirements belong to host options.validation.";
 let mounted;
-const page = globalThis.familyLanguage({ id: "address-plus", words, onChange: () => mounted?.draw() }),
+const page = globalThis.familyLanguage({
+    id: "address-plus",
+    words,
+    onChange: () => {
+      docsLink();
+      mounted?.draw();
+    },
+  }),
   heights = {};
 const key = (settings) => JSON.stringify(settings);
 const builder = familyEmbedBuilder({
@@ -206,3 +217,10 @@ mounted = builder.mount({
     };
   },
 });
+
+function docsLink() {
+  document
+    .querySelector('[data-say="pageDocs"]')
+    ?.setAttribute("href", page.lang === "ja" ? "docs/ja/index.html" : "docs/index.html");
+}
+docsLink();

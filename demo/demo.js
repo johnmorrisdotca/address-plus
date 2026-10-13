@@ -937,6 +937,9 @@ function choices(id, run) {
 }
 
 function render() {
+  document
+    .querySelector('[data-say="pageDocs"]')
+    ?.setAttribute("href", language.lang === "ja" ? "docs/ja/index.html" : "docs/index.html");
   language.say();
   fillExamples();
   for (const panel of Object.values(PANELS)) panel.run();

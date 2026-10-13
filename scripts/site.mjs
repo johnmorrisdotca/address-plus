@@ -294,12 +294,10 @@ function page(uses) {
   <head>
     ${familyHead({
       id,
-      title:
-        "Address Plus · parse, validate and format US, Canadian, Japanese, Australian, French, German and British addresses",
+      title: "address-plus アドレスプラス — US and Canadian address parser",
       description:
         "Try address-plus in your browser: a TypeScript address parser for the US, Canada and Japan, with Australia, France, Germany and the UK as modules of their own. Parse an address into its fields, validate it (a ZIP code, postal code or postcode from another state, province or prefecture is caught), write it out the USPS, Canada Post, Japanese, Australia Post, La Poste, Deutsche Post or Royal Mail way, compare two addresses, find the region of a postal code, and clean up a messy one. Free and open source, in English and Japanese.",
-      ogTitle:
-        "Address Plus: US, Canadian, Japanese, Australian, French, German and British addresses, parsed and checked",
+      ogTitle: "address-plus アドレスプラス — US and Canadian address parser",
       ogDescription:
         "Parse, validate, format and compare addresses from the US, Canada, Japan, Australia, France, Germany and the UK, including Japanese script, romaji and full-width digits. One small dependency.",
     })}
@@ -312,6 +310,7 @@ function page(uses) {
       ${header({
         id,
         links: [
+          { href: "docs/index.html", say: "pageDocs" },
           { href: "api.html", say: "pageApi" },
           { href: "builder.html", say: "pageBuilder" },
         ],
@@ -418,10 +417,17 @@ writeFileSync(
 const builderParts = {
   builderHead: familyHead({
     id,
-    title: "Address Plus · build a form field embed",
+    title: "address-plus アドレスプラス — US and Canadian address parser · Build a form field embed",
     description: "Choose a country and copy a private address input for a form.",
   }),
-  builderHeader: header({ id, links: [{ href: "./", say: "toGallery" }] }),
+  builderHeader: header({
+    id,
+    links: [
+      { href: "./", say: "toGallery" },
+      { href: "docs/index.html", say: "pageDocs" },
+      { href: "api.html", say: "pageApi" },
+    ],
+  }),
   unreviewed: familyUnreviewed({ id }),
   footer: familyFooter({ id }),
   script: `<script>${FAMILY_SCRIPT}</script>`,

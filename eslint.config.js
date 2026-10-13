@@ -5,6 +5,7 @@ export default tseslint.config(
   {
     ignores: [
       "dist/",
+      ".docs-examples/",
       "node_modules/",
       "coverage/",
       "test-management/",
@@ -37,7 +38,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["scripts/validate-schemas.js", "scripts/**/*.ts", "scripts/**/*.mjs"],
+    files: ["src/**/*.test.js", "scripts/validate-schemas.js", "scripts/**/*.ts", "scripts/**/*.mjs"],
     languageOptions: {
       globals: { console: "readonly", process: "readonly", fetch: "readonly", Buffer: "readonly", URL: "readonly" },
     },

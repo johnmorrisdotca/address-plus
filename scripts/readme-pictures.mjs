@@ -9,21 +9,33 @@ const READY = 'main[data-ready="true"]';
 
 await takePictures({
   shots: [
+    ...["parse", "validate", "format", "compare"].map((subject) => ({
+      subject,
+      views: ["desk"],
+      url: "/?lang=en&help=off",
+      ready: READY,
+      target: `[data-testid="${subject}-panel"]`,
+    })),
     // From the top of the page, so the header, the language chooser, the cloth patches and the first panels show.
-    // On a phone, in Japanese, with the Japanese example parsed.
     {
       subject: "hero",
-      views: ["desk", "phone"],
+      views: ["desk"],
       url: "/?lang=en&help=off",
       ready: READY,
       height: 1100,
-      async prepare(page, { view }) {
-        if (view === "phone") {
-          await page.goto("http://address-plus.test/?lang=ja&help=off");
-          await page.waitForSelector(READY);
-          await page.locator('[data-testid="parse-examples"] button').nth(6).click();
-        }
+      async prepare(page) {
         await page.evaluate(() => window.scrollTo(0, 0));
+      },
+    },
+    {
+      subject: "hero",
+      views: ["phone"],
+      url: "/?lang=ja&help=off",
+      target: '[data-testid="parse-panel"]',
+      scale: 1,
+      ready: READY,
+      async prepare(page) {
+        await page.locator('[data-testid="parse-examples"] button').nth(6).click();
       },
     },
   ],
