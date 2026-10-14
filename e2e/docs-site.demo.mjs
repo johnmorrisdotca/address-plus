@@ -44,9 +44,10 @@ test.describe("the documentation site", () => {
   test("every page fits the screen, has one h1, headings in order, a main, a skip link and its language", async ({ page }, testInfo) => {
     // Every page once, at a phone's width: the narrowest screen is where a page runs wide.
     test.skip(testInfo.project.name !== "chromium-phone", "every page is walked once, at a phone's width");
-    test.setTimeout(240_000);
-    const errors = await serve(page);
     const all = pages();
+    // Preserve the original minimum, while budgeting 100 ms per page for large resource catalogues.
+    test.setTimeout(Math.max(240_000, all.length * 100));
+    const errors = await serve(page);
     expect(all.length).toBeGreaterThan(10);
     const wide = [];
     for (const path of all) {

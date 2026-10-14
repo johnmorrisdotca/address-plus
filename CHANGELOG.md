@@ -3,6 +3,8 @@
 All notable changes to this project are written here, in the style of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The project follows [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
+
+- Keep complete resource catalogues on the documentation entry index and the active resource beside core navigation; render valid default imports in HTML and Markdown.
 ### Added
 
 - Add the bilingual documentation site, checked public examples, paired guides, local search and machine-readable pages.

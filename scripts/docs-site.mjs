@@ -65,7 +65,7 @@ import ts from "typescript";
 import { FAMILY, FAMILY_PITCH, FAMILY_SCRIPT, FAMILY_WORDS, familyFooter, familyHead, familyHeader, familyUnreviewed } from "./family-template.mjs";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const DOCS_SITE_VERSION = "2026-10-12";
+export const DOCS_SITE_VERSION = "2026-10-13";
 
 const OWNER = "johnmorrisdotca";
 /** The kinds of guide, in the order the contents list them (Diátaxis, with troubleshooting and upgrading of their own). */
@@ -322,14 +322,15 @@ function describe(checker, symbol, target, declaration, entry, site) {
   };
   if (!declaration) return item;
   const type = checker.getTypeOfSymbolAtLocation(target, declaration);
+  const declarationName = symbol.name === "default" ? (declaration.name && ts.isIdentifier(declaration.name) ? declaration.name.text : "value") : symbol.name;
   if (target.flags & ts.SymbolFlags.Module) {
     item.kind = "namespace";
-    item.signature = `import { ${symbol.name} } from "${entry.importPath}";`;
+    item.signature = importLineOf(item);
     item.members = checker.getExportsOfModule(target).map((member) => ({ name: member.name, type: "", optional: false, doc: "" }));
   } else if (target.flags & ts.SymbolFlags.Class) {
     item.kind = "class";
     const constructs = type.getConstructSignatures();
-    item.signature = [`class ${symbol.name}`, ...constructs.map((call) => `new ${symbol.name}${checker.signatureToString(call, declaration, FORMAT)}`)].join("\n");
+    item.signature = [`class ${declarationName}`, ...constructs.map((call) => `new ${declarationName}${checker.signatureToString(call, declaration, FORMAT)}`)].join("\n");
     item.members = membersOf(checker, checker.getDeclaredTypeOfSymbol(target), declaration, { skipPrivate: true });
     const construct = constructs[0];
     if (construct) item.params = paramsOf(checker, construct, item);
@@ -345,7 +346,7 @@ function describe(checker, symbol, target, declaration, entry, site) {
   } else if (type.getCallSignatures().length > 0) {
     item.kind = "function";
     const calls = type.getCallSignatures();
-    item.signature = calls.map((call) => `function ${symbol.name}${checker.signatureToString(call, declaration, FORMAT)}`).join("\n");
+    item.signature = calls.map((call) => `function ${declarationName}${checker.signatureToString(call, declaration, FORMAT)}`).join("\n");
     item.params = paramsOf(checker, calls[calls.length - 1], item);
     const returnType = checker.getReturnTypeOfSignature(calls[calls.length - 1]);
     item.returns = { type: checker.typeToString(returnType, declaration, FORMAT), doc: item.returnsDoc ?? "", nullable: /\b(null|undefined)\b/.test(checker.typeToString(returnType, declaration, FORMAT)), void: Boolean(returnType.flags & ts.TypeFlags.Void) };
@@ -354,7 +355,7 @@ function describe(checker, symbol, target, declaration, entry, site) {
     const typeText = checker.typeToString(type, declaration, FORMAT);
     const initializer = ts.isVariableDeclaration(declaration) ? declaration.initializer : undefined;
     const printed = initializer ? printer.printNode(ts.EmitHint.Expression, initializer, sourceFile) : "";
-    item.signature = `const ${symbol.name}: ${typeText}${printed && printed.length <= 1600 ? ` = ${printed}` : ""}`;
+    item.signature = `const ${declarationName}: ${typeText}${printed && printed.length <= 1600 ? ` = ${printed}` : ""}`;
     if (initializer && ts.isObjectLiteralExpression(unwrap(initializer))) item.members = membersOf(checker, type, declaration);
   }
   return item;
@@ -958,11 +959,24 @@ function frame(model, page, words, content) {
 const familyHeadFor = (site, { title, description, ogTitle = title }) => (site.inFamily ? familyHead({ id: site.id, title, description, ogTitle }) : [`<meta charset="utf-8" />`, `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />`, `<title>${escapeHtml(title)}</title>`, `<meta name="description" content="${escapeHtml(description)}" />`, `<meta name="theme-color" content="#2f5d4a" />`, `<meta property="og:title" content="${escapeHtml(ogTitle)}" />`, `<meta property="og:description" content="${escapeHtml(description)}" />`].join("\n    "));
 
 /** The contents: the overview, the reference by entry point, then the guides by kind, then the changelog. */
+/** Keep large sibling resource catalogues on the entry index, with the current resource open beside core entries. */
+export function navigationEntries(entries, currentPath) {
+  const parentOf = (entry) => entry.key.slice(0, entry.key.lastIndexOf("/"));
+  const counts = new Map();
+  for (const entry of entries) {
+    const parent = parentOf(entry);
+    if (parent !== "." && parent !== "") counts.set(parent, (counts.get(parent) ?? 0) + 1);
+  }
+  return entries.filter((entry) => (counts.get(parentOf(entry)) ?? 0) < 50 || currentPath.startsWith(`api/${entry.slug}/`));
+}
+
 function sidebar(model, page, words) {
   const lang = page.lang;
   const from = pagePath(lang, page.path);
   const link = (path, label, extra = "") => `<a href="${escapeHtml(hrefFrom(from, pagePath(lang, path)))}"${path === page.path ? ` aria-current="page"` : ""}>${label}${extra}</a>`;
-  const entries = model.reference.entries.map((entry) => {
+  const visible = navigationEntries(model.reference.entries, page.path);
+  const catalogue = visible.length < model.reference.entries.length ? `<li>${link("index.html#reference", escapeHtml(words.entryPoints))}</li>` : "";
+  const entries = visible.map((entry) => {
     const items = model.reference.items.filter((item) => item.entry === entry.key).sort((a, b) => a.name.localeCompare(b.name, "en"));
     const open = page.path.startsWith(`api/${entry.slug}/`);
     const code = entry.key === "." ? "" : `<span class="docs-entry-code">${escapeHtml(`/${entry.key.slice(2)}`)}</span>`;
@@ -989,6 +1003,7 @@ function sidebar(model, page, words) {
         </ul>
         <h2>${escapeHtml(words.reference)}</h2>
         <ul>
+          ${catalogue}
           ${entries}
         </ul>
         <h2>${escapeHtml(words.guides)}</h2>
@@ -1019,6 +1034,12 @@ function docMarkdown(model, page, text, options = {}) {
 const kindBadge = (words, kind) => `<span class="fam-badge docs-kind" data-pagefind-ignore>${escapeHtml(words[`kind_${kind}`] ?? kind)}</span>`;
 
 /** One export's page. */
+/** A valid TypeScript import for named, type-only and default public exports. */
+export function importLineOf(item) {
+  const binding = item.name === "default" ? "value" : `{ ${item.name} }`;
+  return `import ${item.kind === "type" ? "type " : ""}${binding} from "${item.importPath}";`;
+}
+
 function itemPage(model, item, lang, outputs) {
   const words = DOCS_WORDS[lang];
   const page = { lang, path: item.page, title: item.name, description: firstSentence(item.summary).replace(/`/g, ""), section: words.reference };
@@ -1031,7 +1052,7 @@ function itemPage(model, item, lang, outputs) {
   if (lang !== "en" && words.englishOnly) parts.push(`<p class="docs-note">${escapeHtml(words.englishOnly)}</p>`);
   if (item.deprecated !== null) parts.push(`<div class="docs-note"${english}><strong>${escapeHtml(words.deprecated)}.</strong> ${md(item.deprecated)}</div>`);
   parts.push(`<div class="docs-lead"${english}>${md(item.summary)}</div>`);
-  parts.push(`<p class="fam-fine docs-import" data-pagefind-ignore>${escapeHtml(words.importLine)}</p><pre class="docs-signature"><code>${highlight(`import ${item.kind === "type" ? "type " : ""}{ ${item.name} } from "${item.importPath}";`, "ts")}</code></pre>`);
+  parts.push(`<p class="fam-fine docs-import" data-pagefind-ignore>${escapeHtml(words.importLine)}</p><pre class="docs-signature"><code>${highlight(importLineOf(item), "ts")}</code></pre>`);
   if (item.alsoIn.length > 0) parts.push(`<p class="fam-fine">${escapeHtml(words.alsoFrom)}: ${item.alsoIn.map((path) => `<code>${escapeHtml(path)}</code>`).join(", ")}</p>`);
   parts.push(`<h2 id="definition">${escapeHtml(words.definition)}</h2><pre class="docs-signature"><code>${highlight(item.signature, "ts")}</code></pre>`);
   if (item.params.length > 0) {
@@ -1062,7 +1083,7 @@ const metaLine = (model, words, { source, edit }) => `<p class="docs-meta">${sou
 
 /** An export as Markdown, for llms-full.txt and the .md twin of its page. */
 function itemMarkdown(model, item, outputs) {
-  const lines = [`# ${item.name}`, "", `${item.kind} · \`import ${item.kind === "type" ? "type " : ""}{ ${item.name} } from "${item.importPath}"\``, "", item.summary, "", "```ts", item.signature, "```", ""];
+  const lines = [`# ${item.name}`, "", `${item.kind} · \`${importLineOf(item)}\``, "", item.summary, "", "```ts", item.signature, "```", ""];
   if (item.params.length > 0) lines.push("## Parameters", "", ...item.params.map((param) => `- \`${param.name}\`${param.optional ? " (optional)" : ""}: \`${param.type}\`. ${param.doc}`), "");
   if (item.returns && !item.returns.void) lines.push("## Returns", "", `\`${item.returns.type}\`. ${item.returns.doc}`, "");
   if (item.members.length > 0) lines.push("## Members", "", ...item.members.map((member) => `- \`${member.name}\`${member.optional ? " (optional)" : ""}${member.type ? `: \`${member.type}\`` : ""}${member.doc ? `. ${member.doc}` : ""}`), "");
