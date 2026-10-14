@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-05";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-15";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -74,7 +74,15 @@ export const FAMILY = [
   { id: "gunjin", name: "Gunjin", kana: "軍人" },
   { id: "karakuri", name: "Karakuri", kana: "からくり" },
   { id: "houseki", name: "Houseki", kana: "宝石" },
+  { id: "kyogijo-stadiums", name: "Kyogijo Stadiums", kana: "競技場" },
+  { id: "taisen-brackets", name: "Taisen", kana: "対戦" },
 ];
+
+/**
+ * The packages of FAMILY that are not on npm yet. Such a package's header has no npm pill, its footer says so in
+ * place of the install line, and the README's line on it ends "Not on npm yet." Take the id out the day it is published.
+ */
+export const FAMILY_NOT_ON_NPM = ["taisen-brackets"];
 
 /**
  * One line on each package, for the README's "The family" block: lower case, no full stop, no number that can
@@ -106,6 +114,8 @@ export const FAMILY_PITCH = {
   gunjin: "five hidden-rank strategy games with pass-the-device play",
   karakuri: "eight hyper-casual puzzle games, some of them physics: draw a shield, pull pins, cut ropes, slide blocks, pour tubes",
   houseki: "gem and stone matching puzzles: falling triplets, stone collapse, colour chains and gem swap",
+  "kyogijo-stadiums": "sports fields, rinks, courts and ballparks drawn to scale as SVG, with each team and the score on them",
+  "taisen-brackets": "a sport-agnostic tournament bracket, drawn as SVG, from a list of ties",
 };
 
 /**
@@ -160,6 +170,7 @@ export function familyHead({ id, title, description, ogTitle, ogDescription }) {
  */
 export function familyHeader({ id, links = [] }) {
   const { name, kana } = member(id);
+  const onNpm = !FAMILY_NOT_ON_NPM.includes(id);
   return `<header>
         <div class="intro">
           <h1>${name}<span lang="ja">${kana}</span></h1>
@@ -176,8 +187,7 @@ export function familyHeader({ id, links = [] }) {
             .join("")}</div>
           <button type="button" class="fam-button" data-help-switch aria-pressed="false" data-say="help" data-say-title="helpTip" style="min-width:68px"></button>
           <a href="${repo(id)}">GitHub</a>
-          <a href="${npm(id)}">npm</a>
-        </nav>
+${onNpm ? `          <a href="${npm(id)}">npm</a>\n` : ""}        </nav>
       </header>`;
 }
 
@@ -190,10 +200,11 @@ export function familyUnreviewed({ id }) {
 /** The footer: the page's own note (data-say="foot"), the install line and the licence, and the family, each by its demo site, this package marked as the one being read. */
 export function familyFooter({ id }) {
   member(id);
+  const onNpm = !FAMILY_NOT_ON_NPM.includes(id);
   const links = FAMILY.map((one) => `<a href="${site(one.id)}"${one.id === id ? ` aria-current="page"` : ""}>${one.name}</a>`).join("");
   return `<footer>
         <span data-say="foot"></span>
-        <span><code>npm install @${OWNER}/${id}</code> · <a href="${repo(id)}/blob/main/LICENSE" data-say="licence"></a> © John Morris</span>
+        <span>${onNpm ? `<code>npm install @${OWNER}/${id}</code>` : "Not on npm yet"} · <a href="${repo(id)}/blob/main/LICENSE" data-say="licence"></a> © John Morris</span>
         <span class="family"><span data-say="family"></span>${links}<a href="https://itsutsu.com">itsutsu.com</a></span>
       </footer>`;
 }
