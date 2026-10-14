@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-15b";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-15c";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -76,6 +76,8 @@ export const FAMILY = [
   { id: "houseki", name: "Houseki", kana: "宝石" },
   { id: "kyogijo-stadiums", name: "Kyogijo Stadiums", kana: "競技場" },
   { id: "taisen-brackets", name: "Taisen Brackets", kana: "対戦" },
+  { id: "dougu-sports", name: "Dougu Sports", kana: "道具" },
+  { id: "senshu-jerseys", name: "Senshu Jerseys", kana: "選手" },
 ];
 
 /**
@@ -116,6 +118,8 @@ export const FAMILY_PITCH = {
   houseki: "gem and stone matching puzzles: falling triplets, stone collapse, colour chains and gem swap",
   "kyogijo-stadiums": "sports fields, rinks, courts and ballparks drawn to scale as SVG, with each team and the score on them",
   "taisen-brackets": "a sport-agnostic tournament bracket, drawn as SVG, from a list of ties",
+  "dougu-sports": "sports emblems as SVG: trophies, medals, crests, and the ball and gear of every sport, with optional 3D turning",
+  "senshu-jerseys": "sports jerseys, sweaters, kits, caps, helmets and retired-number banners as SVG, front and back, with optional 2.5D turning",
 };
 
 /**
