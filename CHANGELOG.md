@@ -4,6 +4,8 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+- Synchronize documentation tooling for repository layouts, generated type references, Node entry points and repository-specific README links.
+
 - Keep complete resource catalogues on the documentation entry index and the active resource beside core navigation; render valid default imports in HTML and Markdown.
 ### Added
 

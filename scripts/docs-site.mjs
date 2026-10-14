@@ -60,12 +60,15 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 
 import { Marked } from "marked";
-import ts from "typescript";
+import * as tsModule from "typescript";
+
+// TypeScript 7 ships the native CLI; its JavaScript reader remains a separate development dependency.
+const ts = tsModule.default?.createProgram ? tsModule.default : tsModule.createProgram ? tsModule : (await import("typescript-api")).default;
 
 import { FAMILY, FAMILY_PITCH, FAMILY_SCRIPT, FAMILY_WORDS, familyFooter, familyHead, familyHeader, familyUnreviewed } from "./family-template.mjs";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const DOCS_SITE_VERSION = "2026-10-13";
+export const DOCS_SITE_VERSION = "2026-10-13-workspaces";
 
 const OWNER = "johnmorrisdotca";
 /** The kinds of guide, in the order the contents list them (Diátaxis, with troubleshooting and upgrading of their own). */
@@ -152,17 +155,19 @@ export function packageOf(root) {
   const member = FAMILY.find((one) => one.id === id);
   const configFile = join(root, "docs", "site.json");
   const config = existsSync(configFile) ? JSON.parse(read(configFile)) : {};
+  const repositoryRoot = resolve(root, config.repositoryRoot ?? ".");
+  if (relative(repositoryRoot, resolve(root)).startsWith("..")) throw new Error("docs/site.json repositoryRoot must contain the package root");
   const name = member?.name ?? config.title ?? id;
   const kana = member?.kana ?? config.kana ?? "";
   const pitchEn = config.pitch?.en ?? (FAMILY_PITCH[id] ? FAMILY_PITCH[id][0].toUpperCase() + FAMILY_PITCH[id].slice(1) + "." : pkg.description);
-  const repoUrl = `https://github.com/${OWNER}/${id}`;
+  const repoUrl = member?.repo ?? `https://github.com/${OWNER}/${id}`;
   const siteUrl = (pkg.homepage ?? `https://${OWNER}.github.io/${id}/`).replace(/\/?$/, "/");
   const sizesFile = join(root, "docs", "bundle-size.json");
   const sizes = existsSync(sizesFile) ? JSON.parse(read(sizesFile)) : null;
   const inFamily = member !== undefined;
   const job = typeof config.job === "string" && config.job.trim() !== "" ? config.job.trim() : null;
   return {
-    root, pkg, id, name, kana, inFamily, job, headline: `${name}${kana ? ` ${kana}` : ""}${job ? ` — ${job}` : ""}`, repoUrl, siteUrl, docsUrl: `${siteUrl}docs/`, sizes,
+    root, repositoryRoot, pkg, id, name, kana, inFamily, job, headline: `${name}${kana ? ` ${kana}` : ""}${job ? ` — ${job}` : ""}`, repoUrl, siteUrl, docsUrl: `${siteUrl}docs/`, sizes,
     icon: config.icon ?? "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232f5d4a'/%3E%3C/svg%3E",
     pitch: { en: pitchEn, ja: config.pitch?.ja ?? pitchEn },
     nameLine: { en: config.name?.en ?? "", ja: config.name?.ja ?? "" },
@@ -171,18 +176,29 @@ export function packageOf(root) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// Workspace packages set docs/site.json repositoryRoot to the repository directory relative to this package.
+// Guides, changelog, README and workflows belong there; SDK source and built examples stay in the package.
+// A generated type-only entry sets entries[key].source to its declaration file and generatedBy to its writer.
+// Both paths are package-relative, must exist inside the repository, and only runtime entries have bundle sizes.
+//
 // 3. The reference, read from the source with the TypeScript compiler the package is built with.
 
 /** The entry points in package.json's exports that are built from a source file: [{ key, importPath, slug, file }]. */
 function entryPointsOf(site) {
   const { root, pkg } = site;
   return Object.entries(pkg.exports ?? { ".": { default: pkg.main } })
-    .map(([key, entry]) => [key, typeof entry === "string" ? entry : entry.default ?? entry.import])
-    .filter(([key, target]) => !key.includes("*") && typeof target === "string" && target.startsWith("./dist/") && target.endsWith(".js"))
+    .map(([key, entry]) => [key, typeof entry === "string" ? entry : entry.default ?? entry.import ?? entry.types])
+    .filter(([key, target]) => !key.includes("*") && typeof target === "string" && target.startsWith("./dist/") && (target.endsWith(".js") || target.endsWith(".d.ts")))
     .map(([key, target]) => {
-      const base = resolve(root, target.replace("./dist/", "src/").replace(/\.js$/, ""));
-      const file = [".ts", ".tsx", ".mts"].map((ext) => base + ext).find((path) => existsSync(path));
-      return { key, importPath: key === "." ? pkg.name : `${pkg.name}/${key.slice(2)}`, slug: key === "." ? "main" : key.slice(2).replace(/\//g, "-"), file, target };
+      const platform = site.entryTitles[key]?.platform ?? "neutral";
+      if (!["neutral", "browser", "node"].includes(platform)) throw new Error(`docs/site.json platform for ${key} must be neutral, browser or node`);
+      const explicit = site.entryTitles[key]?.source;
+      const generatedBy = site.entryTitles[key]?.generatedBy;
+      if (generatedBy && (relative(site.repositoryRoot, resolve(root, generatedBy)).startsWith("..") || !existsSync(resolve(root, generatedBy)))) throw new Error(`docs/site.json generatedBy for ${key} must exist inside the repository`);
+      const base = resolve(root, target.replace("./dist/", "src/").replace(/\.(?:d\.ts|js)$/, ""));
+      const file = typeof explicit === "string" ? resolve(root, explicit) : [".ts", ".tsx", ".mts"].map((ext) => base + ext).find((path) => existsSync(path));
+      if (file && (relative(site.repositoryRoot, file).startsWith("..") || !existsSync(file))) throw new Error(`docs/site.json source for ${key} must exist inside the repository`);
+      return { key, importPath: key === "." ? pkg.name : `${pkg.name}/${key.slice(2)}`, slug: key === "." ? "main" : key.slice(2).replace(/\//g, "-"), file, target, runtime: target.endsWith(".js"), platform, generatedBy };
     });
 }
 
@@ -305,7 +321,7 @@ function describe(checker, symbol, target, declaration, entry, site) {
   const tagText = (tag) => markdownOf(tag.text ?? []);
   const item = {
     name: symbol.name, entry: entry.key, entrySlug: entry.slug, importPath: entry.importPath, alsoIn: [],
-    file: sourceFile ? toPosix(relative(site.root, sourceFile.fileName)) : "", line,
+    file: entry.generatedBy ? toPosix(relative(site.repositoryRoot, resolve(site.root, entry.generatedBy))) : sourceFile ? toPosix(relative(site.repositoryRoot, sourceFile.fileName)) : "", line, generated: Boolean(entry.generatedBy),
     summary: markdownOf(target.getDocumentationComment(checker)),
     remarks: tags.filter((tag) => tag.name === "remarks").map(tagText).join("\n\n"),
     deprecated: tags.find((tag) => tag.name === "deprecated") ? tagText(tags.find((tag) => tag.name === "deprecated")) || " " : null,
@@ -398,11 +414,11 @@ const parseFrontMatter = (text) => {
 export function guidesOf(site) {
   const guides = [];
   for (const lang of LANGS) {
-    const folder = join(site.root, "docs", "guides", ...(lang === "en" ? [] : [lang]));
+    const folder = join(site.repositoryRoot, "docs", "guides", ...(lang === "en" ? [] : [lang]));
     if (!existsSync(folder)) continue;
     for (const file of readdirSync(folder).filter((name) => name.endsWith(".md")).sort()) {
       const { data, body } = parseFrontMatter(read(join(folder, file)));
-      guides.push({ slug: file.replace(/\.md$/, ""), lang, file: toPosix(relative(site.root, join(folder, file))), title: data?.title ?? "", section: data?.section ?? "", order: Number(data?.order ?? 99), description: data?.description ?? "", body, frontMatter: data !== null });
+      guides.push({ slug: file.replace(/\.md$/, ""), lang, file: toPosix(relative(site.repositoryRoot, join(folder, file))), title: data?.title ?? "", section: data?.section ?? "", order: Number(data?.order ?? 99), description: data?.description ?? "", body, frontMatter: data !== null });
     }
   }
   const rank = (guide) => [GUIDE_SECTIONS.indexOf(guide.section), guide.order, guide.slug];
@@ -565,9 +581,9 @@ function guideLink(model, guide, href, from, problems, anchorsOf) {
     if (hash && !anchorsOf(twin).has(hash)) problems.push(`${where} names no heading in ${twin.file}.`);
     return hrefFrom(from, pagePath(guide.lang, `guides/${target.slug}.html`)) + (hash ? `#${hash}` : "");
   }
-  if (posix.basename(absolute) === "CHANGELOG.md" && existsSync(join(model.site.root, absolute))) return hrefFrom(from, pagePath(guide.lang, "changelog.html"));
-  if (existsSync(join(model.site.root, absolute)) && !absolute.startsWith("..")) {
-    const kind = statSync(join(model.site.root, absolute)).isDirectory() ? "tree" : "blob";
+  if (posix.basename(absolute) === "CHANGELOG.md" && existsSync(join(model.site.repositoryRoot, absolute))) return hrefFrom(from, pagePath(guide.lang, "changelog.html"));
+  if (existsSync(join(model.site.repositoryRoot, absolute)) && !absolute.startsWith("..")) {
+    const kind = statSync(join(model.site.repositoryRoot, absolute)).isDirectory() ? "tree" : "blob";
     return `${model.site.repoUrl}/${kind}/main/${absolute}${hash ? `#${hash}` : ""}`;
   }
   problems.push(`${where} leads to nothing: ${absolute} is not a guide or a file of the repository.`);
@@ -712,8 +728,8 @@ export async function measureBundles(root) {
   const site = packageOf(root);
   const esbuild = await import("esbuild");
   const entries = {};
-  for (const entry of entryPointsOf(site).filter((one) => one.file !== undefined)) {
-    const built = await esbuild.build({ entryPoints: [entry.file], bundle: true, minify: true, format: "esm", platform: "neutral", target: "es2020", write: false, logLevel: "silent", loader: { ".css": "text", ".svg": "text", ".txt": "text" }, mainFields: ["module", "main"] });
+  for (const entry of entryPointsOf(site).filter((one) => one.file !== undefined && one.runtime)) {
+    const built = await esbuild.build({ entryPoints: [entry.file], bundle: true, minify: true, format: "esm", platform: entry.platform, target: "es2020", write: false, logLevel: "silent", loader: { ".css": "text", ".svg": "text", ".txt": "text" }, mainFields: ["module", "main"] });
     const bytes = built.outputFiles[0].contents;
     entries[entry.key] = { minified: bytes.length, gzip: gzipSync(bytes, { level: 9 }).length };
   }
@@ -1075,7 +1091,7 @@ function itemPage(model, item, lang, outputs) {
     });
   }
   if (item.see.length > 0) parts.push(`<h2 id="see-also">${escapeHtml(words.seeAlso)}</h2><ul${english}>${item.see.map((text) => `<li>${md(text).replace(/^<p>|<\/p>\n?$/g, "")}</li>`).join("")}</ul>`);
-  parts.push(metaLine(model, words, { source: `${model.site.repoUrl}/blob/main/${item.file}#L${item.line}`, edit: `${model.site.repoUrl}/edit/main/${item.file}#L${item.line}` }));
+  parts.push(metaLine(model, words, { source: `${model.site.repoUrl}/blob/main/${item.file}${item.generated ? "" : `#L${item.line}`}`, edit: `${model.site.repoUrl}/edit/main/${item.file}${item.generated ? "" : `#L${item.line}`}` }));
   return { ...page, html: frame(model, page, words, parts.join("\n          ")), markdown: itemMarkdown(model, item, outputs) };
 }
 
@@ -1113,7 +1129,7 @@ function entryPage(model, entry, lang) {
     entry.doc ? `<div${english}>${docMarkdown(model, page, entry.doc, { headingOffset: 1 })}</div>` : "",
     `<h2 id="exports">${escapeHtml(words.exports)}</h2>`,
     `<div class="fam-table-box"><table><thead><tr><th>${escapeHtml(words.nameCol)}</th><th>${escapeHtml(words.kindCol)}</th><th>${escapeHtml(words.summaryCol)}</th></tr></thead><tbody>${items.map(({ item }) => `<tr><td><a href="${hrefFrom(from, pagePath(lang, item.page))}"><code>${escapeHtml(item.name)}</code></a></td><td>${escapeHtml(words[`kind_${item.kind}`] ?? item.kind)}</td><td${english}>${docMarkdown(model, page, firstSentence(item.summary)).replace(/^<p>|<\/p>\n?$/g, "")}</td></tr>`).join("")}</tbody></table></div>`,
-    metaLine(model, words, { source: `${model.site.repoUrl}/blob/main/${toPosix(relative(model.site.root, entry.file))}`, edit: `${model.site.repoUrl}/edit/main/${toPosix(relative(model.site.root, entry.file))}` }),
+    metaLine(model, words, { source: `${model.site.repoUrl}/blob/main/${toPosix(relative(model.site.repositoryRoot, entry.generatedBy ? resolve(model.site.root, entry.generatedBy) : entry.file))}`, edit: `${model.site.repoUrl}/edit/main/${toPosix(relative(model.site.repositoryRoot, entry.generatedBy ? resolve(model.site.root, entry.generatedBy) : entry.file))}` }),
   ];
   const markdown = [`# ${entry.title.en} (\`${entry.importPath}\`)`, "", entry.doc, "", ...items.map(({ item }) => `- [${item.name}](${model.site.docsUrl}${item.page.replace(/\.html$/, ".md")}): ${firstSentence(item.summary)}`), ""].join("\n");
   return { ...page, html: frame(model, page, words, parts.filter(Boolean).join("\n          ")), markdown };
@@ -1162,7 +1178,7 @@ function guidePage(model, english, lang, outputs) {
 function changelogPage(model, lang) {
   const words = DOCS_WORDS[lang];
   const page = { lang, path: "changelog.html", title: words.changelog, description: `${words.changelog}: ${model.site.pkg.name}`, section: words.changelog };
-  const file = join(model.site.root, "CHANGELOG.md");
+  const file = join(model.site.repositoryRoot, "CHANGELOG.md");
   const text = existsSync(file) ? read(file).replace(/^# .*\n/, "") : "";
   const body = renderMarkdown(text, { resolve: (href) => (/^(https?:|mailto:|#)/.test(href) ? href : `${model.site.repoUrl}/blob/main/${href.replace(/^\.\//, "")}`) });
   const parts = [`<h1>${escapeHtml(words.changelog)}</h1>`, lang === "en" ? "" : `<p class="docs-note">${escapeHtml(words.untranslated.replace(/ガイド/, "変更履歴"))}</p>`, `<div${lang === "en" ? "" : ` lang="en"`}>${body}</div>`, metaLine(model, words, { source: `${model.site.repoUrl}/blob/main/CHANGELOG.md`, edit: `${model.site.repoUrl}/edit/main/CHANGELOG.md` })];

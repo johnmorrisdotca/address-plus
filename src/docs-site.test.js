@@ -4,26 +4,31 @@
 // are run by `pnpm docs:check` and by the Pages workflow's `pnpm docs:site`, which need the package built.
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { tmpdir } from "node:os";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 import { describe, expect, it } from "vitest";
-import ts from "typescript";
+import * as tsModule from "typescript";
 
-import { DOCS_SITE_VERSION, docsProblems, importLineOf, navigationEntries, packageOf, sizeBadge } from "../scripts/docs-site.mjs";
+const ts = tsModule.default?.createSourceFile ? tsModule.default : tsModule.createSourceFile ? tsModule : (await import("typescript-api")).default;
 
-const read = (path) => readFileSync(path, "utf8").replace(/\r\n/g, "\n");
+import { DOCS_SITE_VERSION, docsProblems, importLineOf, measureBundles, modelOf, navigationEntries, packageOf, sizeBadge } from "../scripts/docs-site.mjs";
+
+import { readInputs } from "../scripts/readme-lint.mjs";
+
+const read = (path) => readFileSync(resolve(path === "README.md" || path.startsWith(".github/") ? packageOf(".").repositoryRoot : ".", path), "utf8").replace(/\r\n/g, "\n");
 const sha = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 const pkg = JSON.parse(read("package.json"));
 
 // The recorded hashes: the generator and its browser test are one text in every package. A change to either is made in
 // every repository at once, with a new DOCS_SITE_VERSION and the new hashes here.
 const RECORDED = {
-  version: "2026-10-13",
-  "scripts/docs-site.mjs": "8ad0f05589e05b4f2769171d823f9c8e0a0abff915f17f7400760232282d774a",
+  version: "2026-10-13-workspaces",
+  "scripts/docs-site.mjs": "5953399a4b239c6f721b733ba007daba8335689dbdbf746135c8d166aa91dead",
   "e2e/docs-site.demo.mjs": "6119efc290d197bb2d90cdd8eaf9dc2364bc485973c4b6f0e6da64c543594564",
 };
 
@@ -62,7 +67,7 @@ describe("the README's badges", () => {
   const site = packageOf(".");
 
   it("link to the documentation site", () => {
-    expect(readme).toContain(`https://johnmorrisdotca.github.io/${site.id}/docs/`);
+    expect(readme).toContain(site.docsUrl);
   });
 
   it("show the package's size, minified and gzipped, as docs/bundle-size.json records it and as it measures now", async () => {
@@ -125,5 +130,60 @@ describe("generated import syntax", () => {
       expect(clause.isTypeOnly).toBe(kind === "type");
       expect(name === "default" ? clause.name.text : clause.namedBindings.elements[0].name.text).toBe(name === "default" ? "value" : name);
     }
+  });
+});
+
+describe("workspace packages and generated declaration entries", () => {
+  const fixture = async (check) => {
+    const repo = mkdtempSync(join(tmpdir(), "docs-workspace-"));
+    const root = join(repo, "apps", "api");
+    const put = (file, text) => { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, text); };
+    const config = { repositoryRoot: "../..", job: "Fake REST API data for testing", entries: { "./types": { source: "dist/types.d.ts", generatedBy: "scripts/build.ts" }, "./server": { platform: "node" } } };
+    put(join(root, "package.json"), JSON.stringify({ name: "@johnmorrisdotca/rest-in-pieces", description: "REST in Pieces — Fake REST API data for testing", homepage: "https://spxis.github.io/rest-in-pieces/", repository: { url: "git+https://github.com/spxis/rest-in-pieces.git" }, exports: { ".": { default: "./dist/index.js" }, "./types": { types: "./dist/types.d.ts" }, "./server": { default: "./dist/server.js" } } }));
+    put(join(root, "docs/site.json"), JSON.stringify(config));
+    put(join(repo, "README.md"), "Repository README\n");
+    put(join(repo, "CHANGELOG.md"), "# Changes\n\n## Unreleased\n\n- Document the SDK.\n");
+    put(join(root, "scripts/build.ts"), "// The authoritative declaration writer.\n");
+    put(join(root, "src/index.ts"), '/** In-process test responses. */\n\n/** A stable response code.\n * @returns The successful response code.\n * @example\n * ```ts\n * import { responseCode } from "@johnmorrisdotca/rest-in-pieces";\n * console.log(responseCode());\n * ```\n */\nexport function responseCode(): number { return 200; }\n');
+    put(join(root, "src/server.ts"), '/** Node path helpers. */\n\nimport { basename } from "node:path";\n\n/** The last part of a file path.\n * @param file The path to read.\n * @returns Its final file name.\n * @example\n * ```ts\n * import { fileName } from "@johnmorrisdotca/rest-in-pieces/server";\n * console.log(fileName("docs/a.txt"));\n * ```\n */\nexport function fileName(file: string): string { return basename(file); }\n');
+    put(join(root, "dist/types.d.ts"), '/** Generated response declarations. */\n\n/** A response body.\n * @example\n * ```ts\n * import type { Result } from "@johnmorrisdotca/rest-in-pieces/types";\n * const body: Result = { ok: true };\n * console.log(body.ok);\n * ```\n */\nexport interface Result { ok: boolean; }\n');
+    for (const section of ["tutorial", "how-to", "explanation", "troubleshooting", "upgrading"]) put(join(repo, `docs/guides/${section}.md`), `---\ntitle: ${section}\nsection: ${section}\norder: 1\ndescription: Read the SDK and its declarations.\n---\n\n## Read the API\n\n[Response](api:responseCode), [body](api:Result), [source](../../apps/api/src/index.ts), [changes](../../CHANGELOG.md).\n`);
+    try { await check({ repo, root, config, put }); } finally { rmSync(repo, { recursive: true, force: true }); }
+  };
+
+  it("reads repository guides and README beside a nested SDK, with real source and writer paths", async () => {
+    await fixture(({ repo, root }) => {
+      const model = modelOf(root);
+      expect(model.site.repositoryRoot).toBe(repo);
+      expect(model.site.repoUrl).toBe("https://github.com/spxis/rest-in-pieces");
+      expect(model.guides).toHaveLength(5);
+      expect(model.guides[0].file).toMatch(/^docs\/guides\//);
+      expect(model.reference.items.find((item) => item.name === "responseCode").file).toBe("apps/api/src/index.ts");
+      expect(model.reference.items.find((item) => item.name === "Result")).toMatchObject({ file: "apps/api/scripts/build.ts", generated: true });
+      expect(docsProblems(root, model)).toEqual([]);
+      expect(readInputs(root)).toMatchObject({ readme: "Repository README\n", job: "Fake REST API data for testing" });
+    });
+  });
+
+  it("documents type-only declarations without counting them as runtime bundles", async () => {
+    await fixture(async ({ root }) => {
+      const model = modelOf(root);
+      expect(model.reference.entries.find((entry) => entry.key === "./types").names.map((item) => item.name)).toEqual(["Result"]);
+      const sizes = (await measureBundles(root)).entries;
+      expect(Object.keys(sizes)).toEqual([".", "./server"]);
+      expect(sizes["./server"].minified).toBeGreaterThan(0);
+    });
+  });
+
+  it("rejects explicit declaration paths outside the repository", async () => {
+    await fixture(({ root, config, put }) => {
+      config.entries["./types"].source = "../../../outside.d.ts";
+      put(join(root, "docs/site.json"), JSON.stringify(config));
+      expect(() => modelOf(root)).toThrow(/source for .\/types must exist inside the repository/);
+      config.entries["./types"].source = "dist/types.d.ts";
+      config.entries["./types"].generatedBy = "../../../outside.ts";
+      put(join(root, "docs/site.json"), JSON.stringify(config));
+      expect(() => modelOf(root)).toThrow(/generatedBy for .\/types must exist inside the repository/);
+    });
   });
 });
