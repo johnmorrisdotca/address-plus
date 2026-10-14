@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-15";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-15b";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -75,14 +75,14 @@ export const FAMILY = [
   { id: "karakuri", name: "Karakuri", kana: "からくり" },
   { id: "houseki", name: "Houseki", kana: "宝石" },
   { id: "kyogijo-stadiums", name: "Kyogijo Stadiums", kana: "競技場" },
-  { id: "taisen-brackets", name: "Taisen", kana: "対戦" },
+  { id: "taisen-brackets", name: "Taisen Brackets", kana: "対戦" },
 ];
 
 /**
  * The packages of FAMILY that are not on npm yet. Such a package's header has no npm pill, its footer says so in
  * place of the install line, and the README's line on it ends "Not on npm yet." Take the id out the day it is published.
  */
-export const FAMILY_NOT_ON_NPM = ["taisen-brackets"];
+export const FAMILY_NOT_ON_NPM = [];
 
 /**
  * One line on each package, for the README's "The family" block: lower case, no full stop, no number that can
