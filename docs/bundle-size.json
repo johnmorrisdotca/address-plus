@@ -3,35 +3,35 @@
   "entries": {
     ".": {
       "minified": 597494,
-      "gzip": 104868
+      "gzip": 105712
     },
     "./jp": {
       "minified": 332967,
-      "gzip": 60549
+      "gzip": 60583
     },
     "./au": {
       "minified": 16746,
-      "gzip": 7071
+      "gzip": 7248
     },
     "./gb": {
       "minified": 20001,
-      "gzip": 8558
+      "gzip": 8724
     },
     "./de": {
       "minified": 27098,
-      "gzip": 12093
+      "gzip": 12245
     },
     "./fr": {
       "minified": 28268,
-      "gzip": 9197
+      "gzip": 9343
     },
     "./element": {
       "minified": 670085,
-      "gzip": 132652
+      "gzip": 133035
     },
     "./element/define": {
       "minified": 670090,
-      "gzip": 132658
+      "gzip": 133037
     }
   }
 }

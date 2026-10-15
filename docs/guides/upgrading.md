@@ -7,7 +7,7 @@ description: Adopt the docs site while keeping existing parser contracts.
 
 ## Keep the imports you use
 
-The root named exports and default `parser` object remain available. The original country and field entries keep their native API. This rollout does not change version, parse rules, table values or country isolation. The new `api.html` is an anchor index leading to individual pages; `docs/api.md` remains the generated complete Markdown reference. Local search and root llms files add ways to read the same package.
+The root named exports and default `parser` object remain available. The original country and field entries keep their native API. The new `api.html` is an anchor index leading to individual pages; `docs/api.md` remains the generated complete Markdown reference. Local search and root llms files add ways to read the same package.
 
 ## Preserve compatibility deliberately
 

@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-10-11-seven-country-embeds";
+export const FAMILY_TEMPLATE_VERSION = "2026-10-15d";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -77,6 +77,10 @@ export const FAMILY = [
   { id: "chizu", name: "Chizu", kana: "地図" },
   { id: "hata", name: "Hata", kana: "旗" },
   { id: "kuni", name: "Kuni", kana: "国" },
+  { id: "dougu-sports", name: "Dougu Sports", kana: "道具" },
+  { id: "kyogijo-stadiums", name: "Kyogijo Stadiums", kana: "競技場" },
+  { id: "senshu-jerseys", name: "Senshu Jerseys", kana: "選手" },
+  { id: "taisen-brackets", name: "Taisen Brackets", kana: "対戦" },
   { id: "rest-in-pieces", name: "REST in Pieces", kana: "レスト・イン・ピーシーズ", repo: "https://github.com/spxis/rest-in-pieces", site: "https://spxis.github.io/rest-in-pieces/" },
 ];
 
@@ -88,8 +92,15 @@ export const FAMILY_GROUPS = [
   { id: "random", en: "Games — dice & random", ja: "ダイスと乱数", members: ["korokoro", "tane"] },
   { id: "language", en: "Language", ja: "ことばと文字", members: ["bushu", "hikidashi", "kotoba"] },
   { id: "geography", en: "Geography & data", ja: "地理とデータ", members: ["address-plus", "chizu", "hata", "kuni"] },
+  { id: "sports", en: "Sports", ja: "スポーツ", members: ["dougu-sports", "kyogijo-stadiums", "senshu-jerseys", "taisen-brackets"] },
   { id: "developer", en: "Developer tools", ja: "開発ツール", members: ["rest-in-pieces"] },
 ];
+
+/**
+ * The packages of FAMILY that are not on npm yet. Such a package's header has no npm pill, its footer says so in
+ * place of the install line, and the README's line on it ends "Not on npm yet." Take the id out the day it is published.
+ */
+export const FAMILY_NOT_ON_NPM = [];
 
 /**
  * One line on each package, for the README's "The family" block: lower case, no full stop, no number that can
@@ -125,6 +136,10 @@ export const FAMILY_PITCH = {
   "hata": "country and regional flags as SVG, at their true proportions and keyed by ISO code",
   "kuni": "countries and their regions, with ISO codes and names in English and Japanese",
   "rest-in-pieces": "seeded test data and REST APIs for frontend development, with latency and error drills",
+  "kyogijo-stadiums": "sports fields, rinks, courts and ballparks drawn to scale as SVG, with each team and the score on them",
+  "taisen-brackets": "a sport-agnostic tournament bracket, drawn as SVG, from a list of ties",
+  "dougu-sports": "sports emblems as SVG: trophies, medals, crests, and the ball and gear of every sport, with optional 3D turning",
+  "senshu-jerseys": "sports jerseys, sweaters, kits, caps, helmets and retired-number banners as SVG, front and back, with optional 2.5D turning",
 };
 
 /** Japanese pitches for the new geography and developer members; awaiting native review. */
@@ -189,6 +204,7 @@ export function familyHead({ id, title, description, ogTitle, ogDescription }) {
  */
 export function familyHeader({ id, links = [] }) {
   const { name, kana } = member(id);
+  const onNpm = !FAMILY_NOT_ON_NPM.includes(id);
   return `<header>
         <div class="intro">
           <h1>${name}<span lang="ja">${kana}</span></h1>
@@ -205,8 +221,7 @@ export function familyHeader({ id, links = [] }) {
             .join("")}</div>
           <button type="button" class="fam-button" data-help-switch aria-pressed="false" data-say="help" data-say-title="helpTip" style="min-width:68px"></button>
           <a href="${repo(id)}">GitHub</a>
-          <a href="${npm(id)}">npm</a>
-        </nav>
+${onNpm ? `          <a href="${npm(id)}">npm</a>\n` : ""}        </nav>
       </header>`;
 }
 
@@ -227,9 +242,10 @@ export function familyFooter({ id }) {
     }).join("");
     return `<span class="family-group" style="display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;flex:1 1 100%;min-width:0"><strong data-say="family_${group.id}">${escape(group.en)}</strong>${links}</span>`;
   }).join("");
+  const onNpm = !FAMILY_NOT_ON_NPM.includes(id);
   return `<footer>
         <span data-say="foot"></span>
-        <span><code>npm install @${OWNER}/${id}</code> · <a href="${repo(id)}/blob/main/LICENSE" data-say="licence"></a> © John Morris</span>
+        <span>${onNpm ? `<code>npm install @${OWNER}/${id}</code>` : "Not on npm yet"} · <a href="${repo(id)}/blob/main/LICENSE" data-say="licence"></a> © John Morris</span>
         <span class="family"><span data-say="family"></span>${groups}<a href="https://itsutsu.com">itsutsu.com</a></span>
       </footer>`;
 }

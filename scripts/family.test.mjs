@@ -6,12 +6,12 @@ import { FAMILY, FAMILY_GROUPS, FAMILY_TEMPLATE_VERSION, familyFooter } from "./
 const sha = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 describe("the shared family list", () => {
   it("pins the shared template and README writer", () => {
-    expect(FAMILY_TEMPLATE_VERSION).toBe("2026-10-11-seven-country-embeds");
-    expect(sha("scripts/family-template.mjs")).toBe("08e9d500321ad4b7c3b86935362459c847a67fc62a448bef98d2dda4ec6aa495");
-    expect(sha("scripts/family-readme.mjs")).toBe("f0bb3adff1a917f672c1b6a323e7ee068bd8b43294cdfb55f31c90112971bcf1");
+    expect(FAMILY_TEMPLATE_VERSION).toBe("2026-10-15d");
+    expect(sha("scripts/family-template.mjs")).toBe("fcc192026cf284303344e108b20e6181126607c670a881a6b3bf8479da26ab03");
+    expect(sha("scripts/family-readme.mjs")).toBe("0ca8badd4d54e393f723b5a625e76caf4b96a01bb79d087448748a358e834afc");
   });
   it("lists every member once, grouped and alphabetical", () => {
-    expect(FAMILY).toHaveLength(28);
+    expect(FAMILY).toHaveLength(32);
     expect(FAMILY_GROUPS.flatMap((group) => group.members)).toEqual(FAMILY.map((one) => one.id));
     expect(new Set(FAMILY.map((one) => one.id)).size).toBe(FAMILY.length);
     for (const group of FAMILY_GROUPS) expect(group.members).toEqual([...group.members].sort());

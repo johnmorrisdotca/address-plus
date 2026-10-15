@@ -11,7 +11,7 @@ The root parser and utilities use shared types and the existing US/Canadian/Japa
 
 ## Generate tables from their source
 
-`*.data.ts` files belong to the JP and country data writers. Documentation examples come from those writers too. Their `--docs-only` path refreshes stored public example comments offline, retaining source dates, data values and ordering. Normal data generation still follows the documented sources/licences and requires its own data review; this rollout does not fetch new tables. The sub-region writer remains unchanged because no exported table comments there needed conversion.
+`*.data.ts` files belong to the JP and country data writers. Documentation examples come from those writers too. Their `--docs-only` path refreshes stored public example comments offline, retaining source dates, data values and ordering. Normal data generation still follows the documented sources/licences and requires its own data review.
 
 ## Keep both documentation checks
 

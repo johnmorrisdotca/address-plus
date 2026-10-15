@@ -1,6 +1,6 @@
 # API reference
 
-Every export of every entry point of @johnmorrisdotca/address-plus 1.6.0, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by `pnpm docs:make`, and `pnpm docs:legacy-check` holds every example's answer to the built package; the demo API anchor index at https://johnmorrisdotca.github.io/address-plus/api.html links to the individual documentation pages. Editors show the same TSDoc on hover, from the published type definitions.
+Every export of every entry point of @johnmorrisdotca/address-plus 1.7.0, with its signature, its TSDoc (what it does, each parameter, what it returns) and one example with the answer it gives. Made from the source by `pnpm docs:make`, and `pnpm docs:legacy-check` holds every example's answer to the built package; the demo API anchor index at https://johnmorrisdotca.github.io/address-plus/api.html links to the individual documentation pages. Editors show the same TSDoc on hover, from the published type definitions.
 
 ## @johnmorrisdotca/address-plus
 

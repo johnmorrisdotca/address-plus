@@ -2,7 +2,7 @@
 title: 国のモジュールを加える
 section: how-to
 order: 3
-description: 表示側で必要な国の表だけを import します。
+description: 表示側で必要な国の表だけをimportします。
 ---
 
 ## 追加のモジュールを渡す
@@ -20,7 +20,7 @@ console.log(parseLocation("12 bis rue de la Paix, 75002 Paris",{countries,countr
 console.log(parseLocation("Hauptstraße 12a, 10115 Berlin",{countries,country:"DE"})?.number);
 ```
 
-AU、GB、FR、DE は必要なときに加えます。主な入口は自動では読み込まず、それぞれの国のビルドに別の国の表は入りません。各モジュールは、標準の解析、確認、書式、比較、郵便のデータを持ちます。フランスの海外地域や英国王室属領は元の国のコードを保ち、推測で主な国のコードにまとめません。
+AU、GB、FR、DEは必要なときに加えます。主な入口は自動では読み込まず、それぞれの国のビルドに別の国の表は入りません。各モジュールは、標準の解析、確認、書式、比較、郵便のデータを持ちます。フランスの海外地域や英国王室属領は元の国のコードを保ち、推測で主な国のコードにまとめません。
 
 ## 日本の入力を端末の中で扱う
 

@@ -13,13 +13,13 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { URL, fileURLToPath } from "node:url";
 import process from "node:process";
-import { FAMILY, FAMILY_GROUPS, FAMILY_PITCH, familyRepo, familySite } from "./family-template.mjs";
+import { FAMILY, FAMILY_GROUPS, FAMILY_NOT_ON_NPM, FAMILY_PITCH, familyRepo, familySite } from "./family-template.mjs";
 
 const OWNER = "johnmorrisdotca";
 export const FAMILY_BLOCK_START = "<!-- family:start (made by scripts/family-readme.mjs from scripts/family-template.mjs; change those, not this) -->";
 export const FAMILY_BLOCK_END = "<!-- family:end -->";
 
-const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight"];
+const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty", "thirty-one", "thirty-two"];
 const numberWord = (n) => {
   const word = NUMBER_WORDS[n];
   if (word === undefined) throw new Error(`family-readme.mjs has no word for ${n} packages: add it to NUMBER_WORDS`);
@@ -37,7 +37,7 @@ export function familyReadmeBlock(id) {
       const one = FAMILY.find((entry) => entry.id === memberId);
       const pitch = FAMILY_PITCH[one.id];
       if (pitch === undefined) throw new Error(`${one.id} has no line in FAMILY_PITCH`);
-      return `- [${one.name}](${familyRepo(one.id)}) (${one.kana}): ${pitch}. [Demo](${familySite(one.id)}).`;
+      return `- [${one.name}](${familyRepo(one.id)}) (${one.kana}): ${pitch}. [Demo](${familySite(one.id)}).${FAMILY_NOT_ON_NPM.includes(one.id) ? " Not on npm yet." : ""}`;
     }),
     "",
   ]);

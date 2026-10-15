@@ -4,7 +4,7 @@
 export const WORDS = {
   en: {
     pageDocs: "Docs",
-    pageApi: "API reference",
+    pageApi: "API",
     pageBuilder: "Build an embed",
     pitch:
       "Parse, validate, format and compare addresses from the US, Canada, Japan, Australia, France, Germany and the UK, in TypeScript. Type in any panel and the answer appears, worked out by the package itself, with the call that made it.",

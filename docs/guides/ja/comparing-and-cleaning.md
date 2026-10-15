@@ -20,4 +20,4 @@ console.log(cleanAddressDetailed("742 evergreen terrace,springfield , il 62704")
 
 ## 元の文章を保つ
 
-整える処理は、正規化した表記と標準の詳細を返します。確認や修正が必要な作業では、入力した文章を保ちます。解析に失敗したら、私的な住所を推測した結果で上書きしません。元の[移行の説明](../../MIGRATING_FROM_PARSE_ADDRESS.md)で parse-address との互換性を読めます。
+整える処理は、正規化した表記と標準の詳細を返します。確認や修正が必要な作業では、入力した文章を保ちます。解析に失敗したら、私的な住所を推測した結果で上書きしません。元の[移行の説明](../../MIGRATING_FROM_PARSE_ADDRESS.md)でparse-addressとの互換性を読めます。

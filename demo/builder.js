@@ -11,7 +11,7 @@ const words = {
   en: {
     ...FAMILY_EMBED_BUILDER_WORDS.en,
     pageDocs: "Docs",
-    pageApi: "API reference",
+    pageApi: "API",
     pitch: "Choose a country, preview a form field and copy the embed code. Addresses you enter stay in the field.",
     name: "Address Plus parses and checks addresses in seven countries.",
     nameLink: "About the package",

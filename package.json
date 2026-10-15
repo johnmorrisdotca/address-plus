@@ -1,6 +1,6 @@
 {
   "name": "@johnmorrisdotca/address-plus",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "address-plus アドレスプラス — US and Canadian address parser: parse, validate, format and compare addresses, with Japanese support and modules for Australia, France, Germany and the UK. TypeScript, batch tools and an optional form field.",
   "type": "module",
   "main": "dist/index.js",

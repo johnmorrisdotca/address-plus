@@ -4,27 +4,26 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
-- Synchronize documentation tooling for repository layouts, generated type references, Node entry points and repository-specific README links.
+## 1.7.0 - 2026-10-14
 
-- Keep complete resource catalogues on the documentation entry index and the active resource beside core navigation; render valid default imports in HTML and Markdown.
+An optional form field and a shared embed builder join the demo and the package, bulk tables download as Markdown and SQL, and the package has an English and Japanese documentation site with a checked example for every export. Parsing, validation, formatting and the country modules are unchanged.
+
 ### Added
 
 - Add the bilingual documentation site, checked public examples, paired guides, local search and machine-readable pages.
-
 - Add Markdown and SQL downloads for bulk address tables, using the family’s shared escape-safe writers.
-
 - Add an optional form-associated `address-field` and `defineField`, with native parsing/validation for seven countries, reflected display/form settings, full parser/validator host options, local structured getters and ordinary form reset/disabled/validity support.
 - Add shared builder and validated iframe; entered addresses stay out of setup links, code and public events. Events compose through shadow roots with country and validation counts only.
-
 - Share a package-independent embed builder for option controls, preview adapters, code tabs and shareable links.
 
 ### Changed
 
 - Bundle both helper dependencies for browser-loadable field scripts; keep individual parser/country entry points and their table isolation.
-
 - Group the package family by kind, alphabetize each group, and include the geography packages and REST in Pieces in the shared footer and README.
-
 - Update the shared family description for addresses in all seven supported countries, including France and Germany.
+- The API link in the header reads "API" in English, so that the header takes the same number of rows in English and in Japanese on a phone, as the demo's test of a language change asks.
+- Synchronize documentation tooling for repository layouts, generated type references, Node entry points and repository-specific README links.
+- Keep complete resource catalogues on the documentation entry index and the active resource beside core navigation; render valid default imports in HTML and Markdown.
 
 ## 1.6.0 - 2026-10-09
 

@@ -26,4 +26,4 @@ import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
 console.log(parseUKPostcode("ec1a1bb"),parseGermanPostcode("10115"),parseFrenchPostcode("75002"));
 ```
 
-正規化と収録データの確認は国ごとです。先頭の0を文字列として保ち、郵便番号を数値にしません。元の[郵便の説明](../../../README.md#zip-code--postal-code-handling)には形式、確認の項目、地域の検索があります。個別の API のページで、null と undefined の正確な意味を読めます。
+正規化と収録データの確認は国ごとです。先頭の0を文字列として保ち、郵便番号を数値にしません。元の[郵便の説明](../../../README.md#zip-code--postal-code-handling)には形式、確認の項目、地域の検索があります。個別のAPIのページで、nullとundefinedの正確な意味を読めます。

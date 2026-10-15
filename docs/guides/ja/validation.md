@@ -24,4 +24,4 @@ if(!address) throw new Error("This example did not parse.");
 console.log(validateFrenchAddress(address).errors.length===0);
 ```
 
-国ごとの確認には、その標準の解析結果を渡します。解析の null を確かめてから次に渡します。`validateAddress` は主な入口の入力と設定を受けますが、国の確認も同じ引数とは限りません。入力欄の `options.validation` は標準の設定をすべて使え、公開のイベントは状態と件数を伝えます。[入力欄の扱い](form-field-and-embeds.md)を読めます。
+国ごとの確認には、その標準の解析結果を渡します。解析のnullを確かめてから次に渡します。`validateAddress`は主な入口の入力と設定を受けますが、国の確認も同じ引数とは限りません。入力欄の`options.validation`は標準の設定をすべて使え、公開のイベントは状態と件数を伝えます。[入力欄の扱い](form-field-and-embeds.md)を読めます。
