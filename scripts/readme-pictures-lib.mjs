@@ -8,7 +8,7 @@
 //   import { takePictures } from "./readme-pictures-lib.mjs";
 //   await takePictures({ shots: [{ subject: "hero", views: ["desk", "phone"], prepare: async (page, { view }) => {...}, ready: "#board svg" }] });
 import { Buffer } from "node:buffer";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -75,7 +75,8 @@ export async function takePictures({ shots, root = join(dirname(fileURLToPath(im
           const page = await context.newPage();
           await page.route(`${host}/**`, (route) => {
             const { pathname } = new URL(route.request().url());
-            const file = join(siteDir, pathname === "/" ? "index.html" : decodeURIComponent(pathname).slice(1));
+            const asked = join(siteDir, pathname === "/" ? "index.html" : decodeURIComponent(pathname).slice(1));
+            const file = existsSync(asked) && statSync(asked).isDirectory() ? join(asked, "index.html") : asked;
             if (!existsSync(file)) return route.fulfill({ status: 404, body: "" });
             return route.fulfill({ body: readFileSync(file), contentType: TYPES[extname(file)] ?? "application/octet-stream" });
           });
