@@ -21,8 +21,19 @@ interface AddressPatterns {
   secUnit: string;
 }
 
+// The tables are fixed when the module loads, so the pattern strings are built once. Rebuilding them on every call
+// sorted and joined every street type for every parser stage of every address, four fifths of a US parse.
+let cachedPatterns: Readonly<AddressPatterns> | undefined;
+
+// The regex pattern strings for address parsing, shared and frozen.
+function buildPatterns(): Readonly<AddressPatterns> {
+  cachedPatterns ??= Object.freeze(composePatterns());
+
+  return cachedPatterns;
+}
+
 // Build regex patterns for address parsing
-function buildPatterns(): AddressPatterns {
+function composePatterns(): AddressPatterns {
   const streetTypes = Object.keys(US_STREET_TYPES)
     .concat(Object.values(US_STREET_TYPES))
     .concat(Object.keys(CA_STREET_TYPES))

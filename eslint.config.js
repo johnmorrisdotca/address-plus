@@ -40,7 +40,14 @@ export default tseslint.config(
   {
     files: ["src/**/*.test.js", "scripts/validate-schemas.js", "scripts/**/*.ts", "scripts/**/*.mjs"],
     languageOptions: {
-      globals: { console: "readonly", process: "readonly", fetch: "readonly", Buffer: "readonly", URL: "readonly" },
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        fetch: "readonly",
+        Buffer: "readonly",
+        URL: "readonly",
+        performance: "readonly",
+      },
     },
   },
   // The demo page runs in a browser, its build scripts and browser tests in Node with code that runs in the page.

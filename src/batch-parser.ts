@@ -16,7 +16,7 @@ function processBatch<T>(
   parseFunction: (address: string, options?: ParseOptions) => T | null,
   options: BatchParseOptions = {},
 ): BatchParseResult<T> {
-  const startTime = Date.now();
+  const startTime = performance.now();
   const results: (T | null)[] = [];
   const errors: BatchParseError[] = [];
 
@@ -69,7 +69,7 @@ function processBatch<T>(
     }
   }
 
-  const endTime = Date.now();
+  const endTime = performance.now();
   const duration = endTime - startTime;
   const successful = results.filter((r) => r !== null).length;
   const failed = results.length - successful;

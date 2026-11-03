@@ -63,8 +63,55 @@ function buildRegexFromDict(dict: Record<string, string>, capture: boolean = tru
   return new RegExp(capture ? `${WORD_START}(${pattern})${WORD_END}` : wholeWord(pattern), "iu");
 }
 
-// The same search for one known word, used to take a match back out of the text.
-const wordPattern = (word: string, flags: string): RegExp => new RegExp(wholeWord(escapeRegExp(word)), flags);
+// The expression for a table of the package's own, made the first time the table is searched. buildRegexFromDict
+// sorts, escapes and compiles every key, which is most of the cost of reading a state or a street type, and the
+// tables do not change between calls. A table of a caller's, passed to buildRegexFromDict, is never kept.
+const tableRegexes = new WeakMap<Record<string, string>, RegExp>();
+
+const tableRegex = (table: Record<string, string>): RegExp => {
+  let regex = tableRegexes.get(table);
+  if (!regex) {
+    regex = buildRegexFromDict(table);
+    tableRegexes.set(table, regex);
+  }
+
+  return regex;
+};
+
+// The same search for one known word, used to take a match back out of the text. A match is one of the table's words
+// in whatever letter case the text used, so there are few; the cache is emptied rather than allowed to grow.
+const WORD_PATTERN_CACHE_LIMIT = 500;
+const wordPatterns = new Map<string, RegExp>();
+
+const wordPattern = (word: string, flags: string): RegExp => {
+  const key = `${flags}:${word}`;
+  let regex = wordPatterns.get(key);
+  if (!regex) {
+    if (wordPatterns.size >= WORD_PATTERN_CACHE_LIMIT) wordPatterns.clear();
+    regex = new RegExp(wholeWord(escapeRegExp(word)), flags);
+    wordPatterns.set(key, regex);
+  }
+
+  return regex;
+};
+
+// The state and province codes, as an alternation, once.
+let stateCodePatterns: { us: RegExp; ca: RegExp } | undefined;
+
+const stateCodeRegexes = (): { us: RegExp; ca: RegExp } => {
+  stateCodePatterns ??= {
+    us: new RegExp(`${WORD_START}(${Object.values(US_STATES).join("|")})${WORD_END}`, "iu"),
+    ca: new RegExp(`${WORD_START}(${Object.values(CA_PROVINCES).join("|")})${WORD_END}`, "iu"),
+  };
+
+  return stateCodePatterns;
+};
+
+// Every Canadian street type, with the US ones beneath them, once.
+let canadianStreetTypes: Record<string, string> | undefined;
+
+// A unit type and its number, once.
+let unitWithNumber: RegExp | undefined;
 
 /**
  * Takes a leading directional off a street (`NW Main St`), abbreviated.
@@ -80,7 +127,7 @@ const wordPattern = (word: string, flags: string): RegExp => new RegExp(wholeWor
  * ```
  */
 function parseDirectional(text: string): { direction: string | undefined; remaining: string } {
-  const dirPattern = buildRegexFromDict(DIRECTIONAL_MAP);
+  const dirPattern = tableRegex(DIRECTIONAL_MAP);
   const match = text.match(dirPattern);
 
   if (match) {
@@ -110,8 +157,9 @@ function parseStreetType(
   text: string,
   country: "US" | "CA" = COUNTRIES.UNITED_STATES,
 ): { type: string | undefined; remaining: string } {
-  const typeMap = country === COUNTRIES.CANADA ? { ...US_STREET_TYPES, ...CA_STREET_TYPES } : US_STREET_TYPES;
-  const typePattern = buildRegexFromDict(typeMap);
+  if (country === COUNTRIES.CANADA) canadianStreetTypes ??= { ...US_STREET_TYPES, ...CA_STREET_TYPES };
+  const typeMap = country === COUNTRIES.CANADA ? canadianStreetTypes! : US_STREET_TYPES;
+  const typePattern = tableRegex(typeMap);
   const match = text.match(typePattern);
 
   if (match) {
@@ -141,9 +189,33 @@ function parseStateProvince(text: string): {
   remaining: string;
   detectedCountry?: "US" | "CA";
 } {
+  // One parse asks about the same state text several times (is it Canadian, what is its code), and each ask is up to
+  // four searches of the text; the answer for a text is the same each time.
+  const known = stateReadings.get(text);
+  if (known) return { ...known };
+  const reading = readStateProvince(text);
+  if (stateReadings.size >= STATE_READING_CACHE_LIMIT) stateReadings.clear();
+  stateReadings.set(text, reading);
+
+  return { ...reading };
+}
+
+// What parseStateProvince reads from a text.
+interface StateProvinceReading {
+  state: string | undefined;
+  remaining: string;
+  detectedCountry?: "US" | "CA";
+}
+
+// The readings parseStateProvince has made lately. The texts are mostly a state or a province as written, so few
+// differ; the cache is emptied rather than allowed to grow when a caller feeds it many.
+const STATE_READING_CACHE_LIMIT = 256;
+const stateReadings = new Map<string, StateProvinceReading>();
+
+function readStateProvince(text: string): StateProvinceReading {
   // Try US state abbreviations first (more specific than full names)
-  const usAbbrevPattern = new RegExp(`${WORD_START}(${Object.values(US_STATES).join("|")})${WORD_END}`, "iu");
-  let match = text.match(usAbbrevPattern);
+  const codes = stateCodeRegexes();
+  let match = text.match(codes.us);
   if (match) {
     const state = match[1].toUpperCase();
     const remaining = text.replace(wordPattern(match[1], "iu"), " ").replace(/\s+/g, " ").trim();
@@ -151,8 +223,7 @@ function parseStateProvince(text: string): {
   }
 
   // Try Canadian province abbreviations
-  const caAbbrevPattern = new RegExp(`${WORD_START}(${Object.values(CA_PROVINCES).join("|")})${WORD_END}`, "iu");
-  match = text.match(caAbbrevPattern);
+  match = text.match(codes.ca);
   if (match) {
     const state = match[1].toUpperCase();
     const remaining = text.replace(wordPattern(match[1], "iu"), " ").replace(/\s+/g, " ").trim();
@@ -160,7 +231,7 @@ function parseStateProvince(text: string): {
   }
 
   // Try US states full names (only if no abbreviation found)
-  const usPattern = buildRegexFromDict(US_STATES);
+  const usPattern = tableRegex(US_STATES);
   match = text.match(usPattern);
   if (match) {
     const state = US_STATES[match[1].toLowerCase()];
@@ -169,7 +240,7 @@ function parseStateProvince(text: string): {
   }
 
   // Try Canadian provinces full names
-  const caPattern = buildRegexFromDict(CA_PROVINCES);
+  const caPattern = tableRegex(CA_PROVINCES);
   match = text.match(caPattern);
   if (match) {
     const state = CA_PROVINCES[match[1].toLowerCase()];
@@ -250,10 +321,10 @@ function parseSecondaryUnit(text: string): {
   secUnitNum: string | undefined;
   remaining: string;
 } {
-  const unitPattern = buildRegexFromDict(SECONDARY_UNIT_TYPES);
+  unitWithNumber ??= new RegExp(`${tableRegex(SECONDARY_UNIT_TYPES).source}\\s*(\\d+\\w*|[a-zA-Z]+\\d*)`);
 
   // Look for unit type followed by number
-  const unitMatch = text.match(new RegExp(`${unitPattern.source}\\s*(\\d+\\w*|[a-zA-Z]+\\d*)`));
+  const unitMatch = text.match(unitWithNumber);
   if (unitMatch) {
     const secUnitType = SECONDARY_UNIT_TYPES[unitMatch[1].toLowerCase()];
     const secUnitNum = unitMatch[2];
