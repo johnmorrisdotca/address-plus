@@ -68,7 +68,7 @@ const ts = tsModule.default?.createProgram ? tsModule.default : tsModule.createP
 import { FAMILY, FAMILY_PITCH, FAMILY_SCRIPT, FAMILY_WORDS, familyFooter, familyHead, familyHeader, familyUnreviewed } from "./family-template.mjs";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const DOCS_SITE_VERSION = "2026-11-02-kazoku-header";
+export const DOCS_SITE_VERSION = "2026-11-03-guide-images";
 
 const OWNER = "johnmorrisdotca";
 /** The kinds of guide, in the order the contents list them (Diátaxis, with troubleshooting and upgrading of their own). */
@@ -453,7 +453,7 @@ export function highlight(code, lang) {
  * `code(name)` answers the page an export's name in backticks links to, or null. Raw HTML is shown as text: a package
  * writes words, never markup. Headings get ids; `headingOffset` moves them down (a doc comment's ## under a page's ##).
  */
-export function renderMarkdown(markdown, { resolve: resolveHref = (href) => href, code: codeLink = () => null, headingOffset = 0, ids = new Map(), headings = [], outputs = new Map() } = {}) {
+export function renderMarkdown(markdown, { resolve: resolveHref = (href) => href, image: imageSrc = (href) => href, code: codeLink = () => null, headingOffset = 0, ids = new Map(), headings = [], outputs = new Map() } = {}) {
   const idFor = (text) => {
     const base = slugOf(text) || "section";
     const count = ids.get(base) ?? 0;
@@ -476,6 +476,10 @@ export function renderMarkdown(markdown, { resolve: resolveHref = (href) => href
         if (target === null) return inner;
         const external = /^https?:/.test(target);
         return `<a href="${escapeHtml(target)}"${title ? ` title="${escapeHtml(title)}"` : ""}${external ? ` rel="noopener"` : ""}>${inner}</a>`;
+      },
+      image({ href, title, text }) {
+        const src = imageSrc(href);
+        return src === null ? escapeHtml(text) : `<img src="${escapeHtml(src)}" alt="${escapeHtml(text)}"${title ? ` title="${escapeHtml(title)}"` : ""} loading="lazy" decoding="async">`;
       },
       codespan({ text }) {
         const page = codeLink(text.replace(/\(\)$/, ""));
@@ -590,6 +594,18 @@ function guideLink(model, guide, href, from, problems, anchorsOf) {
   return null;
 }
 
+/** A guide's picture, resolved: a picture under docs/images/ is copied to site/docs/images/ and shown from there; any other file of the repository is shown from GitHub. */
+function guideImage(model, guide, href, from, problems) {
+  if (/^(https?:|data:)/.test(href)) return href;
+  const absolute = posix.normalize(posix.join(posix.dirname(guide.file), href.split(/[#?]/)[0]));
+  if (absolute.startsWith("..") || !existsSync(join(model.site.repositoryRoot, absolute))) {
+    problems.push(`${guide.file}: the picture "${href}" is not a file of the repository (${absolute}).`);
+    return null;
+  }
+  if (absolute.startsWith("docs/images/")) return hrefFrom(from, absolute.slice(5));
+  return `${model.site.repoUrl}/raw/main/${absolute}`;
+}
+
 /** An address relative to the docs folder, in a language: "guides/x.html" in Japanese is "ja/guides/x.html". */
 const pagePath = (lang, path) => (lang === "en" ? path : `${lang}/${path}`);
 
@@ -653,7 +669,10 @@ export function docsProblems(root, model = modelOf(root)) {
     }
     return anchors.get(guide.file);
   };
-  for (const guide of guides) renderMarkdown(guide.body, { resolve: (href) => guideLink(model, guide, href, pagePath(guide.lang, `guides/${guide.slug}.html`), problems, anchorsOf) });
+  for (const guide of guides) {
+    const from = pagePath(guide.lang, `guides/${guide.slug}.html`);
+    renderMarkdown(guide.body, { resolve: (href) => guideLink(model, guide, href, from, problems, anchorsOf), image: (href) => guideImage(model, guide, href, from, problems) });
+  }
   for (const item of reference.items) {
     const texts = [item.summary, item.remarks, item.returnsDoc ?? "", ...item.see, ...item.paramDocs.map((doc) => doc.doc), ...item.members.map((member) => member.doc)];
     for (const text of texts) renderMarkdown(text, { resolve: (href) => {
@@ -803,6 +822,7 @@ nav.docs-side .docs-entry-code { color: var(--muted); font-family: var(--mono); 
 .docs-content blockquote { margin: 0 0 14px; padding: 8px 14px; border-left: 4px solid var(--felt); background: var(--surface); border-radius: 0 10px 10px 0; }
 .docs-content blockquote > :last-child { margin-bottom: 0; }
 .docs-content .fam-table-box { margin: 0 0 16px; }
+.docs-content img { display: block; max-width: 100%; height: auto; margin: 0 0 16px; border-radius: 10px; border: 1px solid var(--rule); }
 .docs-content table code { white-space: normal; overflow-wrap: break-word; }
 .docs-content td, .docs-content th { overflow-wrap: break-word; }
 .docs-content h1 code { background: none; padding: 0; font-size: 1em; }
@@ -1155,6 +1175,7 @@ function guidePage(model, english, lang, outputs) {
   const body = renderMarkdown(guide.body, {
     headings, outputs: blockOutputs,
     resolve: (href) => guideLink(model, guide, href, from, [], anchorsOf),
+    image: (href) => guideImage(model, guide, href, from, []),
     code: (name) => { const target = referenceTarget(model, name); return target === null ? null : hrefFrom(from, pagePath(lang, target)); },
   });
   const tops = headings.filter((heading) => heading.level === 2);
@@ -1176,7 +1197,11 @@ function guidePage(model, english, lang, outputs) {
     metaLine(model, words, { source: `${model.site.repoUrl}/blob/main/${guide.file}`, edit: `${model.site.repoUrl}/edit/main/${guide.file}` }),
   ];
   const markdown = `# ${guide.title}\n\n${guide.description}\n\n${guide.body.trim()}\n`.replace(/\]\(api:([\w.]+)\)/g, (whole, name) => { const target = referenceTarget(model, `api:${name}`); return target ? `](${model.site.docsUrl}${target.replace(/\.html$/, ".md")})` : whole; });
-  return { ...page, html: frame(model, page, words, parts.filter(Boolean).join("\n          ")), markdown };
+  const markdownWithPictures = markdown.replace(/(!\[[^\]]*\]\()([^)\s]+)(\))/g, (whole, before, href, after) => {
+    const absolute = posix.normalize(posix.join(posix.dirname(guide.file), href));
+    return /^(https?:|data:)/.test(href) || !absolute.startsWith("docs/images/") ? whole : `${before}${model.site.docsUrl}${absolute.slice(5)}${after}`;
+  });
+  return { ...page, html: frame(model, page, words, parts.filter(Boolean).join("\n          ")), markdown: markdownWithPictures };
 }
 
 function changelogPage(model, lang) {
@@ -1294,6 +1319,7 @@ export async function buildDocsSite({ root = process.cwd(), out = join(root, "si
   if (familyCss === undefined) throw new Error("No family.css: it is demo/family.css in every package of the family");
   cpSync(familyCss, join(docs, "family.css"));
   writeFileSync(join(docs, "docs.css"), DOCS_CSS);
+  if (existsSync(join(root, "docs", "images"))) cpSync(join(root, "docs", "images"), join(docs, "images"), { recursive: true });
   const pages = [];
   for (const lang of LANGS) {
     pages.push(homePage(model, lang), searchPage(model, lang), changelogPage(model, lang));
