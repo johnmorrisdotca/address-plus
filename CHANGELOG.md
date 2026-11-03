@@ -4,6 +4,8 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+## 1.8.0 - 2026-11-03
+
 Parsing a US or Canadian address is over 200 times faster, the root entry is smaller and loads faster, and the code is split into files that each do one job. Nothing a caller can see has changed except the points under Changed. The numbers before and after are in [the performance guide](docs/guides/performance.md).
 
 ### Added
