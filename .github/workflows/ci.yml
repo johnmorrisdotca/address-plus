@@ -26,5 +26,5 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Lint, typecheck, test, test:types, schema:validate, build and test:package, in that order.
+      # Lint, typecheck, size gate, test, build, docs checks, test:types, schema:validate, test:package and test:readme (the README's examples run), in that order.
       - run: pnpm check

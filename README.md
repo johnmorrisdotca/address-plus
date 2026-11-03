@@ -4,7 +4,7 @@
 
 The demo parses, validates, formats, compares and cleans an address as you type; takes a pasted list of addresses from all seven countries and saves the results as CSV, JSON or text; takes a Japanese address apart, each part beside its reading and romaji; and runs the whole test corpus, 3,526 cases, in your browser, listing the few still wrong. Every panel copies its call as code or a link that opens the page as you left it. Nothing you type leaves the page.
 
-<p align="center"><img alt="TypeScript" src="https://img.shields.io/badge/types-TypeScript-2f5d4a"> <a href="https://johnmorrisdotca.github.io/address-plus/docs/api/main/index.html"><img alt="105.7 kB minified and gzipped" src="https://img.shields.io/badge/min%2Bgzip-105.7%20kB-2f5d4a"></a> <a href="https://www.npmjs.com/package/@johnmorrisdotca/address-plus#provenance"><img alt="Published with npm provenance" src="https://img.shields.io/badge/npm-provenance-2f5d4a"></a></p>
+<p align="center"><img alt="TypeScript" src="https://img.shields.io/badge/types-TypeScript-2f5d4a"> <a href="https://johnmorrisdotca.github.io/address-plus/docs/api/main/index.html"><img alt="101.8 kB minified and gzipped" src="https://img.shields.io/badge/min%2Bgzip-101.8%20kB-2f5d4a"></a> <a href="https://www.npmjs.com/package/@johnmorrisdotca/address-plus#provenance"><img alt="Published with npm provenance" src="https://img.shields.io/badge/npm-provenance-2f5d4a"></a></p>
 
 <table align="center">
 <tr>
@@ -211,6 +211,8 @@ console.log(parsed);
 ### US Addresses
 
 ```js
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
 // Basic address
 parseLocation("123 Main Street, Anytown, NY 12345");
 
@@ -233,6 +235,8 @@ parseLocation("Starbucks, 1234 Coffee Lane, Seattle WA 98101");
 ### Canadian Addresses
 
 ```js
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
 // English format
 parseLocation("123 Main Street, Toronto ON M5V 1A1");
 
@@ -246,6 +250,8 @@ parseLocation("789 Avenue des Pins Ouest, Montréal QC H2W 1S6");
 ### Intersections
 
 ```js
+import { parseIntersection } from "@johnmorrisdotca/address-plus";
+
 // Various intersection formats
 parseIntersection("Main St & Broadway");
 parseIntersection("5th Street and Park Avenue");
@@ -409,6 +415,8 @@ The parser extracts ZIP/postal codes from addresses and provides validation info
 #### US ZIP Codes
 
 ```js
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
 // Standard 5-digit ZIP
 parseLocation("123 Main St, New York NY 12345");
 // { zip: '12345', zipValid: true, ... }
@@ -432,6 +440,8 @@ parseLocation("123 Main St, New York NY 1234567");
 #### Canadian Postal Codes
 
 ```js
+import { parseLocation } from "@johnmorrisdotca/address-plus";
+
 // Standard format with space (A1A 1A1)
 parseLocation("123 Main St, Toronto ON M5V 1A1");
 // { zip: 'M5V 1A1', zipValid: true, country: 'CA', ... }
@@ -504,6 +514,8 @@ getZipPrefixesForState("GU"); // ['96910', …, '96932'] (five digits where a re
 `validateAddress` uses them: an address whose code belongs to another region gets a `POSTAL_REGION_MISMATCH` warning, or an error with `strictPostalValidation: true`.
 
 ```js
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+
 validateAddress("1 Main St, Beverly Hills, NY 90210").warnings;
 // [{ field: 'zip', code: 'POSTAL_REGION_MISMATCH', message: 'ZIP code 90210 belongs to CA, not NY', severity: 'warning' }]
 ```
@@ -624,6 +636,8 @@ formatJapaneseEnglish(parseLocation("Sample Bldg 5F, 1-2-3 Marunouchi, Chiyoda-k
 | `AMBIGUOUS_MUNICIPALITY`           | warning                                               | Two prefectures have a municipality of that name (府中市), and neither a prefecture nor a postal code says which |
 
 ```js
+import { validateAddress } from "@johnmorrisdotca/address-plus";
+
 validateAddress("〒530-0001 東京都千代田区丸の内1-2-3").warnings;
 // [{ field: 'zip', code: 'POSTAL_REGION_MISMATCH', message: 'Postal code 530-0001 belongs to 大阪府, not 東京都', severity: 'warning' }]
 
@@ -909,13 +923,17 @@ console.log(result.errors);
 #### Batch Options
 
 ```js
+import { parseLocationsBatch } from "@johnmorrisdotca/address-plus";
+
+const addresses = ["123 Main St, Seattle, WA 98101", "100 Queen St W, Toronto, ON M5H 2N2"];
+
 // Stop processing on first error
-const result = parseLocationsBatch(addresses, {
+const stopped = parseLocationsBatch(addresses, {
   stopOnError: true,
 });
 
 // Pass parsing options to underlying parsers
-const result = parseLocationsBatch(addresses, {
+const strict = parseLocationsBatch(addresses, {
   strict: true, // Enable strict ZIP validation
   country: "CA", // Force Canadian parsing
 });
@@ -991,8 +1009,8 @@ Parsing and known postal-data checks do not establish deliverability or occupanc
 ### Performance
 
 - **One small dependency**: `fast-levenshtein`, for fuzzy state and province names; hikidashi is bundled in
-- **Size**: the root is 104.9 kB minified and gzipped; `/jp` is 60.5 kB, `/au` 7.1 kB, `/gb` 8.6 kB, `/de` 12.1 kB and `/fr` 9.2 kB. The optional field and its registration entry are each 132.7 kB and bundle all seven countries. The country modules remain outside the root; [the measured sizes](docs/bundle-size.json) are refreshed with `pnpm size --write`
-- **Fast**: Regex-based parsing optimized for performance
+- **Size**: the root is 101.8 kB minified and gzipped, `/jp` 57.5 kB, `/au` 7.2 kB, `/gb` 8.7 kB, `/de` 12.2 kB and `/fr` 9.3 kB; the optional field entries are 130.1 kB each. [The measured sizes](docs/bundle-size.json) are refreshed with `pnpm size --write`
+- **Fast**: a US or Canadian address parses in about 10 microseconds. `pnpm bench` measures speed, load time and size; [the performance guide](docs/guides/performance.md) has the numbers
 - **Memory efficient**: Minimal object allocation
 
 ## Accessibility
@@ -1097,7 +1115,7 @@ The project needs Node.js 24 (see `.nvmrc`) and pnpm 10.
 
 ```sh
 pnpm install
-pnpm check     # lint, typecheck, test, build, type tests, schema validation, package check
+pnpm check     # lint, typecheck, size gate, test, build, docs, type tests, schema validation, package check, README examples
 pnpm test      # the Vitest suite alone
 pnpm lint:fix  # ESLint and Prettier, fixing what they can
 ```

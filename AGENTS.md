@@ -15,7 +15,10 @@
 
 | Command                  | What it does                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| `pnpm check`             | Everything CI runs, in this order: lint, typecheck, test, build, docs:check, docs:legacy-check, test:types, schema:validate, test:package |
+| `pnpm check`             | Everything CI runs, in this order: lint, typecheck, check:size, test, build, docs:check, docs:legacy-check, test:types, schema:validate, test:package, test:readme |
+| `pnpm check:size`        | `scripts/check-size.mjs`, the family's copy: no source file under `src/` holds more than 500 lines of code (blank lines, comments, tests and `*.data.ts` are not counted) |
+| `pnpm test:readme`       | `scripts/check-readme-examples.mjs`: builds, then runs every `ts`, `js` and `mjs` block of the README against the built package (`no-run` type-checks only, `no-check` skips an excerpt) |
+| `pnpm bench`             | Builds, then `scripts/benchmark.mjs`: parse speed over each country's corpus, load time in a fresh process, and the size of every entry point; see [docs/guides/performance.md](docs/guides/performance.md) |
 | `pnpm lint`              | ESLint, then `prettier --check .`; `pnpm lint:fix` fixes what it can                                       |
 | `pnpm typecheck`         | `tsc -p tsconfig.check.json`: `src/**` including the tests, and `scripts/**/*.ts`                          |
 | `pnpm test`              | Vitest, once (`pnpm test:watch` to watch, `pnpm test:coverage` for coverage)                               |
@@ -26,7 +29,7 @@
 | `pnpm docs:legacy-check`        | `scripts/check-docs.mjs`: every export has TSDoc and an example whose answer the built package gives; needs `dist/` |
 | `pnpm docs:make`         | Writes `docs/api.md`, the API reference, from the TSDoc                                                    |
 | `pnpm data:jp`           | Regenerates the Japanese data tables (documented in `scripts/README.md`)                                   |
-| `pnpm data:sub-regions`  | Regenerates `src/constants/sub-regions.ts` from the Census and Statistics Canada                           |
+| `pnpm data:sub-regions`  | Regenerates `src/constants/sub-regions.data.ts` from the Census and Statistics Canada                      |
 | `pnpm data:countries`    | Regenerates the Australian, British, French and German tables from kuni, the ABS, Code-Point Open, La Poste, INSEE and GeoNames (`docs/COUNTRIES.md`) |
 | `pnpm release <version>` | Cuts a release (below)                                                                                     |
 
@@ -35,13 +38,18 @@ Run `pnpm check` before every push. It must pass with nothing disabled: do not t
 ## Layout
 
 - Eight entry points, all built by tsup: `src/index.ts` is the package root, `src/jp/index.ts` is `@johnmorrisdotca/address-plus/jp`, and `src/au/index.ts`, `src/de/index.ts`, `src/fr/index.ts` and `src/gb/index.ts` are the country modules `/au`, `/de`, `/fr` and `/gb`. The `/jp` bundle must not carry the US street-type tables, and `/au`, `/de`, `/fr` and `/gb` must carry none of the US, Canadian or Japanese tables nor each other's; `pnpm test:package` fails if they do. Keep those modules from importing anything that pulls in another country's tables. The main entry point never imports a country module: it takes them in the `countries` option (`src/country/pick.ts`). `docs/COUNTRIES.md` says how to add a country.
-- `src/parser.ts` and `src/parsers/` parse; `src/constants/` holds the tables; `src/patterns/` holds every regular expression; `src/utils/` holds shared helpers; `src/types/` holds the types.
+- `src/parser.ts` reads the country and the kind of address and hands the text on; `src/parsers/` holds a parser for each kind (military, rural route, PO box, intersection, informal) and `src/parsers/standard/` the US and Canadian street address in stages: `facility.ts` reads the first comma part, `locality-single-line.ts` and `locality-commas.ts` take the city, state and ZIP off the end, `street-line.ts` reads the number, the directionals, the unit and the street type, `finish.ts` writes the result, and `standard-parser.ts` runs them in that order. `src/parsers/standard/patterns.ts` holds the regular expressions those stages build from the tables, made once on first use: build a pattern there, never inside a call, because rebuilding them was four fifths of the time a US address took.
+- Japan is `src/jp/`: `parse.ts` detects and starts, `parse-script.ts` and `parse-romaji.ts` read the two ways of writing an address, and `address-parts.ts` holds the block, town and building parts they share. `src/constants/` holds the tables; `src/patterns/` holds every other regular expression; `src/utils/` holds shared helpers; `src/types/` holds the types.
+- Every source file holds at most 500 lines of code: `pnpm check:size` fails above that. Split a file that grows by what it does, never by trimming comments. A long table goes in a `*.data.ts` file, which the gate does not count. `demo/*.js` is held to the same by `scripts/demo-size.test.mjs`.
+- The demo is `demo/demo.js` (the page: its panels' examples, the example buttons, render and start-up) with one module for each part: `shared.js` (language, words and the elements an answer is written with), `panel-parse.js`, `panel-validate.js`, `panel-format.js`, `panel-compare.js`, `panel-postal.js` and `panel-clean.js`, `fields.js`, `links.js` (the address bar and copy buttons), `extras.js` with its three tools in `extras-japan.js`, `extras-bulk.js` and `extras-corpus.js`, and the words in `words-en.js` and `words-ja.js`. A module the page imports must export every name another imports: only the demo's browser tests (`pnpm test:demo`) catch a missing one.
 - Tests are in `src/__tests__/`. Their data is JSON in `test-data/`, one folder per area, validated against `schemas/`. Test-only scripts live in `scripts/*.test.mjs`.
 - `scripts/*.js` (the old debug scripts) are not linted; leave them alone.
 
 ## Generated data
 
-Files named `*.data.ts` (the Japanese prefectures, municipalities and postal prefixes under `src/constants/jp/`) are written by `pnpm data:jp`, those under `src/constants/au/`, `src/constants/de/`, `src/constants/fr/` and `src/constants/gb/` by `pnpm data:countries`, and `src/constants/sub-regions.ts` is written by `pnpm data:sub-regions`. Never edit them by hand: change the generator in `scripts/` and run it again. Prettier ignores `*.data.ts`, so the generator's output does not have to be formatted.
+Files named `*.data.ts` (the Japanese prefectures, municipalities and postal prefixes under `src/constants/jp/`) are written by `pnpm data:jp`, those under `src/constants/au/`, `src/constants/de/`, `src/constants/fr/` and `src/constants/gb/` by `pnpm data:countries`, and `src/constants/sub-regions.data.ts` is written by `pnpm data:sub-regions`. Never edit them by hand: change the generator in `scripts/` and run it again. Prettier ignores `*.data.ts`, so the generator's output does not have to be formatted.
+
+The two big generated tables are written as packed text, not as objects: `municipalities.data.ts` one municipality to a line as `code|name|kana|romaji` and `sub-regions.data.ts` one sub-region to a line as `name|parentCity|state|type|alias~alias`. A small reader unpacks each (`src/constants/jp/unpack-municipalities.ts`, `src/constants/sub-regions.ts`), the sub-regions the first time a lookup asks and the municipalities when the module loads, behind a `/* @__PURE__ */` mark so a bundler can drop them from a build that never reads them. The packing is `scripts/jp/pack.ts` and `scripts/sub-regions/pack.ts`, and the tests in `src/__tests__/japan/packing.test.ts` and `src/__tests__/utilities/sub-regions.test.ts` hold the packed text to its reader. `src/constants/us-street-types.data.ts` is the one `*.data.ts` file kept by hand (USPS Publication 28): it is named so only because the size gate does not count a long table, and it is edited like any source.
 
 ## Release procedure
 

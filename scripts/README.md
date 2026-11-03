@@ -46,13 +46,11 @@ pnpm data:sub-regions
 
 ### Output
 
-The pipeline generates `src/constants/sub-regions.ts`, which is never edited by hand, containing:
+The pipeline generates `src/constants/sub-regions.data.ts`, which is never edited by hand. It holds the table as two packed texts, `CA_SUB_REGIONS_PACKED` and `US_SUB_REGIONS_PACKED`, one sub-region to a line as `name|parentCity|state|type|alias~alias` (`pack.ts` writes them). `src/constants/sub-regions.ts` unpacks them the first time a lookup asks, once for each country, and offers:
 
-- `ALL_SUB_REGIONS` - Complete array of all sub-regions
-- `SUB_REGION_NAMES` - Set for fast lookup
-- `SUB_REGION_MAP` - Map for detailed lookup
-- Country-specific collections (`US_SUB_REGIONS`, `CA_SUB_REGIONS`)
-- Type-specific collections (`BOROUGHS`, `PARISHES`, `DISTRICTS`, etc.)
+- `allSubRegions()` - every sub-region, Canada first
+- `subRegionsOf(country)` - the sub-regions of `"US"` or `"CA"`
+- `isSubRegionName(text)` - whether a normalized text is a sub-region's name or one of its aliases
 
 ### Data Sources
 

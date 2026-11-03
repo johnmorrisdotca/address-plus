@@ -4,6 +4,24 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+Parsing a US or Canadian address is over 200 times faster, the root entry is smaller and loads faster, and the code is split into files that each do one job. Nothing a caller can see has changed except the points under Changed. The numbers before and after are in [the performance guide](docs/guides/performance.md).
+
+### Added
+
+- `pnpm bench` (`scripts/benchmark.mjs`): parse speed over each country's corpus, the time a fresh process takes to import an entry point, and the size of every entry point, measured the way `pnpm size` does.
+- `pnpm check:size` (`scripts/check-size.mjs`, the family's copy), part of `pnpm check`: no source file holds more than 500 lines of code. `scripts/demo-size.test.mjs` holds the demo's scripts to the same.
+- A performance guide, in English and Japanese, and a section in the architecture guide on the file layout.
+
+### Changed
+
+- A US or Canadian address is parsed in about 10 microseconds instead of about 2,200 (109,415 addresses a second over the 1,082-address US corpus, from 450; 98,921 over the Canadian one, from 460). The patterns built from the street-type, state and directional tables were rebuilt for every address; they are made once, on first use, and so are the expressions for the states, the street types and the units, the state texts a parse asks about several times, and the words taken back out of the text.
+- `looksJapanese` checks the cheap signs of a Japanese address (a postal code, a designator, an English municipality word) before it normalizes each word to look for a prefecture.
+- The root entry is 431 kB minified and 101.8 kB gzipped, from 597 kB and 105.7 kB; `/jp` is 242 kB and 57.5 kB, from 333 kB and 60.6 kB; the field entries 504 kB and 130.1 kB, from 670 kB and 133.0 kB. The Japanese municipalities and the US and Canadian sub-regions are stored as packed text, one row to a line, and unpacked by a small reader. Importing the root takes about 20 ms in a fresh process, from about 41.
+- The sub-regions are unpacked the first time a lookup asks, and the Japanese lookup indexes the first time a Japanese address is read, not when the package loads.
+- `parseLocationsBatch` and the other batch functions time with `performance.now()`, so `stats.duration` and `averagePerAddress` can be fractions of a millisecond; a batch of a few addresses used to read 0.
+- The standard parser is in stages under `src/parsers/standard/`, `src/jp/parse.ts` is split into the script reader, the romaji reader and the shared parts, the demo is one module for each panel and tool, and the test case shapes are one file for each area. The largest hand-written source file is 499 lines, from 1,178. `src/constants/us-street-types.ts` is `us-street-types.data.ts` (kept by hand), and `STREET_TYPE_EXPANSIONS` has a file of its own.
+- `pnpm data:sub-regions` writes `src/constants/sub-regions.data.ts`, and `pnpm data:jp` writes the municipalities as packed text.
+
 ## 1.7.0 - 2026-10-14
 
 An optional form field and a shared embed builder join the demo and the package, bulk tables download as Markdown and SQL, and the package has an English and Japanese documentation site with a checked example for every export. Parsing, validation, formatting and the country modules are unchanged.
