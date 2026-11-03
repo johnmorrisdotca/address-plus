@@ -24,7 +24,8 @@ export function thumbnailAddresses(pkg: PackageJson): {
   raw: { card: string; dark: string; icon: string };
 };
 export function defaultAlt(pkg: PackageJson): string;
-export function thumbnailHead(pkg: PackageJson, options?: { alt?: string }): string;
+export const RELATIVE_BASE: RegExp;
+export function thumbnailHead(pkg: PackageJson, options?: { alt?: string; base?: string; icon?: boolean }): string;
 export function thumbnailReadmeBlock(pkg: PackageJson, options?: { alt?: string }): string;
 export function readmeThumbnailFaults(readme: string, pkg: PackageJson): string[];
 export function pngSize(bytes: Buffer): { width: number; height: number } | null;

@@ -18,7 +18,23 @@ import {
 
 const sha = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 /** The hash of scripts/family-thumbnail.mjs, recorded each time the family changes it. */
-const HASH = "36ef086cc2a0144e3b0d7aa26177d1de085e4d8791f283a89a18e2cee5fb3613";
+const HASH = "b8f703fb7fe0da75cfd6b45e1b152f0ae1ecfa297c06eb2caac023fad1795f47";
+
+/**
+ * The addresses of every tag in some HTML that a browser fetches by itself: a link's href (icon, apple-touch-icon,
+ * stylesheet, preload, manifest), and the src and srcset of an img, script, source, iframe, video or audio. A meta tag's
+ * content is not among them: og:image and twitter:image are read by link previews, never by the browser.
+ */
+const fetchedAddresses = (html) =>
+  [...html.matchAll(/<(link|img|script|source|iframe|video|audio)\b[^>]*>/gi)].flatMap(([tag, name]) =>
+    [...tag.matchAll(/\s(href|src|srcset)\s*=\s*"([^"]*)"/gi)]
+      .filter(([, attribute]) => name.toLowerCase() === "link" || attribute.toLowerCase() !== "href")
+      .flatMap(([, attribute, value]) =>
+        attribute.toLowerCase() === "srcset" ? value.split(",").map((one) => one.trim().split(/\s+/)[0]) : [value],
+      ),
+  );
+/** An address that leaves the page's own site, or names it from the server's root: a scheme, `//host` or `/path`. */
+const offSite = (address) => /^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(address.trim());
 
 /** The bytes of a PNG header saying a size: enough for pngSize, not a picture. */
 const header = (width, height) => {
@@ -54,7 +70,7 @@ const sample = ({
 
 describe("this package's thumbnails", () => {
   it("keeps the family's thumbnail file", () => {
-    expect(FAMILY_THUMBNAIL_VERSION).toBe("2026-11-03");
+    expect(FAMILY_THUMBNAIL_VERSION).toBe("2026-11-03.2");
     expect(sha("scripts/family-thumbnail.mjs")).toBe(HASH);
   });
 
@@ -93,5 +109,41 @@ describe("the thumbnail checks catch what they are for", () => {
     expect(head).toContain('<meta property="og:image" content="https://spxis.github.io/sample/thumbnail.png" />');
     expect(head).toContain('<meta name="twitter:card" content="summary_large_image" />');
     expect(head).toContain('<meta name="twitter:image" content="https://spxis.github.io/sample/thumbnail.png" />');
+  });
+
+  it("gives no tag a browser fetches an absolute or cross-origin address, so a strict CSP (img-src 'self') allows the head", () => {
+    const pkg = { name: "@johnmorrisdotca/sample", repository: "https://github.com/spxis/sample" };
+    expect(
+      fetchedAddresses(
+        '<link rel="icon" href="https://a.test/i.png"><img src="//b.test/x.png" srcset="c.png 1x, /d.png 2x"><script src="e.js"></script>',
+      ),
+    ).toEqual(["https://a.test/i.png", "//b.test/x.png", "c.png", "/d.png", "e.js"]);
+    expect(
+      ["https://a.test/i.png", "//b.test/x.png", "/d.png", "data:x", "icon.png", "../icon.png"].map(offSite),
+    ).toEqual([true, true, true, true, false, false]);
+    for (const [base, icon] of [
+      ["", "icon.png"],
+      ["../", "../icon.png"],
+      ["../../", "../../icon.png"],
+    ]) {
+      const head = thumbnailHead(pkg, { base });
+      expect(fetchedAddresses(head)).toEqual([icon]);
+      expect(fetchedAddresses(head).filter(offSite)).toEqual([]);
+      expect(head).toContain('<meta property="og:image" content="https://spxis.github.io/sample/thumbnail.png" />');
+    }
+    expect(fetchedAddresses(thumbnailHead(JSON.parse(readFileSync("package.json", "utf8")))).filter(offSite)).toEqual(
+      [],
+    );
+    expect(thumbnailHead(pkg, { icon: false })).not.toMatch(/apple-touch-icon/);
+    for (const base of [
+      "/",
+      "./",
+      "docs/",
+      "https://spxis.github.io/sample/",
+      "//spxis.github.io/sample/",
+      "..",
+      "../..",
+    ])
+      expect(() => thumbnailHead(pkg, { base })).toThrow(/base is the way from the page to the site's root/);
   });
 });

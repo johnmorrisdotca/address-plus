@@ -20,7 +20,9 @@
 //   - its screenshot script: captureDrawing(page, selector) for each scheme, then composeThumbnails({ page, root,
 //     light, dark, icon }) writes the three files. scripts/readme-pictures-lib.mjs does this for a `thumbnail` shot.
 //   - its site builder: publishThumbnails(root, siteDir) copies the files into the site, and thumbnailHead(pkg) goes
-//     in the demo's <head> (og:image, twitter:card summary_large_image, twitter:image, apple-touch-icon).
+//     in the demo's <head> (og:image, twitter:card summary_large_image, twitter:image, apple-touch-icon). The cards are
+//     at their absolute addresses, which link previews need and browsers never fetch; the icon, the one tag a browser
+//     does fetch, is relative to the page, so a strict Content-Security-Policy (img-src 'self') allows it.
 //   - its README: thumbnailReadmeBlock(pkg, { alt }) is the first thing in it, above the title, a <picture> of the
 //     light and dark cards linking to the demo. npm shows the light one.
 //   - its family-thumbnail test: thumbnailFaults(root) is empty, and the test records this file's hash.
@@ -28,8 +30,11 @@ import { Buffer } from "node:buffer";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-/** The day this file last changed, in every repository at once. The family-thumbnail test records the file's hash. */
-export const FAMILY_THUMBNAIL_VERSION = "2026-11-03";
+/**
+ * The day this file last changed, in every repository at once (.2, .3 for a second and third change on one day). The
+ * family-thumbnail test records the file's hash.
+ */
+export const FAMILY_THUMBNAIL_VERSION = "2026-11-03.2";
 
 /** The three pictures: their file in docs/images, size in pixels, colour scheme and the most bytes each may take. */
 export const THUMBNAILS = [
@@ -78,8 +83,26 @@ export function thumbnailAddresses(pkg) {
 export const defaultAlt = (pkg) =>
   `${String(pkg.name).split("/").pop()}: ${String(pkg.description ?? "a package of the johnmorrisdotca family").replace(/\.$/, "")}`;
 
-/** The lines the demo's <head> carries for the card and the icon, at their absolute Pages addresses. */
-export function thumbnailHead(pkg, { alt = defaultAlt(pkg) } = {}) {
+/**
+ * The way from a page to the site's root, as thumbnailHead's `base` takes it: "" for a page at the root, "../" for one a
+ * folder down, "../../" for two. Anything else (an address, a path from the server's root, a folder name) is refused,
+ * because the icon must stay on the page's own site and work wherever Pages puts it (https://<owner>.github.io/<repo>/).
+ */
+export const RELATIVE_BASE = /^(?:\.\.\/)*$/;
+
+/**
+ * The lines the demo's <head> carries for the card and the icon. The card (og:image, twitter:image) is at its absolute
+ * Pages address: link previews need that, and a browser never fetches it. The apple-touch-icon is the one tag a browser
+ * fetches, so its address is relative to the page, `${base}icon.png` (publishThumbnails puts icon.png at the site's root):
+ * a strict Content-Security-Policy (img-src 'self') allows it, and a test that serves the site under a made-up host finds
+ * it there. `base` is the way from the page to the site's root ("" for the front page, "../" for a page in docs/ or
+ * demo/); `icon: false` leaves the icon out, for a page that keeps its own.
+ */
+export function thumbnailHead(pkg, { alt = defaultAlt(pkg), base = "", icon = true } = {}) {
+  if (typeof base !== "string" || !RELATIVE_BASE.test(base))
+    throw new Error(
+      `thumbnailHead: base is the way from the page to the site's root ("", "../", "../../"), not ${JSON.stringify(base)}.`,
+    );
   const at = thumbnailAddresses(pkg);
   return [
     `<meta property="og:image" content="${at.card}" />`,
@@ -89,7 +112,7 @@ export function thumbnailHead(pkg, { alt = defaultAlt(pkg) } = {}) {
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:image" content="${at.card}" />`,
     `<meta name="twitter:image:alt" content="${escapeHtml(alt)}" />`,
-    `<link rel="apple-touch-icon" href="${at.icon}" />`,
+    ...(icon ? [`<link rel="apple-touch-icon" href="${base}icon.png" />`] : []),
   ].join("\n    ");
 }
 
