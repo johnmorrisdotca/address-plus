@@ -23,7 +23,7 @@ import {
 } from "../../batch-parser";
 import type { ParsedAddress, ParsedIntersection } from "../../types";
 import type { BatchParseResult } from "../../types/batch-parse";
-import type { AdvancedFunctionTestData, BatchParseFunctionTestData, BatchTestData } from "../types/test-interfaces";
+import type { AdvancedFunctionTestData, BatchParseFunctionTestData, BatchTestData } from "../types/batch-cases";
 
 // Test data paths
 const BATCH_TEST_DATA_PATH = "../../../test-data/batch/batch-test.json";

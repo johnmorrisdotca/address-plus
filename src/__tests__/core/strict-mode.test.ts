@@ -7,7 +7,7 @@ import { describe, expect, test } from "vitest";
 import canadaStrictModeTestDataFile from "../../../test-data/canada/strict-mode.json";
 import usStrictModeTestDataFile from "../../../test-data/us/strict-mode.json";
 import { parseLocation } from "../../index";
-import type { StrictModeTestCase, StrictModeTestData } from "../types/test-interfaces";
+import type { StrictModeTestCase, StrictModeTestData } from "../types/compatibility-cases";
 
 // Helper function to extract test data from objects with $schema
 function loadSchemaTestData<T>(testDataFile: T): T {

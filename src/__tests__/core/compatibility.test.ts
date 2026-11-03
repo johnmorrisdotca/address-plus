@@ -9,7 +9,11 @@ import { describe, expect, it, test } from "vitest";
 
 import testDataFile from "../../../test-data/core/compatibility.json";
 import { parseAddress as ourParseAddress, parseInformalAddress, parseIntersection, parseLocation } from "../../index";
-import type { AddressTestCase, CompatibilityComparisonTestCase, CompatibilityTestData } from "../types/test-interfaces";
+import type {
+  AddressTestCase,
+  CompatibilityComparisonTestCase,
+  CompatibilityTestData,
+} from "../types/compatibility-cases";
 
 // Dynamic import helper for CommonJS module compatibility
 async function getParseAddress() {

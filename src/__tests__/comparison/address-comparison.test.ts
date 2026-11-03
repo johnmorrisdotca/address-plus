@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import testData from "../../../test-data/utilities/address-comparison.json";
 import type { ParsedAddress } from "../../types";
 import { compareAddresses, getAddressSimilarity, isSameAddress } from "../../utils/address-comparison";
-import type { ComparisonEdgeCaseTestCase, ComparisonTestCase } from "../types/test-interfaces";
+import type { ComparisonEdgeCaseTestCase, ComparisonTestCase } from "../types/comparison-cases";
 
 // Extract test cases from new structure
 const allTests = testData.tests ? Object.values(testData.tests).flat() : [];

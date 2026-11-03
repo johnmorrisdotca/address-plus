@@ -7,7 +7,7 @@ import type {
   GetValidationErrorsTestCase,
   IsValidTestCase,
   ValidationTestCase,
-} from "../types/test-interfaces";
+} from "../types/validation-cases";
 
 // Extract test cases from new structure
 const allTests = testData.tests ? Object.values(testData.tests).flat() : [];

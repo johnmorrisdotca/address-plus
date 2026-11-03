@@ -8,7 +8,7 @@ import type {
   CleanAddressTestCase,
   EdgeCaseTestCase,
   FormatSpecificTestCase,
-} from "../types/test-interfaces";
+} from "../types/utility-cases";
 
 // Extract test cases from new structure
 const allTests = testData.tests ? Object.values(testData.tests).flat() : [];

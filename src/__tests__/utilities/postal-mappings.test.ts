@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import testData from "../../../test-data/utilities/postal-mappings.json";
 import { getProvinceFromPostalCode } from "../../constants/postal-code-provinces.js";
-import type { PostalMappingTestCase } from "../types/test-interfaces";
+import type { PostalMappingTestCase } from "../types/utility-cases";
 
 // Extract test cases from new structure
 const allTests = testData.tests ? Object.values(testData.tests).flat() : [];

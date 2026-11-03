@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import testData from "../../../test-data/utilities/address-formatting.json";
 import type { ParsedAddress } from "../../types";
 import { formatAddress, formatCanadaPost, formatUSPS, getAddressAbbreviations } from "../../utils/address-formatting";
-import type { FormattingTestCase } from "../types/test-interfaces";
+import type { FormattingTestCase } from "../types/formatting-cases";
 
 // Extract test cases from new structure
 const allTests = testData.tests ? Object.values(testData.tests).flat() : [];
