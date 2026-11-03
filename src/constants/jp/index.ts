@@ -6,6 +6,14 @@ import { JP_MUNICIPALITIES } from "./municipalities.data";
 import { JP_POSTAL_EXCEPTIONS, JP_POSTAL_PREFIXES } from "./postal-prefixes.data";
 import { JP_PREFECTURES } from "./prefectures.data";
 
+// A table built the first time it is asked for and kept: a caller who never looks a municipality up does not pay
+// for its indexes when the module loads.
+const once = <T>(build: () => T): (() => T) => {
+  let value: T | undefined;
+
+  return () => (value ??= build());
+};
+
 // Designators written after a name: 都道府県 on a prefecture, 市区町村 and 郡 on a municipality.
 const PREFECTURE_DESIGNATOR = /[都道府県]$/;
 const PREFECTURE_ROMAJI_DESIGNATOR = /-(?:to|do|fu|ken)$/;
@@ -88,7 +96,7 @@ const PREFECTURE_BY_CODE: ReadonlyMap<string, JapanesePrefecture> = new Map(
 );
 
 // Every spelling a prefecture goes by, lower-cased, to the prefecture.
-const PREFECTURE_BY_NAME: ReadonlyMap<string, JapanesePrefecture> = (() => {
+const prefectureByName = once((): ReadonlyMap<string, JapanesePrefecture> => {
   const map = new Map<string, JapanesePrefecture>();
   for (const prefecture of JP_PREFECTURES) {
     const short = prefectureShortRomaji(prefecture).toLowerCase();
@@ -107,7 +115,7 @@ const PREFECTURE_BY_NAME: ReadonlyMap<string, JapanesePrefecture> = (() => {
   }
 
   return map;
-})();
+});
 
 // The longest common start of a list of strings.
 const commonStart = (texts: readonly string[]): string => {
@@ -159,7 +167,7 @@ const JP_DESIGNATED_CITIES: readonly JapaneseMunicipality[] = (() => {
 // Every municipality a lookup may answer with: the generated table and the designated cities.
 const ALL_MUNICIPALITIES: readonly JapaneseMunicipality[] = [...JP_MUNICIPALITIES, ...JP_DESIGNATED_CITIES];
 
-const MUNICIPALITIES_BY_PREFECTURE: ReadonlyMap<string, readonly JapaneseMunicipality[]> = (() => {
+const municipalitiesByPrefecture = once((): ReadonlyMap<string, readonly JapaneseMunicipality[]> => {
   const map = new Map<string, JapaneseMunicipality[]>();
   for (const municipality of ALL_MUNICIPALITIES) {
     if (!map.has(municipality.prefecture)) map.set(municipality.prefecture, []);
@@ -167,10 +175,11 @@ const MUNICIPALITIES_BY_PREFECTURE: ReadonlyMap<string, readonly JapaneseMunicip
   }
 
   return map;
-})();
+});
 
-const MUNICIPALITY_BY_CODE: ReadonlyMap<string, JapaneseMunicipality> = new Map(
-  ALL_MUNICIPALITIES.map((municipality) => [municipality.code, municipality]),
+const municipalityByCode = once(
+  (): ReadonlyMap<string, JapaneseMunicipality> =>
+    new Map(ALL_MUNICIPALITIES.map((municipality) => [municipality.code, municipality])),
 );
 
 // The ways a municipality is written in Japanese: its full name, and for a town or village in a district
@@ -183,7 +192,7 @@ const japaneseSpellings = (municipality: JapaneseMunicipality): string[] => {
 
 // Every Japanese spelling, with its variant characters folded, to the municipalities it can mean; 府中市 is in
 // Tokyo and in Hiroshima.
-const MUNICIPALITIES_BY_SPELLING: ReadonlyMap<string, readonly JapaneseMunicipality[]> = (() => {
+const municipalitiesBySpelling = once((): ReadonlyMap<string, readonly JapaneseMunicipality[]> => {
   const map = new Map<string, JapaneseMunicipality[]>();
   for (const municipality of ALL_MUNICIPALITIES) {
     for (const spelling of japaneseSpellings(municipality).map(foldVariants)) {
@@ -193,11 +202,11 @@ const MUNICIPALITIES_BY_SPELLING: ReadonlyMap<string, readonly JapaneseMunicipal
   }
 
   return map;
-})();
+});
 
 // The spellings, longest first, so the first one a text starts with is the longest match.
-const SPELLINGS_LONGEST_FIRST: readonly string[] = [...MUNICIPALITIES_BY_SPELLING.keys()].sort(
-  (left, right) => right.length - left.length,
+const spellingsLongestFirst = once((): readonly string[] =>
+  [...municipalitiesBySpelling().keys()].sort((left, right) => right.length - left.length),
 );
 
 // A romaji municipality reduced to its words without designators, sorted, so "Chuo-ku, Sapporo" and
@@ -215,26 +224,27 @@ const romajiKey = (text: string): string =>
 
 const indexByRomaji = (
   keyOf: (municipality: JapaneseMunicipality) => string,
-): ReadonlyMap<string, readonly JapaneseMunicipality[]> => {
-  const map = new Map<string, JapaneseMunicipality[]>();
-  for (const municipality of ALL_MUNICIPALITIES) {
-    const key = keyOf(municipality);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(municipality);
-  }
+): (() => ReadonlyMap<string, readonly JapaneseMunicipality[]>) =>
+  once(() => {
+    const map = new Map<string, JapaneseMunicipality[]>();
+    for (const municipality of ALL_MUNICIPALITIES) {
+      const key = keyOf(municipality);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(municipality);
+    }
 
-  return map;
-};
+    return map;
+  });
 
-const MUNICIPALITIES_BY_ROMAJI = indexByRomaji((municipality) => romajiKey(municipality.romaji));
+const municipalitiesByRomaji = indexByRomaji((municipality) => romajiKey(municipality.romaji));
 
 // A designated city's ward by its own name, for "Kita-ku, Osaka": asked only when nothing else is found.
-const MUNICIPALITIES_BY_WARD = indexByRomaji((municipality) =>
+const municipalitiesByWard = indexByRomaji((municipality) =>
   DESIGNATED_CITY_WARD.test(municipality.name) ? romajiKey(municipality.romaji.split(" ").slice(1).join(" ")) : "",
 );
 
 // The same without the district, for "Tobetsu-cho, Hokkaido": asked only when the full key finds nothing.
-const MUNICIPALITIES_BY_ROMAJI_WITHOUT_DISTRICT = indexByRomaji((municipality) =>
+const municipalitiesByRomajiWithoutDistrict = indexByRomaji((municipality) =>
   romajiKey(municipality.romaji.replace(ROMAJI_DISTRICT_WORD, "")),
 );
 
@@ -275,7 +285,7 @@ function findPrefecture(text: string): JapanesePrefecture | null {
   if (!text) return null;
   const clean = plainRomaji(text);
 
-  return PREFECTURE_BY_CODE.get(clean) ?? PREFECTURE_BY_NAME.get(clean) ?? null;
+  return PREFECTURE_BY_CODE.get(clean) ?? prefectureByName().get(clean) ?? null;
 }
 
 // The prefecture whose full name opens the text, with what follows it.
@@ -308,9 +318,9 @@ function municipalitiesAtStart(
   prefectureCode?: string,
 ): { matched: string; municipalities: JapaneseMunicipality[]; rest: string } | null {
   const folded = foldVariants(text);
-  for (const spelling of SPELLINGS_LONGEST_FIRST) {
+  for (const spelling of spellingsLongestFirst()) {
     if (!folded.startsWith(spelling)) continue;
-    const municipalities = inPrefecture(MUNICIPALITIES_BY_SPELLING.get(spelling) ?? [], prefectureCode);
+    const municipalities = inPrefecture(municipalitiesBySpelling().get(spelling) ?? [], prefectureCode);
     if (municipalities.length > 0) {
       return { matched: text.slice(0, spelling.length), municipalities, rest: text.slice(spelling.length) };
     }
@@ -335,7 +345,7 @@ function municipalitiesAtStart(
  * ```
  */
 function findMunicipalitiesByName(name: string, prefectureCode?: string): JapaneseMunicipality[] {
-  return inPrefecture(MUNICIPALITIES_BY_SPELLING.get(foldVariants(name)) ?? [], prefectureCode);
+  return inPrefecture(municipalitiesBySpelling().get(foldVariants(name)) ?? [], prefectureCode);
 }
 
 /**
@@ -359,11 +369,11 @@ function findMunicipalitiesByRomaji(text: string, prefectureCode?: string): Japa
   if (!key) return [];
   const written = designatorOf(text);
   let found: JapaneseMunicipality[] = [];
-  for (const index of [MUNICIPALITIES_BY_ROMAJI, MUNICIPALITIES_BY_ROMAJI_WITHOUT_DISTRICT, MUNICIPALITIES_BY_WARD]) {
-    found = inPrefecture(index.get(key) ?? [], prefectureCode);
+  for (const index of [municipalitiesByRomaji, municipalitiesByRomajiWithoutDistrict, municipalitiesByWard]) {
+    found = inPrefecture(index().get(key) ?? [], prefectureCode);
     // A ward found by its own name must not contradict the designator written: Urawa-shi, a city merged away
     // in 2001, is not 浦和区, the ward of さいたま市 that took its name.
-    if (index === MUNICIPALITIES_BY_WARD && written.length > 0) {
+    if (index === municipalitiesByWard && written.length > 0) {
       found = found.filter((municipality) => written.includes(designatorOf(municipality.romaji)[0]));
     }
     if (found.length > 0) break;
@@ -391,7 +401,7 @@ function findMunicipalitiesByRomaji(text: string, prefectureCode?: string): Japa
  * ```
  */
 function municipalitiesOf(prefectureCode: string): readonly JapaneseMunicipality[] {
-  return MUNICIPALITIES_BY_PREFECTURE.get(prefectureCode) ?? [];
+  return municipalitiesByPrefecture().get(prefectureCode) ?? [];
 }
 
 /**
@@ -408,7 +418,7 @@ function municipalitiesOf(prefectureCode: string): readonly JapaneseMunicipality
  * ```
  */
 function findMunicipalityByCode(code: string): JapaneseMunicipality | null {
-  return MUNICIPALITY_BY_CODE.get(code) ?? null;
+  return municipalityByCode().get(code) ?? null;
 }
 
 /**

@@ -71,6 +71,7 @@ export {
 } from "./postal-code-provinces";
 export { SECONDARY_UNIT_TYPES } from "./secondary-unit-types";
 export { STREET_NAME_ACRONYMS } from "./street-name-acronyms";
+export { STREET_TYPE_EXPANSIONS } from "./street-type-expansions";
 export { STREET_TYPE_PROPER_CASE } from "./street-type-proper-case";
 export {
   US_REGIONS,
@@ -80,6 +81,6 @@ export {
   US_STATE_NAMES,
   normalizeStateProvinceName,
 } from "./us-states";
-export { STREET_TYPE_EXPANSIONS, US_STREET_TYPES } from "./us-street-types";
+export { US_STREET_TYPES } from "./us-street-types.data";
 export { getStateFromZip, getZipPrefixesForState } from "./zip-code-states";
 export type { StateCode } from "./zip-code-states";

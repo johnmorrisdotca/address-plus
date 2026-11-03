@@ -3,6 +3,1904 @@
 // Source: Geolonia 住所データ (MIT), https://github.com/geolonia/japanese-addresses
 
 import type { JapaneseMunicipality } from "../../types/japan";
+import { unpackMunicipalities } from "./unpack-municipalities";
+
+// One municipality to a line as code|name|kana|romaji; the prefecture is the first two digits of the code.
+const MUNICIPALITIES_PACKED = `
+01101|札幌市中央区|サッポロシチュウオウク|Sapporo-shi Chuo-ku
+01102|札幌市北区|サッポロシキタク|Sapporo-shi Kita-ku
+01103|札幌市東区|サッポロシヒガシク|Sapporo-shi Higashi-ku
+01104|札幌市白石区|サッポロシシロイシク|Sapporo-shi Shiroishi-ku
+01105|札幌市豊平区|サッポロシトヨヒラク|Sapporo-shi Toyohira-ku
+01106|札幌市南区|サッポロシミナミク|Sapporo-shi Minami-ku
+01107|札幌市西区|サッポロシニシク|Sapporo-shi Nishi-ku
+01108|札幌市厚別区|サッポロシアツベツク|Sapporo-shi Atsubetsu-ku
+01109|札幌市手稲区|サッポロシテイネク|Sapporo-shi Teine-ku
+01110|札幌市清田区|サッポロシキヨタク|Sapporo-shi Kiyota-ku
+01202|函館市|ハコダテシ|Hakodate-shi
+01203|小樽市|オタルシ|Otaru-shi
+01204|旭川市|アサヒカワシ|Asahikawa-shi
+01205|室蘭市|ムロランシ|Muroran-shi
+01206|釧路市|クシロシ|Kushiro-shi
+01207|帯広市|オビヒロシ|Obihiro-shi
+01208|北見市|キタミシ|Kitami-shi
+01209|夕張市|ユウバリシ|Yubari-shi
+01210|岩見沢市|イワミザワシ|Iwamizawa-shi
+01211|網走市|アバシリシ|Abashiri-shi
+01212|留萌市|ルモイシ|Rumoi-shi
+01213|苫小牧市|トマコマイシ|Tomakomai-shi
+01214|稚内市|ワッカナイシ|Wakkanai-shi
+01215|美唄市|ビバイシ|Bibai-shi
+01216|芦別市|アシベツシ|Ashibetsu-shi
+01217|江別市|エベツシ|Ebetsu-shi
+01218|赤平市|アカビラシ|Akabira-shi
+01219|紋別市|モンベツシ|Mombetsu-shi
+01220|士別市|シベツシ|Shibetsu-shi
+01221|名寄市|ナヨロシ|Nayoro-shi
+01222|三笠市|ミカサシ|Mikasa-shi
+01223|根室市|ネムロシ|Nemuro-shi
+01224|千歳市|チトセシ|Chitose-shi
+01225|滝川市|タキカワシ|Takikawa-shi
+01226|砂川市|スナガワシ|Sunagawa-shi
+01227|歌志内市|ウタシナイシ|Utashinai-shi
+01228|深川市|フカガワシ|Fukagawa-shi
+01229|富良野市|フラノシ|Furano-shi
+01230|登別市|ノボリベツシ|Noboribetsu-shi
+01231|恵庭市|エニワシ|Eniwa-shi
+01233|伊達市|ダテシ|Date-shi
+01234|北広島市|キタヒロシマシ|Kitahiroshima-shi
+01235|石狩市|イシカリシ|Ishikari-shi
+01236|北斗市|ホクトシ|Hokuto-shi
+01303|石狩郡当別町|イシカリグントウベツチョウ|Ishikari-gun Tobetsu-cho
+01304|石狩郡新篠津村|イシカリグンシンシノツムラ|Ishikari-gun Shinshinotsu-mura
+01331|松前郡松前町|マツマエグンマツマエチョウ|Matsumae-gun Matsumae-cho
+01332|松前郡福島町|マツマエグンフクシマチョウ|Matsumae-gun Fukushima-cho
+01333|上磯郡知内町|カミイソグンシリウチチョウ|Kamiiso-gun Shiriuchi-cho
+01334|上磯郡木古内町|カミイソグンキコナイチョウ|Kamiiso-gun Kikonai-cho
+01337|亀田郡七飯町|カメダグンナナエチョウ|Kameda-gun Nanae-cho
+01343|茅部郡鹿部町|カヤベグンシカベチョウ|Kayabe-gun Shikabe-cho
+01345|茅部郡森町|カヤベグンモリマチ|Kayabe-gun Mori-machi
+01346|二海郡八雲町|フタミグンヤクモチョウ|Futami-gun Yakumo-cho
+01347|山越郡長万部町|ヤマコシグンオシャマンベチョウ|Yamakoshi-gun Oshamambe-cho
+01361|檜山郡江差町|ヒヤマグンエサシチョウ|Hiyama-gun Esashi-cho
+01362|檜山郡上ノ国町|ヒヤマグンカミノクニチョウ|Hiyama-gun Kaminokuni-cho
+01363|檜山郡厚沢部町|ヒヤマグンアッサブチョウ|Hiyama-gun Assabu-cho
+01364|爾志郡乙部町|ニシグンオトベチョウ|Nishi-gun Otobe-cho
+01367|奥尻郡奥尻町|オクシリグンオクシリチョウ|Okushiri-gun Okushiri-cho
+01370|瀬棚郡今金町|セタナグンイマカネチョウ|Setana-gun Imakane-cho
+01371|久遠郡せたな町|クドウグンセタナチョウ|Kudo-gun Setana-cho
+01391|島牧郡島牧村|シママキグンシママキムラ|Shimamaki-gun Shimamaki-mura
+01392|寿都郡寿都町|スッツグンスッツチョウ|Suttsu-gun Suttsu-cho
+01393|寿都郡黒松内町|スッツグンクロマツナイチョウ|Suttsu-gun Kuromatsunai-cho
+01394|磯谷郡蘭越町|イソヤグンランコシチョウ|Isoya-gun Rankoshi-cho
+01395|虻田郡ニセコ町|アブタグンニセコチョウ|Abuta-gun Niseko-cho
+01396|虻田郡真狩村|アブタグンマッカリムラ|Abuta-gun Makkari-mura
+01397|虻田郡留寿都村|アブタグンルスツムラ|Abuta-gun Rusutsu-mura
+01398|虻田郡喜茂別町|アブタグンキモベツチョウ|Abuta-gun Kimobetsu-cho
+01399|虻田郡京極町|アブタグンキョウゴクチョウ|Abuta-gun Kyogoku-cho
+01400|虻田郡倶知安町|アブタグンクッチャンチョウ|Abuta-gun Kutchan-cho
+01401|岩内郡共和町|イワナイグンキョウワチョウ|Iwanai-gun Kyowa-cho
+01402|岩内郡岩内町|イワナイグンイワナイチョウ|Iwanai-gun Iwanai-cho
+01403|古宇郡泊村|フルウグントマリムラ|Furu-gun Tomari-mura
+01404|古宇郡神恵内村|フルウグンカモエナイムラ|Furu-gun Kamoenai-mura
+01405|積丹郡積丹町|シャコタングンシャコタンチョウ|Shakotan-gun Shakotan-cho
+01406|古平郡古平町|フルビラグンフルビラチョウ|Furubira-gun Furubira-cho
+01407|余市郡仁木町|ヨイチグンニキチョウ|Yoichi-gun Niki-cho
+01408|余市郡余市町|ヨイチグンヨイチチョウ|Yoichi-gun Yoichi-cho
+01409|余市郡赤井川村|ヨイチグンアカイガワムラ|Yoichi-gun Akaigawa-mura
+01423|空知郡南幌町|ソラチグンナンポロチョウ|Sorachi-gun Namporo-cho
+01424|空知郡奈井江町|ソラチグンナイエチョウ|Sorachi-gun Naie-cho
+01425|空知郡上砂川町|ソラチグンカミスナガワチョウ|Sorachi-gun Kamisunagawa-cho
+01427|夕張郡由仁町|ユウバリグンユニチョウ|Yubari-gun Yuni-cho
+01428|夕張郡長沼町|ユウバリグンナガヌマチョウ|Yubari-gun Naganuma-cho
+01429|夕張郡栗山町|ユウバリグンクリヤマチョウ|Yubari-gun Kuriyama-cho
+01430|樺戸郡月形町|カバトグンツキガタチョウ|Kabato-gun Tsukigata-cho
+01431|樺戸郡浦臼町|カバトグンウラウスチョウ|Kabato-gun Urausu-cho
+01432|樺戸郡新十津川町|カバトグンシントツカワチョウ|Kabato-gun Shintotsukawa-cho
+01433|雨竜郡妹背牛町|ウリュウグンモセウシチョウ|Uryu-gun Moseushi-cho
+01434|雨竜郡秩父別町|ウリュウグンチップベツチョウ|Uryu-gun Chippubetsu-cho
+01436|雨竜郡雨竜町|ウリュウグンウリュウチョウ|Uryu-gun Uryu-cho
+01437|雨竜郡北竜町|ウリュウグンホクリュウチョウ|Uryu-gun Hokuryu-cho
+01438|雨竜郡沼田町|ウリュウグンヌマタチョウ|Uryu-gun Numata-cho
+01452|上川郡鷹栖町|カミカワグンタカスチョウ|Kamikawa-gun Takasu-cho
+01453|上川郡東神楽町|カミカワグンヒガシカグラチョウ|Kamikawa-gun Higashikagura-cho
+01454|上川郡当麻町|カミカワグントウマチョウ|Kamikawa-gun Toma-cho
+01455|上川郡比布町|カミカワグンピップチョウ|Kamikawa-gun Pippu-cho
+01456|上川郡愛別町|カミカワグンアイベツチョウ|Kamikawa-gun Aibetsu-cho
+01457|上川郡上川町|カミカワグンカミカワチョウ|Kamikawa-gun Kamikawa-cho
+01458|上川郡東川町|カミカワグンヒガシカワチョウ|Kamikawa-gun Higashikawa-cho
+01459|上川郡美瑛町|カミカワグンビエイチョウ|Kamikawa-gun Biei-cho
+01460|空知郡上富良野町|ソラチグンカミフラノチョウ|Sorachi-gun Kamifurano-cho
+01461|空知郡中富良野町|ソラチグンナカフラノチョウ|Sorachi-gun Nakafurano-cho
+01462|空知郡南富良野町|ソラチグンミナミフラノチョウ|Sorachi-gun Minamifurano-cho
+01463|勇払郡占冠村|ユウフツグンシムカップムラ|Yufutsu-gun Shimukappu-mura
+01464|上川郡和寒町|カミカワグンワッサムチョウ|Kamikawa-gun Wassamu-cho
+01465|上川郡剣淵町|カミカワグンケンブチチョウ|Kamikawa-gun Kembuchi-cho
+01468|上川郡下川町|カミカワグンシモカワチョウ|Kamikawa-gun Shimokawa-cho
+01469|中川郡美深町|ナカガワグンビフカチョウ|Nakagawa-gun Bifuka-cho
+01470|中川郡音威子府村|ナカガワグンオトイネップムラ|Nakagawa-gun Otoineppu-mura
+01471|中川郡中川町|ナカガワグンナカガワチョウ|Nakagawa-gun Nakagawa-cho
+01472|雨竜郡幌加内町|ウリュウグンホロカナイチョウ|Uryu-gun Horokanai-cho
+01481|増毛郡増毛町|マシケグンマシケチョウ|Mashike-gun Mashike-cho
+01482|留萌郡小平町|ルモイグンオビラチョウ|Rumoi-gun Obira-cho
+01483|苫前郡苫前町|トママエグントママエチョウ|Tomamae-gun Tomamae-cho
+01484|苫前郡羽幌町|トママエグンハボロチョウ|Tomamae-gun Haboro-cho
+01485|苫前郡初山別村|トママエグンショサンベツムラ|Tomamae-gun Shosambetsu-mura
+01486|天塩郡遠別町|テシオグンエンベツチョウ|Teshio-gun Embetsu-cho
+01487|天塩郡天塩町|テシオグンテシオチョウ|Teshio-gun Teshio-cho
+01511|宗谷郡猿払村|ソウヤグンサルフツムラ|Soya-gun Sarufutsu-mura
+01512|枝幸郡浜頓別町|エサシグンハマトンベツチョウ|Esashi-gun Hamatombetsu-cho
+01513|枝幸郡中頓別町|エサシグンナカトンベツチョウ|Esashi-gun Nakatombetsu-cho
+01514|枝幸郡枝幸町|エサシグンエサシチョウ|Esashi-gun Esashi-cho
+01516|天塩郡豊富町|テシオグントヨトミチョウ|Teshio-gun Toyotomi-cho
+01517|礼文郡礼文町|レブングンレブンチョウ|Rebun-gun Rebun-cho
+01518|利尻郡利尻町|リシリグンリシリチョウ|Rishiri-gun Rishiri-cho
+01519|利尻郡利尻富士町|リシリグンリシリフジチョウ|Rishiri-gun Rishirifuji-cho
+01520|天塩郡幌延町|テシオグンホロノベチョウ|Teshio-gun Horonobe-cho
+01543|網走郡美幌町|アバシリグンビホロチョウ|Abashiri-gun Bihoro-cho
+01544|網走郡津別町|アバシリグンツベツチョウ|Abashiri-gun Tsubetsu-cho
+01545|斜里郡斜里町|シャリグンシャリチョウ|Shari-gun Shari-cho
+01546|斜里郡清里町|シャリグンキヨサトチョウ|Shari-gun Kiyosato-cho
+01547|斜里郡小清水町|シャリグンコシミズチョウ|Shari-gun Koshimizu-cho
+01549|常呂郡訓子府町|トコログンクンネップチョウ|Tokoro-gun Kunneppu-cho
+01550|常呂郡置戸町|トコログンオケトチョウ|Tokoro-gun Oketo-cho
+01552|常呂郡佐呂間町|トコログンサロマチョウ|Tokoro-gun Saroma-cho
+01555|紋別郡遠軽町|モンベツグンエンガルチョウ|Mombetsu-gun Engaru-cho
+01559|紋別郡湧別町|モンベツグンユウベツチョウ|Mombetsu-gun Yubetsu-cho
+01560|紋別郡滝上町|モンベツグンタキノウエチョウ|Mombetsu-gun Takinoe-cho
+01561|紋別郡興部町|モンベツグンオコッペチョウ|Mombetsu-gun Okoppe-cho
+01562|紋別郡西興部村|モンベツグンニシオコッペムラ|Mombetsu-gun Nishiokoppe-mura
+01563|紋別郡雄武町|モンベツグンオウムチョウ|Mombetsu-gun Omu-cho
+01564|網走郡大空町|アバシリグンオオゾラチョウ|Abashiri-gun Ozora-cho
+01571|虻田郡豊浦町|アブタグントヨウラチョウ|Abuta-gun Toyora-cho
+01575|有珠郡壮瞥町|ウスグンソウベツチョウ|Usu-gun Sobetsu-cho
+01578|白老郡白老町|シラオイグンシラオイチョウ|Shiraoi-gun Shiraoi-cho
+01581|勇払郡厚真町|ユウフツグンアツマチョウ|Yufutsu-gun Atsuma-cho
+01584|虻田郡洞爺湖町|アブタグントウヤコチョウ|Abuta-gun Toyako-cho
+01585|勇払郡安平町|ユウフツグンアビラチョウ|Yufutsu-gun Abira-cho
+01586|勇払郡むかわ町|ユウフツグンムカワチョウ|Yufutsu-gun Mukawa-cho
+01601|沙流郡日高町|サルグンヒダカチョウ|Saru-gun Hidaka-cho
+01602|沙流郡平取町|サルグンビラトリチョウ|Saru-gun Biratori-cho
+01604|新冠郡新冠町|ニイカップグンニイカップチョウ|Niikappu-gun Niikappu-cho
+01607|浦河郡浦河町|ウラカワグンウラカワチョウ|Urakawa-gun Urakawa-cho
+01608|様似郡様似町|サマニグンサマニチョウ|Samani-gun Samani-cho
+01609|幌泉郡えりも町|ホロイズミグンエリモチョウ|Horoizumi-gun Erimo-cho
+01610|日高郡新ひだか町|ヒダカグンシンヒダカチョウ|Hidaka-gun Shinhidaka-cho
+01631|河東郡音更町|カトウグンオトフケチョウ|Kato-gun Otofuke-cho
+01632|河東郡士幌町|カトウグンシホロチョウ|Kato-gun Shihoro-cho
+01633|河東郡上士幌町|カトウグンカミシホロチョウ|Kato-gun Kamishihoro-cho
+01634|河東郡鹿追町|カトウグンシカオイチョウ|Kato-gun Shikaoi-cho
+01635|上川郡新得町|カミカワグンシントクチョウ|Kamikawa-gun Shintoku-cho
+01636|上川郡清水町|カミカワグンシミズチョウ|Kamikawa-gun Shimizu-cho
+01637|河西郡芽室町|カサイグンメムロチョウ|Kasai-gun Memuro-cho
+01638|河西郡中札内村|カサイグンナカサツナイムラ|Kasai-gun Nakasatsunai-mura
+01639|河西郡更別村|カサイグンサラベツムラ|Kasai-gun Sarabetsu-mura
+01641|広尾郡大樹町|ヒロオグンタイキチョウ|Hiro-gun Taiki-cho
+01642|広尾郡広尾町|ヒロオグンヒロオチョウ|Hiro-gun Hiro-cho
+01643|中川郡幕別町|ナカガワグンマクベツチョウ|Nakagawa-gun Makubetsu-cho
+01644|中川郡池田町|ナカガワグンイケダチョウ|Nakagawa-gun Ikeda-cho
+01645|中川郡豊頃町|ナカガワグントヨコロチョウ|Nakagawa-gun Toyokoro-cho
+01646|中川郡本別町|ナカガワグンホンベツチョウ|Nakagawa-gun Hombetsu-cho
+01647|足寄郡足寄町|アショログンアショロチョウ|Ashoro-gun Ashoro-cho
+01648|足寄郡陸別町|アショログンリクベツチョウ|Ashoro-gun Rikubetsu-cho
+01649|十勝郡浦幌町|トカチグンウラホロチョウ|Tokachi-gun Urahoro-cho
+01661|釧路郡釧路町|クシログンクシロチョウ|Kushiro-gun Kushiro-cho
+01662|厚岸郡厚岸町|アッケシグンアッケシチョウ|Akkeshi-gun Akkeshi-cho
+01663|厚岸郡浜中町|アッケシグンハマナカチョウ|Akkeshi-gun Hamanaka-cho
+01664|川上郡標茶町|カワカミグンシベチャチョウ|Kawakami-gun Shibecha-cho
+01665|川上郡弟子屈町|カワカミグンテシカガチョウ|Kawakami-gun Teshikaga-cho
+01667|阿寒郡鶴居村|アカングンツルイムラ|Akan-gun Tsurui-mura
+01668|白糠郡白糠町|シラヌカグンシラヌカチョウ|Shiranuka-gun Shiranuka-cho
+01691|野付郡別海町|ノツケグンベツカイチョウ|Notsuke-gun Betsukai-cho
+01692|標津郡中標津町|シベツグンナカシベツチョウ|Shibetsu-gun Nakashibetsu-cho
+01693|標津郡標津町|シベツグンシベツチョウ|Shibetsu-gun Shibetsu-cho
+01694|目梨郡羅臼町|メナシグンラウスチョウ|Menashi-gun Rausu-cho
+02201|青森市|アオモリシ|Aomori-shi
+02202|弘前市|ヒロサキシ|Hirosaki-shi
+02203|八戸市|ハチノヘシ|Hachinohe-shi
+02204|黒石市|クロイシシ|Kuroishi-shi
+02205|五所川原市|ゴショガワラシ|Goshogawara-shi
+02206|十和田市|トワダシ|Towada-shi
+02207|三沢市|ミサワシ|Misawa-shi
+02208|むつ市|ムツシ|Mutsu-shi
+02209|つがる市|ツガルシ|Tsugaru-shi
+02210|平川市|ヒラカワシ|Hirakawa-shi
+02301|東津軽郡平内町|ヒガシツガルグンヒラナイマチ|Higashitsugaru-gun Hiranai-machi
+02303|東津軽郡今別町|ヒガシツガルグンイマベツマチ|Higashitsugaru-gun Imabetsu-machi
+02304|東津軽郡蓬田村|ヒガシツガルグンヨモギタムラ|Higashitsugaru-gun Yomogita-mura
+02307|東津軽郡外ケ浜町|ヒガシツガルグンソトガハママチ|Higashitsugaru-gun Sotogahama-machi
+02321|西津軽郡鰺ヶ沢町|ニシツガルグンアジガサワマチ|Nishitsugaru-gun Ajigasawa-machi
+02323|西津軽郡深浦町|ニシツガルグンフカウラマチ|Nishitsugaru-gun Fukaura-machi
+02343|中津軽郡西目屋村|ナカツガルグンニシメヤムラ|Nakatsugaru-gun Nishimeya-mura
+02361|南津軽郡藤崎町|ミナミツガルグンフジサキマチ|Minamitsugaru-gun Fujisaki-machi
+02362|南津軽郡大鰐町|ミナミツガルグンオオワニマチ|Minamitsugaru-gun Owani-machi
+02367|南津軽郡田舎館村|ミナミツガルグンイナカダテムラ|Minamitsugaru-gun Inakadate-mura
+02381|北津軽郡板柳町|キタツガルグンイタヤナギマチ|Kitatsugaru-gun Itayanagi-machi
+02384|北津軽郡鶴田町|キタツガルグンツルタマチ|Kitatsugaru-gun Tsuruta-machi
+02387|北津軽郡中泊町|キタツガルグンナカドマリマチ|Kitatsugaru-gun Nakadomari-machi
+02401|上北郡野辺地町|カミキタグンノヘジマチ|Kamikita-gun Noheji-machi
+02402|上北郡七戸町|カミキタグンシチノヘマチ|Kamikita-gun Shichinohe-machi
+02405|上北郡六戸町|カミキタグンロクノヘマチ|Kamikita-gun Rokunohe-machi
+02406|上北郡横浜町|カミキタグンヨコハママチ|Kamikita-gun Yokohama-machi
+02408|上北郡東北町|カミキタグントウホクマチ|Kamikita-gun Tohoku-machi
+02411|上北郡六ヶ所村|カミキタグンロッカショムラ|Kamikita-gun Rokkasho-mura
+02412|上北郡おいらせ町|カミキタグンオイラセチョウ|Kamikita-gun Oirase-cho
+02423|下北郡大間町|シモキタグンオオママチ|Shimokita-gun Oma-machi
+02424|下北郡東通村|シモキタグンヒガシドオリムラ|Shimokita-gun Higashidori-mura
+02425|下北郡風間浦村|シモキタグンカザマウラムラ|Shimokita-gun Kazamaura-mura
+02426|下北郡佐井村|シモキタグンサイムラ|Shimokita-gun Sai-mura
+02441|三戸郡三戸町|サンノヘグンサンノヘマチ|Sannohe-gun Sannohe-machi
+02442|三戸郡五戸町|サンノヘグンゴノヘマチ|Sannohe-gun Gonohe-machi
+02443|三戸郡田子町|サンノヘグンタッコマチ|Sannohe-gun Takko-machi
+02445|三戸郡南部町|サンノヘグンナンブチョウ|Sannohe-gun Nambu-cho
+02446|三戸郡階上町|サンノヘグンハシカミチョウ|Sannohe-gun Hashikami-cho
+02450|三戸郡新郷村|サンノヘグンシンゴウムラ|Sannohe-gun Shingo-mura
+03201|盛岡市|モリオカシ|Morioka-shi
+03202|宮古市|ミヤコシ|Miyako-shi
+03203|大船渡市|オオフナトシ|Ofunato-shi
+03205|花巻市|ハナマキシ|Hanamaki-shi
+03206|北上市|キタカミシ|Kitakami-shi
+03207|久慈市|クジシ|Kuji-shi
+03208|遠野市|トオノシ|Tono-shi
+03209|一関市|イチノセキシ|Ichinoseki-shi
+03210|陸前高田市|リクゼンタカタシ|Rikuzentakata-shi
+03211|釜石市|カマイシシ|Kamaishi-shi
+03213|二戸市|ニノヘシ|Ninohe-shi
+03214|八幡平市|ハチマンタイシ|Hachimantai-shi
+03215|奥州市|オウシュウシ|Oshu-shi
+03216|滝沢市|タキザワシ|Takizawa-shi
+03301|岩手郡雫石町|イワテグンシズクイシチョウ|Iwate-gun Shizukuishi-cho
+03302|岩手郡葛巻町|イワテグンクズマキマチ|Iwate-gun Kuzumaki-machi
+03303|岩手郡岩手町|イワテグンイワテマチ|Iwate-gun Iwate-machi
+03321|紫波郡紫波町|シワグンシワチョウ|Shiwa-gun Shiwa-cho
+03322|紫波郡矢巾町|シワグンヤハバチョウ|Shiwa-gun Yahaba-cho
+03366|和賀郡西和賀町|ワガグンニシワガマチ|Waga-gun Nishiwaga-machi
+03381|胆沢郡金ケ崎町|イサワグンカネガサキチョウ|Isawa-gun Kanegasaki-cho
+03402|西磐井郡平泉町|ニシイワイグンヒライズミチョウ|Nishiiwai-gun Hiraizumi-cho
+03441|気仙郡住田町|ケセングンスミタチョウ|Kesen-gun Sumita-cho
+03461|上閉伊郡大槌町|カミヘイグンオオツチチョウ|Kamihei-gun Otsuchi-cho
+03482|下閉伊郡山田町|シモヘイグンヤマダマチ|Shimohei-gun Yamada-machi
+03483|下閉伊郡岩泉町|シモヘイグンイワイズミチョウ|Shimohei-gun Iwaizumi-cho
+03484|下閉伊郡田野畑村|シモヘイグンタノハタムラ|Shimohei-gun Tanohata-mura
+03485|下閉伊郡普代村|シモヘイグンフダイムラ|Shimohei-gun Fudai-mura
+03501|九戸郡軽米町|クノヘグンカルマイマチ|Kunohe-gun Karumai-machi
+03503|九戸郡野田村|クノヘグンノダムラ|Kunohe-gun Noda-mura
+03506|九戸郡九戸村|クノヘグンクノヘムラ|Kunohe-gun Kunohe-mura
+03507|九戸郡洋野町|クノヘグンヒロノチョウ|Kunohe-gun Hirono-cho
+03524|二戸郡一戸町|ニノヘグンイチノヘマチ|Ninohe-gun Ichinohe-machi
+04101|仙台市青葉区|センダイシアオバク|Sendai-shi Aoba-ku
+04102|仙台市宮城野区|センダイシミヤギノク|Sendai-shi Miyagino-ku
+04103|仙台市若林区|センダイシワカバヤシク|Sendai-shi Wakabayashi-ku
+04104|仙台市太白区|センダイシタイハクク|Sendai-shi Taihaku-ku
+04105|仙台市泉区|センダイシイズミク|Sendai-shi Izumi-ku
+04202|石巻市|イシノマキシ|Ishinomaki-shi
+04203|塩竈市|シオガマシ|Shiogama-shi
+04205|気仙沼市|ケセンヌマシ|Kesennuma-shi
+04206|白石市|シロイシシ|Shiroishi-shi
+04207|名取市|ナトリシ|Natori-shi
+04208|角田市|カクダシ|Kakuda-shi
+04209|多賀城市|タガジョウシ|Tagajo-shi
+04211|岩沼市|イワヌマシ|Iwanuma-shi
+04212|登米市|トメシ|Tome-shi
+04213|栗原市|クリハラシ|Kurihara-shi
+04214|東松島市|ヒガシマツシマシ|Higashimatsushima-shi
+04215|大崎市|オオサキシ|Osaki-shi
+04216|富谷市|トミヤシ|Tomiya-shi
+04301|刈田郡蔵王町|カッタグンザオウマチ|Katta-gun Zao-machi
+04302|刈田郡七ヶ宿町|カッタグンシチカシュクマチ|Katta-gun Shichikashuku-machi
+04321|柴田郡大河原町|シバタグンオオガワラマチ|Shibata-gun Ogawara-machi
+04322|柴田郡村田町|シバタグンムラタマチ|Shibata-gun Murata-machi
+04323|柴田郡柴田町|シバタグンシバタマチ|Shibata-gun Shibata-machi
+04324|柴田郡川崎町|シバタグンカワサキマチ|Shibata-gun Kawasaki-machi
+04341|伊具郡丸森町|イググンマルモリマチ|Igu-gun Marumori-machi
+04361|亘理郡亘理町|ワタリグンワタリチョウ|Watari-gun Watari-cho
+04362|亘理郡山元町|ワタリグンヤマモトチョウ|Watari-gun Yamamoto-cho
+04401|宮城郡松島町|ミヤギグンマツシママチ|Miyagi-gun Matsushima-machi
+04404|宮城郡七ヶ浜町|ミヤギグンシチガハママチ|Miyagi-gun Shichigahama-machi
+04406|宮城郡利府町|ミヤギグンリフチョウ|Miyagi-gun Rifu-cho
+04421|黒川郡大和町|クロカワグンタイワチョウ|Kurokawa-gun Taiwa-cho
+04422|黒川郡大郷町|クロカワグンオオサトチョウ|Kurokawa-gun Osato-cho
+04424|黒川郡大衡村|クロカワグンオオヒラムラ|Kurokawa-gun Ohira-mura
+04444|加美郡色麻町|カミグンシカマチョウ|Kami-gun Shikama-cho
+04445|加美郡加美町|カミグンカミマチ|Kami-gun Kami-machi
+04501|遠田郡涌谷町|トオダグンワクヤチョウ|Toda-gun Wakuya-cho
+04505|遠田郡美里町|トオダグンミサトマチ|Toda-gun Misato-machi
+04581|牡鹿郡女川町|オシカグンオナガワチョウ|Oshika-gun Onagawa-cho
+04606|本吉郡南三陸町|モトヨシグンミナミサンリクチョウ|Motoyoshi-gun Minamisanriku-cho
+05201|秋田市|アキタシ|Akita-shi
+05202|能代市|ノシロシ|Noshiro-shi
+05203|横手市|ヨコテシ|Yokote-shi
+05204|大館市|オオダテシ|Odate-shi
+05206|男鹿市|オガシ|Oga-shi
+05207|湯沢市|ユザワシ|Yuzawa-shi
+05209|鹿角市|カヅノシ|Kazuno-shi
+05210|由利本荘市|ユリホンジョウシ|Yurihonjo-shi
+05211|潟上市|カタガミシ|Katagami-shi
+05212|大仙市|ダイセンシ|Daisen-shi
+05213|北秋田市|キタアキタシ|Kitaakita-shi
+05214|にかほ市|ニカホシ|Nikaho-shi
+05215|仙北市|センボクシ|Semboku-shi
+05303|鹿角郡小坂町|カヅノグンコサカマチ|Kazuno-gun Kosaka-machi
+05327|北秋田郡上小阿仁村|キタアキタグンカミコアニムラ|Kitaakita-gun Kamikoani-mura
+05346|山本郡藤里町|ヤマモトグンフジサトマチ|Yamamoto-gun Fujisato-machi
+05348|山本郡三種町|ヤマモトグンミタネチョウ|Yamamoto-gun Mitane-cho
+05349|山本郡八峰町|ヤマモトグンハッポウチョウ|Yamamoto-gun Happo-cho
+05361|南秋田郡五城目町|ミナミアキタグンゴジョウメマチ|Minamiakita-gun Gojome-machi
+05363|南秋田郡八郎潟町|ミナミアキタグンハチロウガタマチ|Minamiakita-gun Hachirogata-machi
+05366|南秋田郡井川町|ミナミアキタグンイカワマチ|Minamiakita-gun Ikawa-machi
+05368|南秋田郡大潟村|ミナミアキタグンオオガタムラ|Minamiakita-gun Ogata-mura
+05434|仙北郡美郷町|センボクグンミサトチョウ|Semboku-gun Misato-cho
+05463|雄勝郡羽後町|オガチグンウゴマチ|Ogachi-gun Ugo-machi
+05464|雄勝郡東成瀬村|オガチグンヒガシナルセムラ|Ogachi-gun Higashinaruse-mura
+06201|山形市|ヤマガタシ|Yamagata-shi
+06202|米沢市|ヨネザワシ|Yonezawa-shi
+06203|鶴岡市|ツルオカシ|Tsuruoka-shi
+06204|酒田市|サカタシ|Sakata-shi
+06205|新庄市|シンジョウシ|Shinjo-shi
+06206|寒河江市|サガエシ|Sagae-shi
+06207|上山市|カミノヤマシ|Kaminoyama-shi
+06208|村山市|ムラヤマシ|Murayama-shi
+06209|長井市|ナガイシ|Nagai-shi
+06210|天童市|テンドウシ|Tendo-shi
+06211|東根市|ヒガシネシ|Higashine-shi
+06212|尾花沢市|オバナザワシ|Obanazawa-shi
+06213|南陽市|ナンヨウシ|Nanyo-shi
+06301|東村山郡山辺町|ヒガシムラヤマグンヤマノベマチ|Higashimurayama-gun Yamanobe-machi
+06302|東村山郡中山町|ヒガシムラヤマグンナカヤママチ|Higashimurayama-gun Nakayama-machi
+06321|西村山郡河北町|ニシムラヤマグンカホクチョウ|Nishimurayama-gun Kahoku-cho
+06322|西村山郡西川町|ニシムラヤマグンニシカワマチ|Nishimurayama-gun Nishikawa-machi
+06323|西村山郡朝日町|ニシムラヤマグンアサヒマチ|Nishimurayama-gun Asahi-machi
+06324|西村山郡大江町|ニシムラヤマグンオオエマチ|Nishimurayama-gun Oe-machi
+06341|北村山郡大石田町|キタムラヤマグンオオイシダマチ|Kitamurayama-gun Oishida-machi
+06361|最上郡金山町|モガミグンカネヤママチ|Mogami-gun Kaneyama-machi
+06362|最上郡最上町|モガミグンモガミマチ|Mogami-gun Mogami-machi
+06363|最上郡舟形町|モガミグンフナガタマチ|Mogami-gun Funagata-machi
+06364|最上郡真室川町|モガミグンマムロガワマチ|Mogami-gun Mamurogawa-machi
+06365|最上郡大蔵村|モガミグンオオクラムラ|Mogami-gun Okura-mura
+06366|最上郡鮭川村|モガミグンサケガワムラ|Mogami-gun Sakegawa-mura
+06367|最上郡戸沢村|モガミグントザワムラ|Mogami-gun Tozawa-mura
+06381|東置賜郡高畠町|ヒガシオキタマグンタカハタマチ|Higashiokitama-gun Takahata-machi
+06382|東置賜郡川西町|ヒガシオキタマグンカワニシマチ|Higashiokitama-gun Kawanishi-machi
+06401|西置賜郡小国町|ニシオキタマグンオグニマチ|Nishiokitama-gun Oguni-machi
+06402|西置賜郡白鷹町|ニシオキタマグンシラタカマチ|Nishiokitama-gun Shirataka-machi
+06403|西置賜郡飯豊町|ニシオキタマグンイイデマチ|Nishiokitama-gun Iide-machi
+06426|東田川郡三川町|ヒガシタガワグンミカワマチ|Higashitagawa-gun Mikawa-machi
+06428|東田川郡庄内町|ヒガシタガワグンショウナイマチ|Higashitagawa-gun Shonai-machi
+06461|飽海郡遊佐町|アクミグンユザマチ|Akumi-gun Yuza-machi
+07201|福島市|フクシマシ|Fukushima-shi
+07202|会津若松市|アイヅワカマツシ|Aizuwakamatsu-shi
+07203|郡山市|コオリヤマシ|Koriyama-shi
+07204|いわき市|イワキシ|Iwaki-shi
+07205|白河市|シラカワシ|Shirakawa-shi
+07207|須賀川市|スカガワシ|Sukagawa-shi
+07208|喜多方市|キタカタシ|Kitakata-shi
+07209|相馬市|ソウマシ|Soma-shi
+07210|二本松市|ニホンマツシ|Nihommatsu-shi
+07211|田村市|タムラシ|Tamura-shi
+07212|南相馬市|ミナミソウマシ|Minamisoma-shi
+07213|伊達市|ダテシ|Date-shi
+07214|本宮市|モトミヤシ|Motomiya-shi
+07301|伊達郡桑折町|ダテグンコオリマチ|Date-gun Kori-machi
+07303|伊達郡国見町|ダテグンクニミマチ|Date-gun Kunimi-machi
+07308|伊達郡川俣町|ダテグンカワマタマチ|Date-gun Kawamata-machi
+07322|安達郡大玉村|アダチグンオオタマムラ|Adachi-gun Otama-mura
+07342|岩瀬郡鏡石町|イワセグンカガミイシマチ|Iwase-gun Kagamiishi-machi
+07344|岩瀬郡天栄村|イワセグンテンエイムラ|Iwase-gun Tenei-mura
+07362|南会津郡下郷町|ミナミアイヅグンシモゴウマチ|Minamiaizu-gun Shimogo-machi
+07364|南会津郡檜枝岐村|ミナミアイヅグンヒノエマタムラ|Minamiaizu-gun Hinoemata-mura
+07367|南会津郡只見町|ミナミアイヅグンタダミマチ|Minamiaizu-gun Tadami-machi
+07368|南会津郡南会津町|ミナミアイヅグンミナミアイヅマチ|Minamiaizu-gun Minamiaizu-machi
+07402|耶麻郡北塩原村|ヤマグンキタシオバラムラ|Yama-gun Kitashiobara-mura
+07405|耶麻郡西会津町|ヤマグンニシアイヅマチ|Yama-gun Nishiaizu-machi
+07407|耶麻郡磐梯町|ヤマグンバンダイマチ|Yama-gun Bandai-machi
+07408|耶麻郡猪苗代町|ヤマグンイナワシロマチ|Yama-gun Inawashiro-machi
+07421|河沼郡会津坂下町|カワヌマグンアイヅバンゲマチ|Kawanuma-gun Aizubange-machi
+07422|河沼郡湯川村|カワヌマグンユガワムラ|Kawanuma-gun Yugawa-mura
+07423|河沼郡柳津町|カワヌマグンヤナイヅマチ|Kawanuma-gun Yanaizu-machi
+07444|大沼郡三島町|オオヌマグンミシママチ|Onuma-gun Mishima-machi
+07445|大沼郡金山町|オオヌマグンカネヤママチ|Onuma-gun Kaneyama-machi
+07446|大沼郡昭和村|オオヌマグンショウワムラ|Onuma-gun Showa-mura
+07447|大沼郡会津美里町|オオヌマグンアイヅミサトマチ|Onuma-gun Aizumisato-machi
+07461|西白河郡西郷村|ニシシラカワグンニシゴウムラ|Nishishirakawa-gun Nishigo-mura
+07464|西白河郡泉崎村|ニシシラカワグンイズミザキムラ|Nishishirakawa-gun Izumizaki-mura
+07465|西白河郡中島村|ニシシラカワグンナカジマムラ|Nishishirakawa-gun Nakajima-mura
+07466|西白河郡矢吹町|ニシシラカワグンヤブキマチ|Nishishirakawa-gun Yabuki-machi
+07481|東白川郡棚倉町|ヒガシシラカワグンタナグラマチ|Higashishirakawa-gun Tanagura-machi
+07482|東白川郡矢祭町|ヒガシシラカワグンヤマツリマチ|Higashishirakawa-gun Yamatsuri-machi
+07483|東白川郡塙町|ヒガシシラカワグンハナワマチ|Higashishirakawa-gun Hanawa-machi
+07484|東白川郡鮫川村|ヒガシシラカワグンサメガワムラ|Higashishirakawa-gun Samegawa-mura
+07501|石川郡石川町|イシカワグンイシカワマチ|Ishikawa-gun Ishikawa-machi
+07502|石川郡玉川村|イシカワグンタマカワムラ|Ishikawa-gun Tamakawa-mura
+07503|石川郡平田村|イシカワグンヒラタムラ|Ishikawa-gun Hirata-mura
+07504|石川郡浅川町|イシカワグンアサカワマチ|Ishikawa-gun Asakawa-machi
+07505|石川郡古殿町|イシカワグンフルドノマチ|Ishikawa-gun Furudono-machi
+07521|田村郡三春町|タムラグンミハルマチ|Tamura-gun Miharu-machi
+07522|田村郡小野町|タムラグンオノマチ|Tamura-gun Ono-machi
+07541|双葉郡広野町|フタバグンヒロノマチ|Futaba-gun Hirono-machi
+07542|双葉郡楢葉町|フタバグンナラハマチ|Futaba-gun Naraha-machi
+07543|双葉郡富岡町|フタバグントミオカマチ|Futaba-gun Tomioka-machi
+07544|双葉郡川内村|フタバグンカワウチムラ|Futaba-gun Kawauchi-mura
+07545|双葉郡大熊町|フタバグンオオクママチ|Futaba-gun Okuma-machi
+07546|双葉郡双葉町|フタバグンフタバマチ|Futaba-gun Futaba-machi
+07547|双葉郡浪江町|フタバグンナミエマチ|Futaba-gun Namie-machi
+07548|双葉郡葛尾村|フタバグンカツラオムラ|Futaba-gun Katsurao-mura
+07561|相馬郡新地町|ソウマグンシンチマチ|Soma-gun Shinchi-machi
+07564|相馬郡飯舘村|ソウマグンイイタテムラ|Soma-gun Iitate-mura
+08201|水戸市|ミトシ|Mito-shi
+08202|日立市|ヒタチシ|Hitachi-shi
+08203|土浦市|ツチウラシ|Tsuchiura-shi
+08204|古河市|コガシ|Koga-shi
+08205|石岡市|イシオカシ|Ishioka-shi
+08207|結城市|ユウキシ|Yuki-shi
+08208|龍ヶ崎市|リュウガサキシ|Ryugasaki-shi
+08210|下妻市|シモツマシ|Shimotsuma-shi
+08211|常総市|ジョウソウシ|Joso-shi
+08212|常陸太田市|ヒタチオオタシ|Hitachiota-shi
+08214|高萩市|タカハギシ|Takahagi-shi
+08215|北茨城市|キタイバラキシ|Kitaibaraki-shi
+08216|笠間市|カサマシ|Kasama-shi
+08217|取手市|トリデシ|Toride-shi
+08219|牛久市|ウシクシ|Ushiku-shi
+08220|つくば市|ツクバシ|Tsukuba-shi
+08221|ひたちなか市|ヒタチナカシ|Hitachinaka-shi
+08222|鹿嶋市|カシマシ|Kashima-shi
+08223|潮来市|イタコシ|Itako-shi
+08224|守谷市|モリヤシ|Moriya-shi
+08225|常陸大宮市|ヒタチオオミヤシ|Hitachiomiya-shi
+08226|那珂市|ナカシ|Naka-shi
+08227|筑西市|チクセイシ|Chikusei-shi
+08228|坂東市|バンドウシ|Bando-shi
+08229|稲敷市|イナシキシ|Inashiki-shi
+08230|かすみがうら市|カスミガウラシ|Kasumigaura-shi
+08231|桜川市|サクラガワシ|Sakuragawa-shi
+08232|神栖市|カミスシ|Kamisu-shi
+08233|行方市|ナメガタシ|Namegata-shi
+08234|鉾田市|ホコタシ|Hokota-shi
+08235|つくばみらい市|ツクバミライシ|Tsukubamirai-shi
+08236|小美玉市|オミタマシ|Omitama-shi
+08302|東茨城郡茨城町|ヒガシイバラキグンイバラキマチ|Higashiibaraki-gun Ibaraki-machi
+08309|東茨城郡大洗町|ヒガシイバラキグンオオアライマチ|Higashiibaraki-gun Oarai-machi
+08310|東茨城郡城里町|ヒガシイバラキグンシロサトマチ|Higashiibaraki-gun Shirosato-machi
+08341|那珂郡東海村|ナカグントウカイムラ|Naka-gun Tokai-mura
+08364|久慈郡大子町|クジグンダイゴマチ|Kuji-gun Daigo-machi
+08442|稲敷郡美浦村|イナシキグンミホムラ|Inashiki-gun Miho-mura
+08443|稲敷郡阿見町|イナシキグンアミマチ|Inashiki-gun Ami-machi
+08447|稲敷郡河内町|イナシキグンカワチマチ|Inashiki-gun Kawachi-machi
+08521|結城郡八千代町|ユウキグンヤチヨマチ|Yuki-gun Yachiyo-machi
+08542|猿島郡五霞町|サシマグンゴカマチ|Sashima-gun Goka-machi
+08546|猿島郡境町|サシマグンサカイマチ|Sashima-gun Sakai-machi
+08564|北相馬郡利根町|キタソウマグントネマチ|Kitasoma-gun Tone-machi
+09201|宇都宮市|ウツノミヤシ|Utsunomiya-shi
+09202|足利市|アシカガシ|Ashikaga-shi
+09203|栃木市|トチギシ|Tochigi-shi
+09204|佐野市|サノシ|Sano-shi
+09205|鹿沼市|カヌマシ|Kanuma-shi
+09206|日光市|ニッコウシ|Nikko-shi
+09208|小山市|オヤマシ|Oyama-shi
+09209|真岡市|モオカシ|Moka-shi
+09210|大田原市|オオタワラシ|Otawara-shi
+09211|矢板市|ヤイタシ|Yaita-shi
+09213|那須塩原市|ナスシオバラシ|Nasushiobara-shi
+09214|さくら市|サクラシ|Sakura-shi
+09215|那須烏山市|ナスカラスヤマシ|Nasukarasuyama-shi
+09216|下野市|シモツケシ|Shimotsuke-shi
+09301|河内郡上三川町|カワチグンカミノカワマチ|Kawachi-gun Kaminokawa-machi
+09342|芳賀郡益子町|ハガグンマシコマチ|Haga-gun Mashiko-machi
+09343|芳賀郡茂木町|ハガグンモテギマチ|Haga-gun Motegi-machi
+09344|芳賀郡市貝町|ハガグンイチカイマチ|Haga-gun Ichikai-machi
+09345|芳賀郡芳賀町|ハガグンハガマチ|Haga-gun Haga-machi
+09361|下都賀郡壬生町|シモツガグンミブマチ|Shimotsuga-gun Mibu-machi
+09364|下都賀郡野木町|シモツガグンノギマチ|Shimotsuga-gun Nogi-machi
+09384|塩谷郡塩谷町|シオヤグンシオヤマチ|Shioya-gun Shioya-machi
+09386|塩谷郡高根沢町|シオヤグンタカネザワマチ|Shioya-gun Takanezawa-machi
+09407|那須郡那須町|ナスグンナスマチ|Nasu-gun Nasu-machi
+09411|那須郡那珂川町|ナスグンナカガワマチ|Nasu-gun Nakagawa-machi
+10201|前橋市|マエバシシ|Maebashi-shi
+10202|高崎市|タカサキシ|Takasaki-shi
+10203|桐生市|キリュウシ|Kiryu-shi
+10204|伊勢崎市|イセサキシ|Isesaki-shi
+10205|太田市|オオタシ|Ota-shi
+10206|沼田市|ヌマタシ|Numata-shi
+10207|館林市|タテバヤシシ|Tatebayashi-shi
+10208|渋川市|シブカワシ|Shibukawa-shi
+10209|藤岡市|フジオカシ|Fujioka-shi
+10210|富岡市|トミオカシ|Tomioka-shi
+10211|安中市|アンナカシ|Annaka-shi
+10212|みどり市|ミドリシ|Midori-shi
+10344|北群馬郡榛東村|キタグンマグンシントウムラ|Kitagumma-gun Shinto-mura
+10345|北群馬郡吉岡町|キタグンマグンヨシオカマチ|Kitagumma-gun Yoshioka-machi
+10366|多野郡上野村|タノグンウエノムラ|Tano-gun Ueno-mura
+10367|多野郡神流町|タノグンカンナマチ|Tano-gun Kanna-machi
+10382|甘楽郡下仁田町|カンラグンシモニタマチ|Kanra-gun Shimonita-machi
+10383|甘楽郡南牧村|カンラグンナンモクムラ|Kanra-gun Nammoku-mura
+10384|甘楽郡甘楽町|カンラグンカンラマチ|Kanra-gun Kanra-machi
+10421|吾妻郡中之条町|アガツマグンナカノジョウマチ|Agatsuma-gun Nakanojo-machi
+10424|吾妻郡長野原町|アガツマグンナガノハラマチ|Agatsuma-gun Naganohara-machi
+10425|吾妻郡嬬恋村|アガツマグンツマゴイムラ|Agatsuma-gun Tsumagoi-mura
+10426|吾妻郡草津町|アガツマグンクサツマチ|Agatsuma-gun Kusatsu-machi
+10428|吾妻郡高山村|アガツマグンタカヤマムラ|Agatsuma-gun Takayama-mura
+10429|吾妻郡東吾妻町|アガツマグンヒガシアガツママチ|Agatsuma-gun Higashiagatsuma-machi
+10443|利根郡片品村|トネグンカタシナムラ|Tone-gun Katashina-mura
+10444|利根郡川場村|トネグンカワバムラ|Tone-gun Kawaba-mura
+10448|利根郡昭和村|トネグンショウワムラ|Tone-gun Showa-mura
+10449|利根郡みなかみ町|トネグンミナカミマチ|Tone-gun Minakami-machi
+10464|佐波郡玉村町|サワグンタマムラマチ|Sawa-gun Tamamura-machi
+10521|邑楽郡板倉町|オウラグンイタクラマチ|Ora-gun Itakura-machi
+10522|邑楽郡明和町|オウラグンメイワマチ|Ora-gun Meiwa-machi
+10523|邑楽郡千代田町|オウラグンチヨダマチ|Ora-gun Chiyoda-machi
+10524|邑楽郡大泉町|オウラグンオオイズミマチ|Ora-gun Oizumi-machi
+10525|邑楽郡邑楽町|オウラグンオウラマチ|Ora-gun Ora-machi
+11101|さいたま市西区|サイタマシニシク|Saitama-shi Nishi-ku
+11102|さいたま市北区|サイタマシキタク|Saitama-shi Kita-ku
+11103|さいたま市大宮区|サイタマシオオミヤク|Saitama-shi Omiya-ku
+11104|さいたま市見沼区|サイタマシミヌマク|Saitama-shi Minuma-ku
+11105|さいたま市中央区|サイタマシチュウオウク|Saitama-shi Chuo-ku
+11106|さいたま市桜区|サイタマシサクラク|Saitama-shi Sakura-ku
+11107|さいたま市浦和区|サイタマシウラワク|Saitama-shi Urawa-ku
+11108|さいたま市南区|サイタマシミナミク|Saitama-shi Minami-ku
+11109|さいたま市緑区|サイタマシミドリク|Saitama-shi Midori-ku
+11110|さいたま市岩槻区|サイタマシイワツキク|Saitama-shi Iwatsuki-ku
+11201|川越市|カワゴエシ|Kawagoe-shi
+11202|熊谷市|クマガヤシ|Kumagaya-shi
+11203|川口市|カワグチシ|Kawaguchi-shi
+11206|行田市|ギョウダシ|Gyoda-shi
+11207|秩父市|チチブシ|Chichibu-shi
+11208|所沢市|トコロザワシ|Tokorozawa-shi
+11209|飯能市|ハンノウシ|Hanno-shi
+11210|加須市|カゾシ|Kazo-shi
+11211|本庄市|ホンジョウシ|Honjo-shi
+11212|東松山市|ヒガシマツヤマシ|Higashimatsuyama-shi
+11214|春日部市|カスカベシ|Kasukabe-shi
+11215|狭山市|サヤマシ|Sayama-shi
+11216|羽生市|ハニュウシ|Hanyu-shi
+11217|鴻巣市|コウノスシ|Konosu-shi
+11218|深谷市|フカヤシ|Fukaya-shi
+11219|上尾市|アゲオシ|Ageo-shi
+11221|草加市|ソウカシ|Soka-shi
+11222|越谷市|コシガヤシ|Koshigaya-shi
+11223|蕨市|ワラビシ|Warabi-shi
+11224|戸田市|トダシ|Toda-shi
+11225|入間市|イルマシ|Iruma-shi
+11227|朝霞市|アサカシ|Asaka-shi
+11228|志木市|シキシ|Shiki-shi
+11229|和光市|ワコウシ|Wako-shi
+11230|新座市|ニイザシ|Niiza-shi
+11231|桶川市|オケガワシ|Okegawa-shi
+11232|久喜市|クキシ|Kuki-shi
+11233|北本市|キタモトシ|Kitamoto-shi
+11234|八潮市|ヤシオシ|Yashio-shi
+11235|富士見市|フジミシ|Fujimi-shi
+11237|三郷市|ミサトシ|Misato-shi
+11238|蓮田市|ハスダシ|Hasuda-shi
+11239|坂戸市|サカドシ|Sakado-shi
+11240|幸手市|サッテシ|Satte-shi
+11241|鶴ヶ島市|ツルガシマシ|Tsurugashima-shi
+11242|日高市|ヒダカシ|Hidaka-shi
+11243|吉川市|ヨシカワシ|Yoshikawa-shi
+11245|ふじみ野市|フジミノシ|Fujimino-shi
+11246|白岡市|シラオカシ|Shiraoka-shi
+11301|北足立郡伊奈町|キタアダチグンイナマチ|Kitaadachi-gun Ina-machi
+11324|入間郡三芳町|イルマグンミヨシマチ|Iruma-gun Miyoshi-machi
+11326|入間郡毛呂山町|イルマグンモロヤママチ|Iruma-gun Moroyama-machi
+11327|入間郡越生町|イルマグンオゴセマチ|Iruma-gun Ogose-machi
+11341|比企郡滑川町|ヒキグンナメガワマチ|Hiki-gun Namegawa-machi
+11342|比企郡嵐山町|ヒキグンランザンマチ|Hiki-gun Ranzan-machi
+11343|比企郡小川町|ヒキグンオガワマチ|Hiki-gun Ogawa-machi
+11346|比企郡川島町|ヒキグンカワジママチ|Hiki-gun Kawajima-machi
+11347|比企郡吉見町|ヒキグンヨシミマチ|Hiki-gun Yoshimi-machi
+11348|比企郡鳩山町|ヒキグンハトヤママチ|Hiki-gun Hatoyama-machi
+11349|比企郡ときがわ町|ヒキグントキガワマチ|Hiki-gun Tokigawa-machi
+11361|秩父郡横瀬町|チチブグンヨコゼマチ|Chichibu-gun Yokoze-machi
+11362|秩父郡皆野町|チチブグンミナノマチ|Chichibu-gun Minano-machi
+11363|秩父郡長瀞町|チチブグンナガトロマチ|Chichibu-gun Nagatoro-machi
+11365|秩父郡小鹿野町|チチブグンオガノマチ|Chichibu-gun Ogano-machi
+11369|秩父郡東秩父村|チチブグンヒガシチチブムラ|Chichibu-gun Higashichichibu-mura
+11381|児玉郡美里町|コダマグンミサトマチ|Kodama-gun Misato-machi
+11383|児玉郡神川町|コダマグンカミカワマチ|Kodama-gun Kamikawa-machi
+11385|児玉郡上里町|コダマグンカミサトマチ|Kodama-gun Kamisato-machi
+11408|大里郡寄居町|オオサトグンヨリイマチ|Osato-gun Yorii-machi
+11442|南埼玉郡宮代町|ミナミサイタマグンミヤシロマチ|Minamisaitama-gun Miyashiro-machi
+11464|北葛飾郡杉戸町|キタカツシカグンスギトマチ|Kitakatsushika-gun Sugito-machi
+11465|北葛飾郡松伏町|キタカツシカグンマツブシマチ|Kitakatsushika-gun Matsubushi-machi
+12101|千葉市中央区|チバシチュウオウク|Chiba-shi Chuo-ku
+12102|千葉市花見川区|チバシハナミガワク|Chiba-shi Hanamigawa-ku
+12103|千葉市稲毛区|チバシイナゲク|Chiba-shi Inage-ku
+12104|千葉市若葉区|チバシワカバク|Chiba-shi Wakaba-ku
+12105|千葉市緑区|チバシミドリク|Chiba-shi Midori-ku
+12106|千葉市美浜区|チバシミハマク|Chiba-shi Mihama-ku
+12202|銚子市|チョウシシ|Choshi-shi
+12203|市川市|イチカワシ|Ichikawa-shi
+12204|船橋市|フナバシシ|Funabashi-shi
+12205|館山市|タテヤマシ|Tateyama-shi
+12206|木更津市|キサラヅシ|Kisarazu-shi
+12207|松戸市|マツドシ|Matsudo-shi
+12208|野田市|ノダシ|Noda-shi
+12210|茂原市|モバラシ|Mobara-shi
+12211|成田市|ナリタシ|Narita-shi
+12212|佐倉市|サクラシ|Sakura-shi
+12213|東金市|トウガネシ|Togane-shi
+12215|旭市|アサヒシ|Asahi-shi
+12216|習志野市|ナラシノシ|Narashino-shi
+12217|柏市|カシワシ|Kashiwa-shi
+12218|勝浦市|カツウラシ|Katsura-shi
+12219|市原市|イチハラシ|Ichihara-shi
+12220|流山市|ナガレヤマシ|Nagareyama-shi
+12221|八千代市|ヤチヨシ|Yachiyo-shi
+12222|我孫子市|アビコシ|Abiko-shi
+12223|鴨川市|カモガワシ|Kamogawa-shi
+12224|鎌ヶ谷市|カマガヤシ|Kamagaya-shi
+12225|君津市|キミツシ|Kimitsu-shi
+12226|富津市|フッツシ|Futtsu-shi
+12227|浦安市|ウラヤスシ|Urayasu-shi
+12228|四街道市|ヨツカイドウシ|Yotsukaido-shi
+12229|袖ヶ浦市|ソデガウラシ|Sodegaura-shi
+12230|八街市|ヤチマタシ|Yachimata-shi
+12231|印西市|インザイシ|Inzai-shi
+12232|白井市|シロイシ|Shiroi-shi
+12233|富里市|トミサトシ|Tomisato-shi
+12234|南房総市|ミナミボウソウシ|Minamiboso-shi
+12235|匝瑳市|ソウサシ|Sosa-shi
+12236|香取市|カトリシ|Katori-shi
+12237|山武市|サンムシ|Sammu-shi
+12238|いすみ市|イスミシ|Isumi-shi
+12239|大網白里市|オオアミシラサトシ|Oamishirasato-shi
+12322|印旛郡酒々井町|インバグンシスイマチ|Imba-gun Shisui-machi
+12329|印旛郡栄町|インバグンサカエマチ|Imba-gun Sakae-machi
+12342|香取郡神崎町|カトリグンコウザキマチ|Katori-gun Kozaki-machi
+12347|香取郡多古町|カトリグンタコマチ|Katori-gun Tako-machi
+12349|香取郡東庄町|カトリグントウノショウマチ|Katori-gun Tonosho-machi
+12403|山武郡九十九里町|サンブグンクジュウクリマチ|Sambu-gun Kujukuri-machi
+12409|山武郡芝山町|サンブグンシバヤママチ|Sambu-gun Shibayama-machi
+12410|山武郡横芝光町|サンブグンヨコシバヒカリマチ|Sambu-gun Yokoshibahikari-machi
+12421|長生郡一宮町|チョウセイグンイチノミヤマチ|Chosei-gun Ichinomiya-machi
+12422|長生郡睦沢町|チョウセイグンムツザワマチ|Chosei-gun Mutsuzawa-machi
+12423|長生郡長生村|チョウセイグンチョウセイムラ|Chosei-gun Chosei-mura
+12424|長生郡白子町|チョウセイグンシラコマチ|Chosei-gun Shirako-machi
+12426|長生郡長柄町|チョウセイグンナガラマチ|Chosei-gun Nagara-machi
+12427|長生郡長南町|チョウセイグンチョウナンマチ|Chosei-gun Chonan-machi
+12441|夷隅郡大多喜町|イスミグンオオタキマチ|Isumi-gun Otaki-machi
+12443|夷隅郡御宿町|イスミグンオンジュクマチ|Isumi-gun Onjuku-machi
+12463|安房郡鋸南町|アワグンキョナンマチ|Awa-gun Kyonan-machi
+13101|千代田区|チヨダク|Chiyoda-ku
+13102|中央区|チュウオウク|Chuo-ku
+13103|港区|ミナトク|Minato-ku
+13104|新宿区|シンジュクク|Shinjuku-ku
+13105|文京区|ブンキョウク|Bunkyo-ku
+13106|台東区|タイトウク|Taito-ku
+13107|墨田区|スミダク|Sumida-ku
+13108|江東区|コウトウク|Koto-ku
+13109|品川区|シナガワク|Shinagawa-ku
+13110|目黒区|メグロク|Meguro-ku
+13111|大田区|オオタク|Ota-ku
+13112|世田谷区|セタガヤク|Setagaya-ku
+13113|渋谷区|シブヤク|Shibuya-ku
+13114|中野区|ナカノク|Nakano-ku
+13115|杉並区|スギナミク|Suginami-ku
+13116|豊島区|トシマク|Toshima-ku
+13117|北区|キタク|Kita-ku
+13118|荒川区|アラカワク|Arakawa-ku
+13119|板橋区|イタバシク|Itabashi-ku
+13120|練馬区|ネリマク|Nerima-ku
+13121|足立区|アダチク|Adachi-ku
+13122|葛飾区|カツシカク|Katsushika-ku
+13123|江戸川区|エドガワク|Edogawa-ku
+13201|八王子市|ハチオウジシ|Hachioji-shi
+13202|立川市|タチカワシ|Tachikawa-shi
+13203|武蔵野市|ムサシノシ|Musashino-shi
+13204|三鷹市|ミタカシ|Mitaka-shi
+13205|青梅市|オウメシ|Ome-shi
+13206|府中市|フチュウシ|Fuchu-shi
+13207|昭島市|アキシマシ|Akishima-shi
+13208|調布市|チョウフシ|Chofu-shi
+13209|町田市|マチダシ|Machida-shi
+13210|小金井市|コガネイシ|Koganei-shi
+13211|小平市|コダイラシ|Kodaira-shi
+13212|日野市|ヒノシ|Hino-shi
+13213|東村山市|ヒガシムラヤマシ|Higashimurayama-shi
+13214|国分寺市|コクブンジシ|Kokubunji-shi
+13215|国立市|クニタチシ|Kunitachi-shi
+13218|福生市|フッサシ|Fussa-shi
+13219|狛江市|コマエシ|Komae-shi
+13220|東大和市|ヒガシヤマトシ|Higashiyamato-shi
+13221|清瀬市|キヨセシ|Kiyose-shi
+13222|東久留米市|ヒガシクルメシ|Higashikurume-shi
+13223|武蔵村山市|ムサシムラヤマシ|Musashimurayama-shi
+13224|多摩市|タマシ|Tama-shi
+13225|稲城市|イナギシ|Inagi-shi
+13227|羽村市|ハムラシ|Hamura-shi
+13228|あきる野市|アキルノシ|Akiruno-shi
+13229|西東京市|ニシトウキョウシ|Nishitokyo-shi
+13303|西多摩郡瑞穂町|ニシタマグンミズホマチ|Nishitama-gun Mizuho-machi
+13305|西多摩郡日の出町|ニシタマグンヒノデマチ|Nishitama-gun Hinode-machi
+13307|西多摩郡檜原村|ニシタマグンヒノハラムラ|Nishitama-gun Hinohara-mura
+13308|西多摩郡奥多摩町|ニシタマグンオクタママチ|Nishitama-gun Okutama-machi
+13361|大島町|オオシママチ|Oshima-machi
+13363|新島村|ニイジマムラ|Niijima-mura
+13364|神津島村|コウヅシマムラ|Kozushima-mura
+13381|三宅村|ミヤケムラ|Miyake-mura
+13382|御蔵島村|ミクラジマムラ|Mikurajima-mura
+13401|八丈町|ハチジョウマチ|Hachijo-machi
+13402|青ヶ島村|アオガシマムラ|Aogashima-mura
+13421|小笠原村|オガサワラムラ|Ogasawara-mura
+14101|横浜市鶴見区|ヨコハマシツルミク|Yokohama-shi Tsurumi-ku
+14102|横浜市神奈川区|ヨコハマシカナガワク|Yokohama-shi Kanagawa-ku
+14103|横浜市西区|ヨコハマシニシク|Yokohama-shi Nishi-ku
+14104|横浜市中区|ヨコハマシナカク|Yokohama-shi Naka-ku
+14105|横浜市南区|ヨコハマシミナミク|Yokohama-shi Minami-ku
+14106|横浜市保土ケ谷区|ヨコハマシホドガヤク|Yokohama-shi Hodogaya-ku
+14107|横浜市磯子区|ヨコハマシイソゴク|Yokohama-shi Isogo-ku
+14108|横浜市金沢区|ヨコハマシカナザワク|Yokohama-shi Kanazawa-ku
+14109|横浜市港北区|ヨコハマシコウホクク|Yokohama-shi Kohoku-ku
+14110|横浜市戸塚区|ヨコハマシトツカク|Yokohama-shi Totsuka-ku
+14111|横浜市港南区|ヨコハマシコウナンク|Yokohama-shi Konan-ku
+14112|横浜市旭区|ヨコハマシアサヒク|Yokohama-shi Asahi-ku
+14113|横浜市緑区|ヨコハマシミドリク|Yokohama-shi Midori-ku
+14114|横浜市瀬谷区|ヨコハマシセヤク|Yokohama-shi Seya-ku
+14115|横浜市栄区|ヨコハマシサカエク|Yokohama-shi Sakae-ku
+14116|横浜市泉区|ヨコハマシイズミク|Yokohama-shi Izumi-ku
+14117|横浜市青葉区|ヨコハマシアオバク|Yokohama-shi Aoba-ku
+14118|横浜市都筑区|ヨコハマシツヅキク|Yokohama-shi Tsuzuki-ku
+14131|川崎市川崎区|カワサキシカワサキク|Kawasaki-shi Kawasaki-ku
+14132|川崎市幸区|カワサキシサイワイク|Kawasaki-shi Saiwai-ku
+14133|川崎市中原区|カワサキシナカハラク|Kawasaki-shi Nakahara-ku
+14134|川崎市高津区|カワサキシタカツク|Kawasaki-shi Takatsu-ku
+14135|川崎市多摩区|カワサキシタマク|Kawasaki-shi Tama-ku
+14136|川崎市宮前区|カワサキシミヤマエク|Kawasaki-shi Miyamae-ku
+14137|川崎市麻生区|カワサキシアサオク|Kawasaki-shi Asao-ku
+14151|相模原市緑区|サガミハラシミドリク|Sagamihara-shi Midori-ku
+14152|相模原市中央区|サガミハラシチュウオウク|Sagamihara-shi Chuo-ku
+14153|相模原市南区|サガミハラシミナミク|Sagamihara-shi Minami-ku
+14201|横須賀市|ヨコスカシ|Yokosuka-shi
+14203|平塚市|ヒラツカシ|Hiratsuka-shi
+14204|鎌倉市|カマクラシ|Kamakura-shi
+14205|藤沢市|フジサワシ|Fujisawa-shi
+14206|小田原市|オダワラシ|Odawara-shi
+14207|茅ヶ崎市|チガサキシ|Chigasaki-shi
+14208|逗子市|ズシシ|Zushi-shi
+14210|三浦市|ミウラシ|Miura-shi
+14211|秦野市|ハダノシ|Hadano-shi
+14212|厚木市|アツギシ|Atsugi-shi
+14213|大和市|ヤマトシ|Yamato-shi
+14214|伊勢原市|イセハラシ|Isehara-shi
+14215|海老名市|エビナシ|Ebina-shi
+14216|座間市|ザマシ|Zama-shi
+14217|南足柄市|ミナミアシガラシ|Minamiashigara-shi
+14218|綾瀬市|アヤセシ|Ayase-shi
+14301|三浦郡葉山町|ミウラグンハヤママチ|Miura-gun Hayama-machi
+14321|高座郡寒川町|コウザグンサムカワマチ|Koza-gun Samukawa-machi
+14341|中郡大磯町|ナカグンオオイソマチ|Naka-gun Oiso-machi
+14342|中郡二宮町|ナカグンニノミヤマチ|Naka-gun Ninomiya-machi
+14361|足柄上郡中井町|アシガラカミグンナカイマチ|Ashigarakami-gun Nakai-machi
+14362|足柄上郡大井町|アシガラカミグンオオイマチ|Ashigarakami-gun Oi-machi
+14363|足柄上郡松田町|アシガラカミグンマツダマチ|Ashigarakami-gun Matsuda-machi
+14364|足柄上郡山北町|アシガラカミグンヤマキタマチ|Ashigarakami-gun Yamakita-machi
+14366|足柄上郡開成町|アシガラカミグンカイセイマチ|Ashigarakami-gun Kaisei-machi
+14382|足柄下郡箱根町|アシガラシモグンハコネマチ|Ashigarashimo-gun Hakone-machi
+14383|足柄下郡真鶴町|アシガラシモグンマナヅルマチ|Ashigarashimo-gun Manazuru-machi
+14384|足柄下郡湯河原町|アシガラシモグンユガワラマチ|Ashigarashimo-gun Yugawara-machi
+14401|愛甲郡愛川町|アイコウグンアイカワマチ|Aiko-gun Aikawa-machi
+14402|愛甲郡清川村|アイコウグンキヨカワムラ|Aiko-gun Kiyokawa-mura
+15101|新潟市北区|ニイガタシキタク|Niigata-shi Kita-ku
+15102|新潟市東区|ニイガタシヒガシク|Niigata-shi Higashi-ku
+15103|新潟市中央区|ニイガタシチュウオウク|Niigata-shi Chuo-ku
+15104|新潟市江南区|ニイガタシコウナンク|Niigata-shi Konan-ku
+15105|新潟市秋葉区|ニイガタシアキハク|Niigata-shi Akiha-ku
+15106|新潟市南区|ニイガタシミナミク|Niigata-shi Minami-ku
+15107|新潟市西区|ニイガタシニシク|Niigata-shi Nishi-ku
+15108|新潟市西蒲区|ニイガタシニシカンク|Niigata-shi Nishikan-ku
+15202|長岡市|ナガオカシ|Nagaoka-shi
+15204|三条市|サンジョウシ|Sanjo-shi
+15205|柏崎市|カシワザキシ|Kashiwazaki-shi
+15206|新発田市|シバタシ|Shibata-shi
+15208|小千谷市|オヂヤシ|Ojiya-shi
+15209|加茂市|カモシ|Kamo-shi
+15210|十日町市|トオカマチシ|Tokamachi-shi
+15211|見附市|ミツケシ|Mitsuke-shi
+15212|村上市|ムラカミシ|Murakami-shi
+15213|燕市|ツバメシ|Tsubame-shi
+15216|糸魚川市|イトイガワシ|Itoigawa-shi
+15217|妙高市|ミョウコウシ|Myoko-shi
+15218|五泉市|ゴセンシ|Gosen-shi
+15222|上越市|ジョウエツシ|Joetsu-shi
+15223|阿賀野市|アガノシ|Agano-shi
+15224|佐渡市|サドシ|Sado-shi
+15225|魚沼市|ウオヌマシ|Uonuma-shi
+15226|南魚沼市|ミナミウオヌマシ|Minamiuonuma-shi
+15227|胎内市|タイナイシ|Tainai-shi
+15307|北蒲原郡聖籠町|キタカンバラグンセイロウマチ|Kitakambara-gun Seiro-machi
+15342|西蒲原郡弥彦村|ニシカンバラグンヤヒコムラ|Nishikambara-gun Yahiko-mura
+15361|南蒲原郡田上町|ミナミカンバラグンタガミマチ|Minamikambara-gun Tagami-machi
+15385|東蒲原郡阿賀町|ヒガシカンバラグンアガマチ|Higashikambara-gun Aga-machi
+15405|三島郡出雲崎町|サントウグンイズモザキマチ|Santo-gun Izumozaki-machi
+15461|南魚沼郡湯沢町|ミナミウオヌマグンユザワマチ|Minamiuonuma-gun Yuzawa-machi
+15482|中魚沼郡津南町|ナカウオヌマグンツナンマチ|Nakauonuma-gun Tsunan-machi
+15504|刈羽郡刈羽村|カリワグンカリワムラ|Kariwa-gun Kariwa-mura
+15581|岩船郡関川村|イワフネグンセキカワムラ|Iwafune-gun Sekikawa-mura
+15586|岩船郡粟島浦村|イワフネグンアワシマウラムラ|Iwafune-gun Awashimaura-mura
+16201|富山市|トヤマシ|Toyama-shi
+16202|高岡市|タカオカシ|Takaoka-shi
+16204|魚津市|ウオヅシ|Uozu-shi
+16205|氷見市|ヒミシ|Himi-shi
+16206|滑川市|ナメリカワシ|Namerikawa-shi
+16207|黒部市|クロベシ|Kurobe-shi
+16208|砺波市|トナミシ|Tonami-shi
+16209|小矢部市|オヤベシ|Oyabe-shi
+16210|南砺市|ナントシ|Nanto-shi
+16211|射水市|イミズシ|Imizu-shi
+16321|中新川郡舟橋村|ナカニイカワグンフナハシムラ|Nakaniikawa-gun Funahashi-mura
+16322|中新川郡上市町|ナカニイカワグンカミイチマチ|Nakaniikawa-gun Kamiichi-machi
+16323|中新川郡立山町|ナカニイカワグンタテヤママチ|Nakaniikawa-gun Tateyama-machi
+16342|下新川郡入善町|シモニイカワグンニュウゼンマチ|Shimoniikawa-gun Nyuzen-machi
+16343|下新川郡朝日町|シモニイカワグンアサヒマチ|Shimoniikawa-gun Asahi-machi
+17201|金沢市|カナザワシ|Kanazawa-shi
+17202|七尾市|ナナオシ|Nanao-shi
+17203|小松市|コマツシ|Komatsu-shi
+17204|輪島市|ワジマシ|Wajima-shi
+17205|珠洲市|スズシ|Suzu-shi
+17206|加賀市|カガシ|Kaga-shi
+17207|羽咋市|ハクイシ|Hakui-shi
+17209|かほく市|カホクシ|Kahoku-shi
+17210|白山市|ハクサンシ|Hakusan-shi
+17211|能美市|ノミシ|Nomi-shi
+17212|野々市市|ノノイチシ|Nonoichi-shi
+17324|能美郡川北町|ノミグンカワキタマチ|Nomi-gun Kawakita-machi
+17361|河北郡津幡町|カホクグンツバタマチ|Kahoku-gun Tsubata-machi
+17365|河北郡内灘町|カホクグンウチナダマチ|Kahoku-gun Uchinada-machi
+17384|羽咋郡志賀町|ハクイグンシカマチ|Hakui-gun Shika-machi
+17386|羽咋郡宝達志水町|ハクイグンホウダツシミズチョウ|Hakui-gun Hodatsushimizu-cho
+17407|鹿島郡中能登町|カシマグンナカノトマチ|Kashima-gun Nakanoto-machi
+17461|鳳珠郡穴水町|ホウスグンアナミズマチ|Hosu-gun Anamizu-machi
+17463|鳳珠郡能登町|ホウスグンノトチョウ|Hosu-gun Noto-cho
+18201|福井市|フクイシ|Fukui-shi
+18202|敦賀市|ツルガシ|Tsuruga-shi
+18204|小浜市|オバマシ|Obama-shi
+18205|大野市|オオノシ|Ono-shi
+18206|勝山市|カツヤマシ|Katsuyama-shi
+18207|鯖江市|サバエシ|Sabae-shi
+18208|あわら市|アワラシ|Awara-shi
+18209|越前市|エチゼンシ|Echizen-shi
+18210|坂井市|サカイシ|Sakai-shi
+18322|吉田郡永平寺町|ヨシダグンエイヘイジチョウ|Yoshida-gun Eiheiji-cho
+18382|今立郡池田町|イマダテグンイケダチョウ|Imadate-gun Ikeda-cho
+18404|南条郡南越前町|ナンジョウグンミナミエチゼンチョウ|Nanjo-gun Minamiechizen-cho
+18423|丹生郡越前町|ニュウグンエチゼンチョウ|Nyu-gun Echizen-cho
+18442|三方郡美浜町|ミカタグンミハマチョウ|Mikata-gun Mihama-cho
+18481|大飯郡高浜町|オオイグンタカハマチョウ|Oi-gun Takahama-cho
+18483|大飯郡おおい町|オオイグンオオイチョウ|Oi-gun Oi-cho
+18501|三方上中郡若狭町|ミカタカミナカグンワカサチョウ|Mikatakaminaka-gun Wakasa-cho
+19201|甲府市|コウフシ|Kofu-shi
+19202|富士吉田市|フジヨシダシ|Fujiyoshida-shi
+19204|都留市|ツルシ|Tsuru-shi
+19205|山梨市|ヤマナシシ|Yamanashi-shi
+19206|大月市|オオツキシ|Otsuki-shi
+19207|韮崎市|ニラサキシ|Nirasaki-shi
+19208|南アルプス市|ミナミアルプスシ|Minamiarupusu-shi
+19209|北杜市|ホクトシ|Hokuto-shi
+19210|甲斐市|カイシ|Kai-shi
+19211|笛吹市|フエフキシ|Fuefuki-shi
+19212|上野原市|ウエノハラシ|Uenohara-shi
+19213|甲州市|コウシュウシ|Koshu-shi
+19214|中央市|チュウオウシ|Chuo-shi
+19346|西八代郡市川三郷町|ニシヤツシログンイチカワミサトチョウ|Nishiyatsushiro-gun Ichikawamisato-cho
+19364|南巨摩郡早川町|ミナミコマグンハヤカワチョウ|Minamikoma-gun Hayakawa-cho
+19365|南巨摩郡身延町|ミナミコマグンミノブチョウ|Minamikoma-gun Minobu-cho
+19366|南巨摩郡南部町|ミナミコマグンナンブチョウ|Minamikoma-gun Nambu-cho
+19368|南巨摩郡富士川町|ミナミコマグンフジカワチョウ|Minamikoma-gun Fujikawa-cho
+19384|中巨摩郡昭和町|ナカコマグンショウワチョウ|Nakakoma-gun Showa-cho
+19422|南都留郡道志村|ミナミツルグンドウシムラ|Minamitsuru-gun Doshi-mura
+19423|南都留郡西桂町|ミナミツルグンニシカツラチョウ|Minamitsuru-gun Nishikatsura-cho
+19424|南都留郡忍野村|ミナミツルグンオシノムラ|Minamitsuru-gun Oshino-mura
+19425|南都留郡山中湖村|ミナミツルグンヤマナカコムラ|Minamitsuru-gun Yamanakako-mura
+19429|南都留郡鳴沢村|ミナミツルグンナルサワムラ|Minamitsuru-gun Narusawa-mura
+19430|南都留郡富士河口湖町|ミナミツルグンフジカワグチコマチ|Minamitsuru-gun Fujikawaguchiko-machi
+19442|北都留郡小菅村|キタツルグンコスゲムラ|Kitatsuru-gun Kosuge-mura
+19443|北都留郡丹波山村|キタツルグンタバヤマムラ|Kitatsuru-gun Tabayama-mura
+20201|長野市|ナガノシ|Nagano-shi
+20202|松本市|マツモトシ|Matsumoto-shi
+20203|上田市|ウエダシ|Ueda-shi
+20204|岡谷市|オカヤシ|Okaya-shi
+20205|飯田市|イイダシ|Iida-shi
+20206|諏訪市|スワシ|Suwa-shi
+20207|須坂市|スザカシ|Suzaka-shi
+20208|小諸市|コモロシ|Komoro-shi
+20209|伊那市|イナシ|Ina-shi
+20210|駒ヶ根市|コマガネシ|Komagane-shi
+20211|中野市|ナカノシ|Nakano-shi
+20212|大町市|オオマチシ|Omachi-shi
+20213|飯山市|イイヤマシ|Iiyama-shi
+20214|茅野市|チノシ|Chino-shi
+20215|塩尻市|シオジリシ|Shiojiri-shi
+20217|佐久市|サクシ|Saku-shi
+20218|千曲市|チクマシ|Chikuma-shi
+20219|東御市|トウミシ|Tomi-shi
+20220|安曇野市|アヅミノシ|Azumino-shi
+20303|南佐久郡小海町|ミナミサクグンコウミマチ|Minamisaku-gun Komi-machi
+20304|南佐久郡川上村|ミナミサクグンカワカミムラ|Minamisaku-gun Kawakami-mura
+20305|南佐久郡南牧村|ミナミサクグンミナミマキムラ|Minamisaku-gun Minamimaki-mura
+20306|南佐久郡南相木村|ミナミサクグンミナミアイキムラ|Minamisaku-gun Minamiaiki-mura
+20307|南佐久郡北相木村|ミナミサクグンキタアイキムラ|Minamisaku-gun Kitaaiki-mura
+20309|南佐久郡佐久穂町|ミナミサクグンサクホマチ|Minamisaku-gun Sakuho-machi
+20321|北佐久郡軽井沢町|キタサクグンカルイザワマチ|Kitasaku-gun Karuizawa-machi
+20323|北佐久郡御代田町|キタサクグンミヨタマチ|Kitasaku-gun Miyota-machi
+20324|北佐久郡立科町|キタサクグンタテシナマチ|Kitasaku-gun Tateshina-machi
+20349|小県郡青木村|チイサガタグンアオキムラ|Chiisagata-gun Aoki-mura
+20350|小県郡長和町|チイサガタグンナガワマチ|Chiisagata-gun Nagawa-machi
+20361|諏訪郡下諏訪町|スワグンシモスワマチ|Suwa-gun Shimosuwa-machi
+20362|諏訪郡富士見町|スワグンフジミマチ|Suwa-gun Fujimi-machi
+20363|諏訪郡原村|スワグンハラムラ|Suwa-gun Hara-mura
+20382|上伊那郡辰野町|カミイナグンタツノマチ|Kamiina-gun Tatsuno-machi
+20383|上伊那郡箕輪町|カミイナグンミノワマチ|Kamiina-gun Minowa-machi
+20384|上伊那郡飯島町|カミイナグンイイジママチ|Kamiina-gun Iijima-machi
+20385|上伊那郡南箕輪村|カミイナグンミナミミノワムラ|Kamiina-gun Minamiminowa-mura
+20386|上伊那郡中川村|カミイナグンナカガワムラ|Kamiina-gun Nakagawa-mura
+20388|上伊那郡宮田村|カミイナグンミヤダムラ|Kamiina-gun Miyada-mura
+20402|下伊那郡松川町|シモイナグンマツカワマチ|Shimoina-gun Matsukawa-machi
+20403|下伊那郡高森町|シモイナグンタカモリマチ|Shimoina-gun Takamori-machi
+20404|下伊那郡阿南町|シモイナグンアナンチョウ|Shimoina-gun Anan-cho
+20407|下伊那郡阿智村|シモイナグンアチムラ|Shimoina-gun Achi-mura
+20409|下伊那郡平谷村|シモイナグンヒラヤムラ|Shimoina-gun Hiraya-mura
+20410|下伊那郡根羽村|シモイナグンネバムラ|Shimoina-gun Neba-mura
+20411|下伊那郡下條村|シモイナグンシモジョウムラ|Shimoina-gun Shimojo-mura
+20412|下伊那郡売木村|シモイナグンウルギムラ|Shimoina-gun Urugi-mura
+20413|下伊那郡天龍村|シモイナグンテンリュウムラ|Shimoina-gun Tenryu-mura
+20414|下伊那郡泰阜村|シモイナグンヤスオカムラ|Shimoina-gun Yasuoka-mura
+20415|下伊那郡喬木村|シモイナグンタカギムラ|Shimoina-gun Takagi-mura
+20416|下伊那郡豊丘村|シモイナグントヨオカムラ|Shimoina-gun Toyoka-mura
+20417|下伊那郡大鹿村|シモイナグンオオシカムラ|Shimoina-gun Oshika-mura
+20422|木曽郡上松町|キソグンアゲマツマチ|Kiso-gun Agematsu-machi
+20423|木曽郡南木曽町|キソグンナギソマチ|Kiso-gun Nagiso-machi
+20425|木曽郡木祖村|キソグンキソムラ|Kiso-gun Kiso-mura
+20429|木曽郡王滝村|キソグンオウタキムラ|Kiso-gun Otaki-mura
+20430|木曽郡大桑村|キソグンオオクワムラ|Kiso-gun Okuwa-mura
+20432|木曽郡木曽町|キソグンキソマチ|Kiso-gun Kiso-machi
+20446|東筑摩郡麻績村|ヒガシチクマグンオミムラ|Higashichikuma-gun Omi-mura
+20448|東筑摩郡生坂村|ヒガシチクマグンイクサカムラ|Higashichikuma-gun Ikusaka-mura
+20450|東筑摩郡山形村|ヒガシチクマグンヤマガタムラ|Higashichikuma-gun Yamagata-mura
+20451|東筑摩郡朝日村|ヒガシチクマグンアサヒムラ|Higashichikuma-gun Asahi-mura
+20452|東筑摩郡筑北村|ヒガシチクマグンチクホクムラ|Higashichikuma-gun Chikuhoku-mura
+20481|北安曇郡池田町|キタアヅミグンイケダマチ|Kitaazumi-gun Ikeda-machi
+20482|北安曇郡松川村|キタアヅミグンマツカワムラ|Kitaazumi-gun Matsukawa-mura
+20485|北安曇郡白馬村|キタアヅミグンハクバムラ|Kitaazumi-gun Hakuba-mura
+20486|北安曇郡小谷村|キタアヅミグンオタリムラ|Kitaazumi-gun Otari-mura
+20521|埴科郡坂城町|ハニシナグンサカキマチ|Hanishina-gun Sakaki-machi
+20541|上高井郡小布施町|カミタカイグンオブセマチ|Kamitakai-gun Obuse-machi
+20543|上高井郡高山村|カミタカイグンタカヤマムラ|Kamitakai-gun Takayama-mura
+20561|下高井郡山ノ内町|シモタカイグンヤマノウチマチ|Shimotakai-gun Yamanochi-machi
+20562|下高井郡木島平村|シモタカイグンキジマダイラムラ|Shimotakai-gun Kijimadaira-mura
+20563|下高井郡野沢温泉村|シモタカイグンノザワオンセンムラ|Shimotakai-gun Nozawaonsen-mura
+20583|上水内郡信濃町|カミミノチグンシナノマチ|Kamiminochi-gun Shinano-machi
+20588|上水内郡小川村|カミミノチグンオガワムラ|Kamiminochi-gun Ogawa-mura
+20590|上水内郡飯綱町|カミミノチグンイイヅナマチ|Kamiminochi-gun Iizuna-machi
+20602|下水内郡栄村|シモミノチグンサカエムラ|Shimominochi-gun Sakae-mura
+21201|岐阜市|ギフシ|Gifu-shi
+21202|大垣市|オオガキシ|Ogaki-shi
+21203|高山市|タカヤマシ|Takayama-shi
+21204|多治見市|タジミシ|Tajimi-shi
+21205|関市|セキシ|Seki-shi
+21206|中津川市|ナカツガワシ|Nakatsugawa-shi
+21207|美濃市|ミノシ|Mino-shi
+21208|瑞浪市|ミズナミシ|Mizunami-shi
+21209|羽島市|ハシマシ|Hashima-shi
+21210|恵那市|エナシ|Ena-shi
+21211|美濃加茂市|ミノカモシ|Minokamo-shi
+21212|土岐市|トキシ|Toki-shi
+21213|各務原市|カカミガハラシ|Kakamigahara-shi
+21214|可児市|カニシ|Kani-shi
+21215|山県市|ヤマガタシ|Yamagata-shi
+21216|瑞穂市|ミズホシ|Mizuho-shi
+21217|飛騨市|ヒダシ|Hida-shi
+21218|本巣市|モトスシ|Motosu-shi
+21219|郡上市|グジョウシ|Gujo-shi
+21220|下呂市|ゲロシ|Gero-shi
+21221|海津市|カイヅシ|Kaizu-shi
+21302|羽島郡岐南町|ハシマグンギナンチョウ|Hashima-gun Ginan-cho
+21303|羽島郡笠松町|ハシマグンカサマツチョウ|Hashima-gun Kasamatsu-cho
+21341|養老郡養老町|ヨウロウグンヨウロウチョウ|Yoro-gun Yoro-cho
+21361|不破郡垂井町|フワグンタルイチョウ|Fuwa-gun Tarui-cho
+21362|不破郡関ケ原町|フワグンセキガハラチョウ|Fuwa-gun Sekigahara-cho
+21381|安八郡神戸町|アンパチグンゴウドチョウ|Ampachi-gun Godo-cho
+21382|安八郡輪之内町|アンパチグンワノウチチョウ|Ampachi-gun Wanochi-cho
+21383|安八郡安八町|アンパチグンアンパチチョウ|Ampachi-gun Ampachi-cho
+21401|揖斐郡揖斐川町|イビグンイビガワチョウ|Ibi-gun Ibigawa-cho
+21403|揖斐郡大野町|イビグンオオノチョウ|Ibi-gun Ono-cho
+21404|揖斐郡池田町|イビグンイケダチョウ|Ibi-gun Ikeda-cho
+21421|本巣郡北方町|モトスグンキタガタチョウ|Motosu-gun Kitagata-cho
+21501|加茂郡坂祝町|カモグンサカホギチョウ|Kamo-gun Sakahogi-cho
+21502|加茂郡富加町|カモグントミカチョウ|Kamo-gun Tomika-cho
+21503|加茂郡川辺町|カモグンカワベチョウ|Kamo-gun Kawabe-cho
+21504|加茂郡七宗町|カモグンヒチソウチョウ|Kamo-gun Hichiso-cho
+21505|加茂郡八百津町|カモグンヤオツチョウ|Kamo-gun Yaotsu-cho
+21506|加茂郡白川町|カモグンシラカワチョウ|Kamo-gun Shirakawa-cho
+21507|加茂郡東白川村|カモグンヒガシシラカワムラ|Kamo-gun Higashishirakawa-mura
+21521|可児郡御嵩町|カニグンミタケチョウ|Kani-gun Mitake-cho
+21604|大野郡白川村|オオノグンシラカワムラ|Ono-gun Shirakawa-mura
+22101|静岡市葵区|シズオカシアオイク|Shizuoka-shi Aoi-ku
+22102|静岡市駿河区|シズオカシスルガク|Shizuoka-shi Suruga-ku
+22103|静岡市清水区|シズオカシシミズク|Shizuoka-shi Shimizu-ku
+22131|浜松市中区|ハママツシナカク|Hamamatsu-shi Naka-ku
+22132|浜松市東区|ハママツシヒガシク|Hamamatsu-shi Higashi-ku
+22133|浜松市西区|ハママツシニシク|Hamamatsu-shi Nishi-ku
+22134|浜松市南区|ハママツシミナミク|Hamamatsu-shi Minami-ku
+22135|浜松市北区|ハママツシキタク|Hamamatsu-shi Kita-ku
+22136|浜松市浜北区|ハママツシハマキタク|Hamamatsu-shi Hamakita-ku
+22137|浜松市天竜区|ハママツシテンリュウク|Hamamatsu-shi Tenryu-ku
+22203|沼津市|ヌマヅシ|Numazu-shi
+22205|熱海市|アタミシ|Atami-shi
+22206|三島市|ミシマシ|Mishima-shi
+22207|富士宮市|フジノミヤシ|Fujinomiya-shi
+22208|伊東市|イトウシ|Ito-shi
+22209|島田市|シマダシ|Shimada-shi
+22210|富士市|フジシ|Fuji-shi
+22211|磐田市|イワタシ|Iwata-shi
+22212|焼津市|ヤイヅシ|Yaizu-shi
+22213|掛川市|カケガワシ|Kakegawa-shi
+22214|藤枝市|フジエダシ|Fujieda-shi
+22215|御殿場市|ゴテンバシ|Gotemba-shi
+22216|袋井市|フクロイシ|Fukuroi-shi
+22219|下田市|シモダシ|Shimoda-shi
+22220|裾野市|スソノシ|Susono-shi
+22221|湖西市|コサイシ|Kosai-shi
+22222|伊豆市|イズシ|Izu-shi
+22223|御前崎市|オマエザキシ|Omaezaki-shi
+22224|菊川市|キクガワシ|Kikugawa-shi
+22225|伊豆の国市|イズノクニシ|Izunokuni-shi
+22226|牧之原市|マキノハラシ|Makinohara-shi
+22301|賀茂郡東伊豆町|カモグンヒガシイズチョウ|Kamo-gun Higashiizu-cho
+22302|賀茂郡河津町|カモグンカワヅチョウ|Kamo-gun Kawazu-cho
+22304|賀茂郡南伊豆町|カモグンミナミイズチョウ|Kamo-gun Minamiizu-cho
+22305|賀茂郡松崎町|カモグンマツザキチョウ|Kamo-gun Matsuzaki-cho
+22306|賀茂郡西伊豆町|カモグンニシイズチョウ|Kamo-gun Nishiizu-cho
+22325|田方郡函南町|タガタグンカンナミチョウ|Tagata-gun Kannami-cho
+22341|駿東郡清水町|スントウグンシミズチョウ|Sunto-gun Shimizu-cho
+22342|駿東郡長泉町|スントウグンナガイズミチョウ|Sunto-gun Nagaizumi-cho
+22344|駿東郡小山町|スントウグンオヤマチョウ|Sunto-gun Oyama-cho
+22424|榛原郡吉田町|ハイバラグンヨシダチョウ|Haibara-gun Yoshida-cho
+22429|榛原郡川根本町|ハイバラグンカワネホンチョウ|Haibara-gun Kawanehon-cho
+22461|周智郡森町|シュウチグンモリマチ|Shuchi-gun Mori-machi
+23101|名古屋市千種区|ナゴヤシチクサク|Nagoya-shi Chikusa-ku
+23102|名古屋市東区|ナゴヤシヒガシク|Nagoya-shi Higashi-ku
+23103|名古屋市北区|ナゴヤシキタク|Nagoya-shi Kita-ku
+23104|名古屋市西区|ナゴヤシニシク|Nagoya-shi Nishi-ku
+23105|名古屋市中村区|ナゴヤシナカムラク|Nagoya-shi Nakamura-ku
+23106|名古屋市中区|ナゴヤシナカク|Nagoya-shi Naka-ku
+23107|名古屋市昭和区|ナゴヤシショウワク|Nagoya-shi Showa-ku
+23108|名古屋市瑞穂区|ナゴヤシミズホク|Nagoya-shi Mizuho-ku
+23109|名古屋市熱田区|ナゴヤシアツタク|Nagoya-shi Atsuta-ku
+23110|名古屋市中川区|ナゴヤシナカガワク|Nagoya-shi Nakagawa-ku
+23111|名古屋市港区|ナゴヤシミナトク|Nagoya-shi Minato-ku
+23112|名古屋市南区|ナゴヤシミナミク|Nagoya-shi Minami-ku
+23113|名古屋市守山区|ナゴヤシモリヤマク|Nagoya-shi Moriyama-ku
+23114|名古屋市緑区|ナゴヤシミドリク|Nagoya-shi Midori-ku
+23115|名古屋市名東区|ナゴヤシメイトウク|Nagoya-shi Meito-ku
+23116|名古屋市天白区|ナゴヤシテンパクク|Nagoya-shi Tempaku-ku
+23201|豊橋市|トヨハシシ|Toyohashi-shi
+23202|岡崎市|オカザキシ|Okazaki-shi
+23203|一宮市|イチノミヤシ|Ichinomiya-shi
+23204|瀬戸市|セトシ|Seto-shi
+23205|半田市|ハンダシ|Handa-shi
+23206|春日井市|カスガイシ|Kasugai-shi
+23207|豊川市|トヨカワシ|Toyokawa-shi
+23208|津島市|ツシマシ|Tsushima-shi
+23209|碧南市|ヘキナンシ|Hekinan-shi
+23210|刈谷市|カリヤシ|Kariya-shi
+23211|豊田市|トヨタシ|Toyota-shi
+23212|安城市|アンジョウシ|Anjo-shi
+23213|西尾市|ニシオシ|Nishio-shi
+23214|蒲郡市|ガマゴオリシ|Gamagori-shi
+23215|犬山市|イヌヤマシ|Inuyama-shi
+23216|常滑市|トコナメシ|Tokoname-shi
+23217|江南市|コウナンシ|Konan-shi
+23219|小牧市|コマキシ|Komaki-shi
+23220|稲沢市|イナザワシ|Inazawa-shi
+23221|新城市|シンシロシ|Shinshiro-shi
+23222|東海市|トウカイシ|Tokai-shi
+23223|大府市|オオブシ|Obu-shi
+23224|知多市|チタシ|Chita-shi
+23225|知立市|チリュウシ|Chiryu-shi
+23226|尾張旭市|オワリアサヒシ|Owariasahi-shi
+23227|高浜市|タカハマシ|Takahama-shi
+23228|岩倉市|イワクラシ|Iwakura-shi
+23229|豊明市|トヨアケシ|Toyoake-shi
+23230|日進市|ニッシンシ|Nisshin-shi
+23231|田原市|タハラシ|Tahara-shi
+23232|愛西市|アイサイシ|Aisai-shi
+23233|清須市|キヨスシ|Kiyosu-shi
+23234|北名古屋市|キタナゴヤシ|Kitanagoya-shi
+23235|弥富市|ヤトミシ|Yatomi-shi
+23236|みよし市|ミヨシシ|Miyoshi-shi
+23237|あま市|アマシ|Ama-shi
+23238|長久手市|ナガクテシ|Nagakute-shi
+23302|愛知郡東郷町|アイチグントウゴウチョウ|Aichi-gun Togo-cho
+23342|西春日井郡豊山町|ニシカスガイグントヨヤマチョウ|Nishikasugai-gun Toyoyama-cho
+23361|丹羽郡大口町|ニワグンオオグチチョウ|Niwa-gun Oguchi-cho
+23362|丹羽郡扶桑町|ニワグンフソウチョウ|Niwa-gun Fuso-cho
+23424|海部郡大治町|アマグンオオハルチョウ|Ama-gun Oharu-cho
+23425|海部郡蟹江町|アマグンカニエチョウ|Ama-gun Kanie-cho
+23427|海部郡飛島村|アマグントビシマムラ|Ama-gun Tobishima-mura
+23441|知多郡阿久比町|チタグンアグイチョウ|Chita-gun Agui-cho
+23442|知多郡東浦町|チタグンヒガシウラチョウ|Chita-gun Higashiura-cho
+23445|知多郡南知多町|チタグンミナミチタチョウ|Chita-gun Minamichita-cho
+23446|知多郡美浜町|チタグンミハマチョウ|Chita-gun Mihama-cho
+23447|知多郡武豊町|チタグンタケトヨチョウ|Chita-gun Taketoyo-cho
+23501|額田郡幸田町|ヌカタグンコウタチョウ|Nukata-gun Kota-cho
+23561|北設楽郡設楽町|キタシタラグンシタラチョウ|Kitashitara-gun Shitara-cho
+23562|北設楽郡東栄町|キタシタラグントウエイチョウ|Kitashitara-gun Toei-cho
+23563|北設楽郡豊根村|キタシタラグントヨネムラ|Kitashitara-gun Toyone-mura
+24201|津市|ツシ|Tsu-shi
+24202|四日市市|ヨッカイチシ|Yokkaichi-shi
+24203|伊勢市|イセシ|Ise-shi
+24204|松阪市|マツサカシ|Matsusaka-shi
+24205|桑名市|クワナシ|Kuwana-shi
+24207|鈴鹿市|スズカシ|Suzuka-shi
+24208|名張市|ナバリシ|Nabari-shi
+24209|尾鷲市|オワセシ|Owase-shi
+24210|亀山市|カメヤマシ|Kameyama-shi
+24211|鳥羽市|トバシ|Toba-shi
+24212|熊野市|クマノシ|Kumano-shi
+24214|いなべ市|イナベシ|Inabe-shi
+24215|志摩市|シマシ|Shima-shi
+24216|伊賀市|イガシ|Iga-shi
+24303|桑名郡木曽岬町|クワナグンキソサキチョウ|Kuwana-gun Kisosaki-cho
+24324|員弁郡東員町|イナベグントウインチョウ|Inabe-gun Toin-cho
+24341|三重郡菰野町|ミエグンコモノチョウ|Mie-gun Komono-cho
+24343|三重郡朝日町|ミエグンアサヒチョウ|Mie-gun Asahi-cho
+24344|三重郡川越町|ミエグンカワゴエチョウ|Mie-gun Kawagoe-cho
+24441|多気郡多気町|タキグンタキチョウ|Taki-gun Taki-cho
+24442|多気郡明和町|タキグンメイワチョウ|Taki-gun Meiwa-cho
+24443|多気郡大台町|タキグンオオダイチョウ|Taki-gun Odai-cho
+24461|度会郡玉城町|ワタライグンタマキチョウ|Watarai-gun Tamaki-cho
+24470|度会郡度会町|ワタライグンワタライチョウ|Watarai-gun Watarai-cho
+24471|度会郡大紀町|ワタライグンタイキチョウ|Watarai-gun Taiki-cho
+24472|度会郡南伊勢町|ワタライグンミナミイセチョウ|Watarai-gun Minamiise-cho
+24543|北牟婁郡紀北町|キタムログンキホクチョウ|Kitamuro-gun Kihoku-cho
+24561|南牟婁郡御浜町|ミナミムログンミハマチョウ|Minamimuro-gun Mihama-cho
+24562|南牟婁郡紀宝町|ミナミムログンキホウチョウ|Minamimuro-gun Kiho-cho
+25201|大津市|オオツシ|Otsu-shi
+25202|彦根市|ヒコネシ|Hikone-shi
+25203|長浜市|ナガハマシ|Nagahama-shi
+25204|近江八幡市|オウミハチマンシ|Omihachiman-shi
+25206|草津市|クサツシ|Kusatsu-shi
+25207|守山市|モリヤマシ|Moriyama-shi
+25208|栗東市|リットウシ|Ritto-shi
+25209|甲賀市|コウカシ|Koka-shi
+25210|野洲市|ヤスシ|Yasu-shi
+25211|湖南市|コナンシ|Konan-shi
+25212|高島市|タカシマシ|Takashima-shi
+25213|東近江市|ヒガシオウミシ|Higashiomi-shi
+25214|米原市|マイバラシ|Maibara-shi
+25383|蒲生郡日野町|ガモウグンヒノチョウ|Gamo-gun Hino-cho
+25384|蒲生郡竜王町|ガモウグンリュウオウチョウ|Gamo-gun Ryuo-cho
+25425|愛知郡愛荘町|エチグンアイショウチョウ|Echi-gun Aisho-cho
+25441|犬上郡豊郷町|イヌカミグントヨサトチョウ|Inukami-gun Toyosato-cho
+25442|犬上郡甲良町|イヌカミグンコウラチョウ|Inukami-gun Kora-cho
+25443|犬上郡多賀町|イヌカミグンタガチョウ|Inukami-gun Taga-cho
+26101|京都市北区|キョウトシキタク|Kyoto-shi Kita-ku
+26102|京都市上京区|キョウトシカミギョウク|Kyoto-shi Kamigyo-ku
+26103|京都市左京区|キョウトシサキョウク|Kyoto-shi Sakyo-ku
+26104|京都市中京区|キョウトシナカギョウク|Kyoto-shi Nakagyo-ku
+26105|京都市東山区|キョウトシヒガシヤマク|Kyoto-shi Higashiyama-ku
+26106|京都市下京区|キョウトシシモギョウク|Kyoto-shi Shimogyo-ku
+26107|京都市南区|キョウトシミナミク|Kyoto-shi Minami-ku
+26108|京都市右京区|キョウトシウキョウク|Kyoto-shi Ukyo-ku
+26109|京都市伏見区|キョウトシフシミク|Kyoto-shi Fushimi-ku
+26110|京都市山科区|キョウトシヤマシナク|Kyoto-shi Yamashina-ku
+26111|京都市西京区|キョウトシニシキョウク|Kyoto-shi Nishikyo-ku
+26201|福知山市|フクチヤマシ|Fukuchiyama-shi
+26202|舞鶴市|マイヅルシ|Maizuru-shi
+26203|綾部市|アヤベシ|Ayabe-shi
+26204|宇治市|ウジシ|Uji-shi
+26205|宮津市|ミヤヅシ|Miyazu-shi
+26206|亀岡市|カメオカシ|Kameoka-shi
+26207|城陽市|ジョウヨウシ|Joyo-shi
+26208|向日市|ムコウシ|Muko-shi
+26209|長岡京市|ナガオカキョウシ|Nagaokakyo-shi
+26210|八幡市|ヤワタシ|Yawata-shi
+26211|京田辺市|キョウタナベシ|Kyotanabe-shi
+26212|京丹後市|キョウタンゴシ|Kyotango-shi
+26213|南丹市|ナンタンシ|Nantan-shi
+26214|木津川市|キヅガワシ|Kizugawa-shi
+26303|乙訓郡大山崎町|オトクニグンオオヤマザキチョウ|Otokuni-gun Oyamazaki-cho
+26322|久世郡久御山町|クセグンクミヤマチョウ|Kuse-gun Kumiyama-cho
+26343|綴喜郡井手町|ツヅキグンイデチョウ|Tsuzuki-gun Ide-cho
+26344|綴喜郡宇治田原町|ツヅキグンウジタワラチョウ|Tsuzuki-gun Ujitawara-cho
+26364|相楽郡笠置町|ソウラクグンカサギチョウ|Soraku-gun Kasagi-cho
+26365|相楽郡和束町|ソウラクグンワヅカチョウ|Soraku-gun Wazuka-cho
+26366|相楽郡精華町|ソウラクグンセイカチョウ|Soraku-gun Seika-cho
+26367|相楽郡南山城村|ソウラクグンミナミヤマシロムラ|Soraku-gun Minamiyamashiro-mura
+26407|船井郡京丹波町|フナイグンキョウタンバチョウ|Funai-gun Kyotamba-cho
+26463|与謝郡伊根町|ヨサグンイネチョウ|Yosa-gun Ine-cho
+26465|与謝郡与謝野町|ヨサグンヨサノチョウ|Yosa-gun Yosano-cho
+27102|大阪市都島区|オオサカシミヤコジマク|Osaka-shi Miyakojima-ku
+27103|大阪市福島区|オオサカシフクシマク|Osaka-shi Fukushima-ku
+27104|大阪市此花区|オオサカシコノハナク|Osaka-shi Konohana-ku
+27106|大阪市西区|オオサカシニシク|Osaka-shi Nishi-ku
+27107|大阪市港区|オオサカシミナトク|Osaka-shi Minato-ku
+27108|大阪市大正区|オオサカシタイショウク|Osaka-shi Taisho-ku
+27109|大阪市天王寺区|オオサカシテンノウジク|Osaka-shi Tennoji-ku
+27111|大阪市浪速区|オオサカシナニワク|Osaka-shi Naniwa-ku
+27113|大阪市西淀川区|オオサカシニシヨドガワク|Osaka-shi Nishiyodogawa-ku
+27114|大阪市東淀川区|オオサカシヒガシヨドガワク|Osaka-shi Higashiyodogawa-ku
+27115|大阪市東成区|オオサカシヒガシナリク|Osaka-shi Higashinari-ku
+27116|大阪市生野区|オオサカシイクノク|Osaka-shi Ikuno-ku
+27117|大阪市旭区|オオサカシアサヒク|Osaka-shi Asahi-ku
+27118|大阪市城東区|オオサカシジョウトウク|Osaka-shi Joto-ku
+27119|大阪市阿倍野区|オオサカシアベノク|Osaka-shi Abeno-ku
+27120|大阪市住吉区|オオサカシスミヨシク|Osaka-shi Sumiyoshi-ku
+27121|大阪市東住吉区|オオサカシヒガシスミヨシク|Osaka-shi Higashisumiyoshi-ku
+27122|大阪市西成区|オオサカシニシナリク|Osaka-shi Nishinari-ku
+27123|大阪市淀川区|オオサカシヨドガワク|Osaka-shi Yodogawa-ku
+27124|大阪市鶴見区|オオサカシツルミク|Osaka-shi Tsurumi-ku
+27125|大阪市住之江区|オオサカシスミノエク|Osaka-shi Suminoe-ku
+27126|大阪市平野区|オオサカシヒラノク|Osaka-shi Hirano-ku
+27127|大阪市北区|オオサカシキタク|Osaka-shi Kita-ku
+27128|大阪市中央区|オオサカシチュウオウク|Osaka-shi Chuo-ku
+27141|堺市堺区|サカイシサカイク|Sakai-shi Sakai-ku
+27142|堺市中区|サカイシナカク|Sakai-shi Naka-ku
+27143|堺市東区|サカイシヒガシク|Sakai-shi Higashi-ku
+27144|堺市西区|サカイシニシク|Sakai-shi Nishi-ku
+27145|堺市南区|サカイシミナミク|Sakai-shi Minami-ku
+27146|堺市北区|サカイシキタク|Sakai-shi Kita-ku
+27147|堺市美原区|サカイシミハラク|Sakai-shi Mihara-ku
+27202|岸和田市|キシワダシ|Kishiwada-shi
+27203|豊中市|トヨナカシ|Toyonaka-shi
+27204|池田市|イケダシ|Ikeda-shi
+27205|吹田市|スイタシ|Suita-shi
+27206|泉大津市|イズミオオツシ|Izumiotsu-shi
+27207|高槻市|タカツキシ|Takatsuki-shi
+27208|貝塚市|カイヅカシ|Kaizuka-shi
+27209|守口市|モリグチシ|Moriguchi-shi
+27210|枚方市|ヒラカタシ|Hirakata-shi
+27211|茨木市|イバラキシ|Ibaraki-shi
+27212|八尾市|ヤオシ|Yao-shi
+27213|泉佐野市|イズミサノシ|Izumisano-shi
+27214|富田林市|トンダバヤシシ|Tondabayashi-shi
+27215|寝屋川市|ネヤガワシ|Neyagawa-shi
+27216|河内長野市|カワチナガノシ|Kawachinagano-shi
+27217|松原市|マツバラシ|Matsubara-shi
+27218|大東市|ダイトウシ|Daito-shi
+27219|和泉市|イズミシ|Izumi-shi
+27220|箕面市|ミノオシ|Mino-shi
+27221|柏原市|カシワラシ|Kashiwara-shi
+27222|羽曳野市|ハビキノシ|Habikino-shi
+27223|門真市|カドマシ|Kadoma-shi
+27224|摂津市|セッツシ|Settsu-shi
+27225|高石市|タカイシシ|Takaishi-shi
+27226|藤井寺市|フジイデラシ|Fujiidera-shi
+27227|東大阪市|ヒガシオオサカシ|Higashiosaka-shi
+27228|泉南市|センナンシ|Sennan-shi
+27229|四條畷市|シジョウナワテシ|Shijonawate-shi
+27230|交野市|カタノシ|Katano-shi
+27231|大阪狭山市|オオサカサヤマシ|Osakasayama-shi
+27232|阪南市|ハンナンシ|Hannan-shi
+27301|三島郡島本町|ミシマグンシマモトチョウ|Mishima-gun Shimamoto-cho
+27321|豊能郡豊能町|トヨノグントヨノチョウ|Toyono-gun Toyono-cho
+27322|豊能郡能勢町|トヨノグンノセチョウ|Toyono-gun Nose-cho
+27341|泉北郡忠岡町|センボクグンタダオカチョウ|Semboku-gun Tadaoka-cho
+27361|泉南郡熊取町|センナングンクマトリチョウ|Sennan-gun Kumatori-cho
+27362|泉南郡田尻町|センナングンタジリチョウ|Sennan-gun Tajiri-cho
+27366|泉南郡岬町|センナングンミサキチョウ|Sennan-gun Misaki-cho
+27381|南河内郡太子町|ミナミカワチグンタイシチョウ|Minamikawachi-gun Taishi-cho
+27382|南河内郡河南町|ミナミカワチグンカナンチョウ|Minamikawachi-gun Kanan-cho
+27383|南河内郡千早赤阪村|ミナミカワチグンチハヤアカサカムラ|Minamikawachi-gun Chihayaakasaka-mura
+28101|神戸市東灘区|コウベシヒガシナダク|Kobe-shi Higashinada-ku
+28102|神戸市灘区|コウベシナダク|Kobe-shi Nada-ku
+28105|神戸市兵庫区|コウベシヒョウゴク|Kobe-shi Hyogo-ku
+28106|神戸市長田区|コウベシナガタク|Kobe-shi Nagata-ku
+28107|神戸市須磨区|コウベシスマク|Kobe-shi Suma-ku
+28108|神戸市垂水区|コウベシタルミク|Kobe-shi Tarumi-ku
+28109|神戸市北区|コウベシキタク|Kobe-shi Kita-ku
+28110|神戸市中央区|コウベシチュウオウク|Kobe-shi Chuo-ku
+28111|神戸市西区|コウベシニシク|Kobe-shi Nishi-ku
+28201|姫路市|ヒメジシ|Himeji-shi
+28202|尼崎市|アマガサキシ|Amagasaki-shi
+28203|明石市|アカシシ|Akashi-shi
+28204|西宮市|ニシノミヤシ|Nishinomiya-shi
+28205|洲本市|スモトシ|Sumoto-shi
+28206|芦屋市|アシヤシ|Ashiya-shi
+28207|伊丹市|イタミシ|Itami-shi
+28208|相生市|アイオイシ|Aioi-shi
+28209|豊岡市|トヨオカシ|Toyoka-shi
+28210|加古川市|カコガワシ|Kakogawa-shi
+28212|赤穂市|アコウシ|Ako-shi
+28213|西脇市|ニシワキシ|Nishiwaki-shi
+28214|宝塚市|タカラヅカシ|Takarazuka-shi
+28215|三木市|ミキシ|Miki-shi
+28216|高砂市|タカサゴシ|Takasago-shi
+28217|川西市|カワニシシ|Kawanishi-shi
+28218|小野市|オノシ|Ono-shi
+28219|三田市|サンダシ|Sanda-shi
+28220|加西市|カサイシ|Kasai-shi
+28221|丹波篠山市|タンバササヤマシ|Tambasasayama-shi
+28222|養父市|ヤブシ|Yabu-shi
+28223|丹波市|タンバシ|Tamba-shi
+28224|南あわじ市|ミナミアワジシ|Minamiawaji-shi
+28225|朝来市|アサゴシ|Asago-shi
+28226|淡路市|アワジシ|Awaji-shi
+28227|宍粟市|シソウシ|Shiso-shi
+28228|加東市|カトウシ|Kato-shi
+28229|たつの市|タツノシ|Tatsuno-shi
+28301|川辺郡猪名川町|カワベグンイナガワチョウ|Kawabe-gun Inagawa-cho
+28365|多可郡多可町|タカグンタカチョウ|Taka-gun Taka-cho
+28381|加古郡稲美町|カコグンイナミチョウ|Kako-gun Inami-cho
+28382|加古郡播磨町|カコグンハリマチョウ|Kako-gun Harima-cho
+28442|神崎郡市川町|カンザキグンイチカワチョウ|Kanzaki-gun Ichikawa-cho
+28443|神崎郡福崎町|カンザキグンフクサキチョウ|Kanzaki-gun Fukusaki-cho
+28446|神崎郡神河町|カンザキグンカミカワチョウ|Kanzaki-gun Kamikawa-cho
+28464|揖保郡太子町|イボグンタイシチョウ|Ibo-gun Taishi-cho
+28481|赤穂郡上郡町|アコウグンカミゴオリチョウ|Ako-gun Kamigori-cho
+28501|佐用郡佐用町|サヨウグンサヨウチョウ|Sayo-gun Sayo-cho
+28585|美方郡香美町|ミカタグンカミチョウ|Mikata-gun Kami-cho
+28586|美方郡新温泉町|ミカタグンシンオンセンチョウ|Mikata-gun Shinonsen-cho
+29201|奈良市|ナラシ|Nara-shi
+29202|大和高田市|ヤマトタカダシ|Yamatotakada-shi
+29203|大和郡山市|ヤマトコオリヤマシ|Yamatokoriyama-shi
+29204|天理市|テンリシ|Tenri-shi
+29205|橿原市|カシハラシ|Kashihara-shi
+29206|桜井市|サクライシ|Sakurai-shi
+29207|五條市|ゴジョウシ|Gojo-shi
+29208|御所市|ゴセシ|Gose-shi
+29209|生駒市|イコマシ|Ikoma-shi
+29210|香芝市|カシバシ|Kashiba-shi
+29211|葛城市|カツラギシ|Katsuragi-shi
+29212|宇陀市|ウダシ|Uda-shi
+29322|山辺郡山添村|ヤマベグンヤマゾエムラ|Yamabe-gun Yamazoe-mura
+29342|生駒郡平群町|イコマグンヘグリチョウ|Ikoma-gun Heguri-cho
+29343|生駒郡三郷町|イコマグンサンゴウチョウ|Ikoma-gun Sango-cho
+29344|生駒郡斑鳩町|イコマグンイカルガチョウ|Ikoma-gun Ikaruga-cho
+29345|生駒郡安堵町|イコマグンアンドチョウ|Ikoma-gun Ando-cho
+29361|磯城郡川西町|シキグンカワニシチョウ|Shiki-gun Kawanishi-cho
+29362|磯城郡三宅町|シキグンミヤケチョウ|Shiki-gun Miyake-cho
+29363|磯城郡田原本町|シキグンタワラモトチョウ|Shiki-gun Tawaramoto-cho
+29385|宇陀郡曽爾村|ウダグンソニムラ|Uda-gun Soni-mura
+29386|宇陀郡御杖村|ウダグンミツエムラ|Uda-gun Mitsue-mura
+29401|高市郡高取町|タカイチグンタカトリチョウ|Takaichi-gun Takatori-cho
+29402|高市郡明日香村|タカイチグンアスカムラ|Takaichi-gun Asuka-mura
+29424|北葛城郡上牧町|キタカツラギグンカンマキチョウ|Kitakatsuragi-gun Kammaki-cho
+29425|北葛城郡王寺町|キタカツラギグンオウジチョウ|Kitakatsuragi-gun Oji-cho
+29426|北葛城郡広陵町|キタカツラギグンコウリョウチョウ|Kitakatsuragi-gun Koryo-cho
+29427|北葛城郡河合町|キタカツラギグンカワイチョウ|Kitakatsuragi-gun Kawai-cho
+29441|吉野郡吉野町|ヨシノグンヨシノチョウ|Yoshino-gun Yoshino-cho
+29442|吉野郡大淀町|ヨシノグンオオヨドチョウ|Yoshino-gun Oyodo-cho
+29443|吉野郡下市町|ヨシノグンシモイチチョウ|Yoshino-gun Shimoichi-cho
+29444|吉野郡黒滝村|ヨシノグンクロタキムラ|Yoshino-gun Kurotaki-mura
+29446|吉野郡天川村|ヨシノグンテンカワムラ|Yoshino-gun Tenkawa-mura
+29447|吉野郡野迫川村|ヨシノグンノセガワムラ|Yoshino-gun Nosegawa-mura
+29449|吉野郡十津川村|ヨシノグントツカワムラ|Yoshino-gun Totsukawa-mura
+29450|吉野郡下北山村|ヨシノグンシモキタヤマムラ|Yoshino-gun Shimokitayama-mura
+29451|吉野郡上北山村|ヨシノグンカミキタヤマムラ|Yoshino-gun Kamikitayama-mura
+29452|吉野郡川上村|ヨシノグンカワカミムラ|Yoshino-gun Kawakami-mura
+29453|吉野郡東吉野村|ヨシノグンヒガシヨシノムラ|Yoshino-gun Higashiyoshino-mura
+30201|和歌山市|ワカヤマシ|Wakayama-shi
+30202|海南市|カイナンシ|Kainan-shi
+30203|橋本市|ハシモトシ|Hashimoto-shi
+30204|有田市|アリダシ|Arida-shi
+30205|御坊市|ゴボウシ|Gobo-shi
+30206|田辺市|タナベシ|Tanabe-shi
+30207|新宮市|シングウシ|Shingu-shi
+30208|紀の川市|キノカワシ|Kinokawa-shi
+30209|岩出市|イワデシ|Iwade-shi
+30304|海草郡紀美野町|カイソウグンキミノチョウ|Kaiso-gun Kimino-cho
+30341|伊都郡かつらぎ町|イトグンカツラギチョウ|Ito-gun Katsuragi-cho
+30343|伊都郡九度山町|イトグンクドヤマチョウ|Ito-gun Kudoyama-cho
+30344|伊都郡高野町|イトグンコウヤチョウ|Ito-gun Koya-cho
+30361|有田郡湯浅町|アリダグンユアサチョウ|Arida-gun Yuasa-cho
+30362|有田郡広川町|アリダグンヒロガワチョウ|Arida-gun Hirogawa-cho
+30366|有田郡有田川町|アリダグンアリダガワチョウ|Arida-gun Aridagawa-cho
+30381|日高郡美浜町|ヒダカグンミハマチョウ|Hidaka-gun Mihama-cho
+30382|日高郡日高町|ヒダカグンヒダカチョウ|Hidaka-gun Hidaka-cho
+30383|日高郡由良町|ヒダカグンユラチョウ|Hidaka-gun Yura-cho
+30390|日高郡印南町|ヒダカグンイナミチョウ|Hidaka-gun Inami-cho
+30391|日高郡みなべ町|ヒダカグンミナベチョウ|Hidaka-gun Minabe-cho
+30392|日高郡日高川町|ヒダカグンヒダカガワチョウ|Hidaka-gun Hidakagawa-cho
+30401|西牟婁郡白浜町|ニシムログンシラハマチョウ|Nishimuro-gun Shirahama-cho
+30404|西牟婁郡上富田町|ニシムログンカミトンダチョウ|Nishimuro-gun Kamitonda-cho
+30406|西牟婁郡すさみ町|ニシムログンスサミチョウ|Nishimuro-gun Susami-cho
+30421|東牟婁郡那智勝浦町|ヒガシムログンナチカツウラチョウ|Higashimuro-gun Nachikatsura-cho
+30422|東牟婁郡太地町|ヒガシムログンタイジチョウ|Higashimuro-gun Taiji-cho
+30424|東牟婁郡古座川町|ヒガシムログンコザガワチョウ|Higashimuro-gun Kozagawa-cho
+30427|東牟婁郡北山村|ヒガシムログンキタヤマムラ|Higashimuro-gun Kitayama-mura
+30428|東牟婁郡串本町|ヒガシムログンクシモトチョウ|Higashimuro-gun Kushimoto-cho
+31201|鳥取市|トットリシ|Tottori-shi
+31202|米子市|ヨナゴシ|Yonago-shi
+31203|倉吉市|クラヨシシ|Kurayoshi-shi
+31204|境港市|サカイミナトシ|Sakaiminato-shi
+31302|岩美郡岩美町|イワミグンイワミチョウ|Iwami-gun Iwami-cho
+31325|八頭郡若桜町|ヤズグンワカサチョウ|Yazu-gun Wakasa-cho
+31328|八頭郡智頭町|ヤズグンチヅチョウ|Yazu-gun Chizu-cho
+31329|八頭郡八頭町|ヤズグンヤズチョウ|Yazu-gun Yazu-cho
+31364|東伯郡三朝町|トウハクグンミササチョウ|Tohaku-gun Misasa-cho
+31370|東伯郡湯梨浜町|トウハクグンユリハマチョウ|Tohaku-gun Yurihama-cho
+31371|東伯郡琴浦町|トウハクグンコトウラチョウ|Tohaku-gun Kotora-cho
+31372|東伯郡北栄町|トウハクグンホクエイチョウ|Tohaku-gun Hokuei-cho
+31384|西伯郡日吉津村|サイハクグンヒエヅソン|Saihaku-gun Hiezu-son
+31386|西伯郡大山町|サイハクグンダイセンチョウ|Saihaku-gun Daisen-cho
+31389|西伯郡南部町|サイハクグンナンブチョウ|Saihaku-gun Nambu-cho
+31390|西伯郡伯耆町|サイハクグンホウキチョウ|Saihaku-gun Hoki-cho
+31401|日野郡日南町|ヒノグンニチナンチョウ|Hino-gun Nichinan-cho
+31402|日野郡日野町|ヒノグンヒノチョウ|Hino-gun Hino-cho
+31403|日野郡江府町|ヒノグンコウフチョウ|Hino-gun Kofu-cho
+32201|松江市|マツエシ|Matsue-shi
+32202|浜田市|ハマダシ|Hamada-shi
+32203|出雲市|イズモシ|Izumo-shi
+32204|益田市|マスダシ|Masuda-shi
+32205|大田市|オオダシ|Oda-shi
+32206|安来市|ヤスギシ|Yasugi-shi
+32207|江津市|ゴウツシ|Gotsu-shi
+32209|雲南市|ウンナンシ|Unnan-shi
+32343|仁多郡奥出雲町|ニタグンオクイズモチョウ|Nita-gun Okuizumo-cho
+32386|飯石郡飯南町|イイシグンイイナンチョウ|Iishi-gun Iinan-cho
+32441|邑智郡川本町|オオチグンカワモトマチ|Ochi-gun Kawamoto-machi
+32448|邑智郡美郷町|オオチグンミサトチョウ|Ochi-gun Misato-cho
+32449|邑智郡邑南町|オオチグンオオナンチョウ|Ochi-gun Onan-cho
+32501|鹿足郡津和野町|カノアシグンツワノチョウ|Kanoashi-gun Tsuwano-cho
+32505|鹿足郡吉賀町|カノアシグンヨシカチョウ|Kanoashi-gun Yoshika-cho
+32525|隠岐郡海士町|オキグンアマチョウ|Oki-gun Ama-cho
+32526|隠岐郡西ノ島町|オキグンニシノシマチョウ|Oki-gun Nishinoshima-cho
+32527|隠岐郡知夫村|オキグンチブムラ|Oki-gun Chibu-mura
+32528|隠岐郡隠岐の島町|オキグンオキノシマチョウ|Oki-gun Okinoshima-cho
+33101|岡山市北区|オカヤマシキタク|Okayama-shi Kita-ku
+33102|岡山市中区|オカヤマシナカク|Okayama-shi Naka-ku
+33103|岡山市東区|オカヤマシヒガシク|Okayama-shi Higashi-ku
+33104|岡山市南区|オカヤマシミナミク|Okayama-shi Minami-ku
+33202|倉敷市|クラシキシ|Kurashiki-shi
+33203|津山市|ツヤマシ|Tsuyama-shi
+33204|玉野市|タマノシ|Tamano-shi
+33205|笠岡市|カサオカシ|Kasaoka-shi
+33207|井原市|イバラシ|Ibara-shi
+33208|総社市|ソウジャシ|Soja-shi
+33209|高梁市|タカハシシ|Takahashi-shi
+33210|新見市|ニイミシ|Niimi-shi
+33211|備前市|ビゼンシ|Bizen-shi
+33212|瀬戸内市|セトウチシ|Setochi-shi
+33213|赤磐市|アカイワシ|Akaiwa-shi
+33214|真庭市|マニワシ|Maniwa-shi
+33215|美作市|ミマサカシ|Mimasaka-shi
+33216|浅口市|アサクチシ|Asakuchi-shi
+33346|和気郡和気町|ワケグンワケチョウ|Wake-gun Wake-cho
+33423|都窪郡早島町|ツクボグンハヤシマチョウ|Tsukubo-gun Hayashima-cho
+33445|浅口郡里庄町|アサクチグンサトショウチョウ|Asakuchi-gun Satosho-cho
+33461|小田郡矢掛町|オダグンヤカゲチョウ|Oda-gun Yakage-cho
+33586|真庭郡新庄村|マニワグンシンジョウソン|Maniwa-gun Shinjo-son
+33606|苫田郡鏡野町|トマタグンカガミノチョウ|Tomata-gun Kagamino-cho
+33622|勝田郡勝央町|カツタグンショウオウチョウ|Katsuta-gun Shoo-cho
+33623|勝田郡奈義町|カツタグンナギチョウ|Katsuta-gun Nagi-cho
+33643|英田郡西粟倉村|アイダグンニシアワクラソン|Aida-gun Nishiawakura-son
+33663|久米郡久米南町|クメグンクメナンチョウ|Kume-gun Kumenan-cho
+33666|久米郡美咲町|クメグンミサキチョウ|Kume-gun Misaki-cho
+33681|加賀郡吉備中央町|カガグンキビチュウオウチョウ|Kaga-gun Kibichuo-cho
+34101|広島市中区|ヒロシマシナカク|Hiroshima-shi Naka-ku
+34102|広島市東区|ヒロシマシヒガシク|Hiroshima-shi Higashi-ku
+34103|広島市南区|ヒロシマシミナミク|Hiroshima-shi Minami-ku
+34104|広島市西区|ヒロシマシニシク|Hiroshima-shi Nishi-ku
+34105|広島市安佐南区|ヒロシマシアサミナミク|Hiroshima-shi Asaminami-ku
+34106|広島市安佐北区|ヒロシマシアサキタク|Hiroshima-shi Asakita-ku
+34107|広島市安芸区|ヒロシマシアキク|Hiroshima-shi Aki-ku
+34108|広島市佐伯区|ヒロシマシサエキク|Hiroshima-shi Saeki-ku
+34202|呉市|クレシ|Kure-shi
+34203|竹原市|タケハラシ|Takehara-shi
+34204|三原市|ミハラシ|Mihara-shi
+34205|尾道市|オノミチシ|Onomichi-shi
+34207|福山市|フクヤマシ|Fukuyama-shi
+34208|府中市|フチュウシ|Fuchu-shi
+34209|三次市|ミヨシシ|Miyoshi-shi
+34210|庄原市|ショウバラシ|Shobara-shi
+34211|大竹市|オオタケシ|Otake-shi
+34212|東広島市|ヒガシヒロシマシ|Higashihiroshima-shi
+34213|廿日市市|ハツカイチシ|Hatsukaichi-shi
+34214|安芸高田市|アキタカタシ|Akitakata-shi
+34215|江田島市|エタジマシ|Etajima-shi
+34302|安芸郡府中町|アキグンフチュウチョウ|Aki-gun Fuchu-cho
+34304|安芸郡海田町|アキグンカイタチョウ|Aki-gun Kaita-cho
+34307|安芸郡熊野町|アキグンクマノチョウ|Aki-gun Kumano-cho
+34309|安芸郡坂町|アキグンサカチョウ|Aki-gun Saka-cho
+34368|山県郡安芸太田町|ヤマガタグンアキオオタチョウ|Yamagata-gun Akiota-cho
+34369|山県郡北広島町|ヤマガタグンキタヒロシマチョウ|Yamagata-gun Kitahiroshima-cho
+34431|豊田郡大崎上島町|トヨタグンオオサキカミジマチョウ|Toyota-gun Osakikamijima-cho
+34462|世羅郡世羅町|セラグンセラチョウ|Sera-gun Sera-cho
+34545|神石郡神石高原町|ジンセキグンジンセキコウゲンチョウ|Jinseki-gun Jinsekikogen-cho
+35201|下関市|シモノセキシ|Shimonoseki-shi
+35202|宇部市|ウベシ|Ube-shi
+35203|山口市|ヤマグチシ|Yamaguchi-shi
+35204|萩市|ハギシ|Hagi-shi
+35206|防府市|ホウフシ|Hofu-shi
+35207|下松市|クダマツシ|Kudamatsu-shi
+35208|岩国市|イワクニシ|Iwakuni-shi
+35210|光市|ヒカリシ|Hikari-shi
+35211|長門市|ナガトシ|Nagato-shi
+35212|柳井市|ヤナイシ|Yanai-shi
+35213|美祢市|ミネシ|Mine-shi
+35215|周南市|シュウナンシ|Shunan-shi
+35216|山陽小野田市|サンヨウオノダシ|Sanyoonoda-shi
+35305|大島郡周防大島町|オオシマグンスオウオオシマチョウ|Oshima-gun Suooshima-cho
+35321|玖珂郡和木町|クガグンワキチョウ|Kuga-gun Waki-cho
+35341|熊毛郡上関町|クマゲグンカミノセキチョウ|Kumage-gun Kaminoseki-cho
+35343|熊毛郡田布施町|クマゲグンタブセチョウ|Kumage-gun Tabuse-cho
+35344|熊毛郡平生町|クマゲグンヒラオチョウ|Kumage-gun Hirao-cho
+35502|阿武郡阿武町|アブグンアブチョウ|Abu-gun Abu-cho
+36201|徳島市|トクシマシ|Tokushima-shi
+36202|鳴門市|ナルトシ|Naruto-shi
+36203|小松島市|コマツシマシ|Komatsushima-shi
+36204|阿南市|アナンシ|Anan-shi
+36205|吉野川市|ヨシノガワシ|Yoshinogawa-shi
+36206|阿波市|アワシ|Awa-shi
+36207|美馬市|ミマシ|Mima-shi
+36208|三好市|ミヨシシ|Miyoshi-shi
+36301|勝浦郡勝浦町|カツウラグンカツウラチョウ|Katsura-gun Katsura-cho
+36302|勝浦郡上勝町|カツウラグンカミカツチョウ|Katsura-gun Kamikatsu-cho
+36321|名東郡佐那河内村|ミョウドウグンサナゴウチソン|Myodo-gun Sanagochi-son
+36341|名西郡石井町|ミョウザイグンイシイチョウ|Myozai-gun Ishii-cho
+36342|名西郡神山町|ミョウザイグンカミヤマチョウ|Myozai-gun Kamiyama-cho
+36368|那賀郡那賀町|ナカグンナカチョウ|Naka-gun Naka-cho
+36383|海部郡牟岐町|カイフグンムギチョウ|Kaifu-gun Mugi-cho
+36387|海部郡美波町|カイフグンミナミチョウ|Kaifu-gun Minami-cho
+36388|海部郡海陽町|カイフグンカイヨウチョウ|Kaifu-gun Kaiyo-cho
+36401|板野郡松茂町|イタノグンマツシゲチョウ|Itano-gun Matsushige-cho
+36402|板野郡北島町|イタノグンキタジマチョウ|Itano-gun Kitajima-cho
+36403|板野郡藍住町|イタノグンアイズミチョウ|Itano-gun Aizumi-cho
+36404|板野郡板野町|イタノグンイタノチョウ|Itano-gun Itano-cho
+36405|板野郡上板町|イタノグンカミイタチョウ|Itano-gun Kamiita-cho
+36468|美馬郡つるぎ町|ミマグンツルギチョウ|Mima-gun Tsurugi-cho
+36489|三好郡東みよし町|ミヨシグンヒガシミヨシチョウ|Miyoshi-gun Higashimiyoshi-cho
+37201|高松市|タカマツシ|Takamatsu-shi
+37202|丸亀市|マルガメシ|Marugame-shi
+37203|坂出市|サカイデシ|Sakaide-shi
+37204|善通寺市|ゼンツウジシ|Zentsuji-shi
+37205|観音寺市|カンオンジシ|Kanonji-shi
+37206|さぬき市|サヌキシ|Sanuki-shi
+37207|東かがわ市|ヒガシカガワシ|Higashikagawa-shi
+37208|三豊市|ミトヨシ|Mitoyo-shi
+37322|小豆郡土庄町|ショウズグントノショウチョウ|Shozu-gun Tonosho-cho
+37324|小豆郡小豆島町|ショウズグンショウドシマチョウ|Shozu-gun Shodoshima-cho
+37341|木田郡三木町|キタグンミキチョウ|Kita-gun Miki-cho
+37364|香川郡直島町|カガワグンナオシマチョウ|Kagawa-gun Naoshima-cho
+37386|綾歌郡宇多津町|アヤウタグンウタヅチョウ|Ayauta-gun Utazu-cho
+37387|綾歌郡綾川町|アヤウタグンアヤガワチョウ|Ayauta-gun Ayagawa-cho
+37403|仲多度郡琴平町|ナカタドグンコトヒラチョウ|Nakatado-gun Kotohira-cho
+37404|仲多度郡多度津町|ナカタドグンタドツチョウ|Nakatado-gun Tadotsu-cho
+37406|仲多度郡まんのう町|ナカタドグンマンノウチョウ|Nakatado-gun Manno-cho
+38201|松山市|マツヤマシ|Matsuyama-shi
+38202|今治市|イマバリシ|Imabari-shi
+38203|宇和島市|ウワジマシ|Uwajima-shi
+38204|八幡浜市|ヤワタハマシ|Yawatahama-shi
+38205|新居浜市|ニイハマシ|Niihama-shi
+38206|西条市|サイジョウシ|Saijo-shi
+38207|大洲市|オオズシ|Ozu-shi
+38210|伊予市|イヨシ|Iyo-shi
+38213|四国中央市|シコクチュウオウシ|Shikokuchuo-shi
+38214|西予市|セイヨシ|Seiyo-shi
+38215|東温市|トウオンシ|Toon-shi
+38356|越智郡上島町|オチグンカミジマチョウ|Ochi-gun Kamijima-cho
+38386|上浮穴郡久万高原町|カミウケナグンクマコウゲンチョウ|Kamiukena-gun Kumakogen-cho
+38401|伊予郡松前町|イヨグンマサキチョウ|Iyo-gun Masaki-cho
+38402|伊予郡砥部町|イヨグントベチョウ|Iyo-gun Tobe-cho
+38422|喜多郡内子町|キタグンウチコチョウ|Kita-gun Uchiko-cho
+38442|西宇和郡伊方町|ニシウワグンイカタチョウ|Nishiuwa-gun Ikata-cho
+38484|北宇和郡松野町|キタウワグンマツノチョウ|Kitauwa-gun Matsuno-cho
+38488|北宇和郡鬼北町|キタウワグンキホクチョウ|Kitauwa-gun Kihoku-cho
+38506|南宇和郡愛南町|ミナミウワグンアイナンチョウ|Minamiuwa-gun Ainan-cho
+39201|高知市|コウチシ|Kochi-shi
+39202|室戸市|ムロトシ|Muroto-shi
+39203|安芸市|アキシ|Aki-shi
+39204|南国市|ナンコクシ|Nankoku-shi
+39205|土佐市|トサシ|Tosa-shi
+39206|須崎市|スサキシ|Susaki-shi
+39208|宿毛市|スクモシ|Sukumo-shi
+39209|土佐清水市|トサシミズシ|Tosashimizu-shi
+39210|四万十市|シマントシ|Shimanto-shi
+39211|香南市|コウナンシ|Konan-shi
+39212|香美市|カミシ|Kami-shi
+39301|安芸郡東洋町|アキグントウヨウチョウ|Aki-gun Toyo-cho
+39302|安芸郡奈半利町|アキグンナハリチョウ|Aki-gun Nahari-cho
+39303|安芸郡田野町|アキグンタノチョウ|Aki-gun Tano-cho
+39304|安芸郡安田町|アキグンヤスダチョウ|Aki-gun Yasuda-cho
+39305|安芸郡北川村|アキグンキタガワムラ|Aki-gun Kitagawa-mura
+39306|安芸郡馬路村|アキグンウマジムラ|Aki-gun Umaji-mura
+39307|安芸郡芸西村|アキグンゲイセイムラ|Aki-gun Geisei-mura
+39341|長岡郡本山町|ナガオカグンモトヤマチョウ|Nagaoka-gun Motoyama-cho
+39344|長岡郡大豊町|ナガオカグンオオトヨチョウ|Nagaoka-gun Otoyo-cho
+39363|土佐郡土佐町|トサグントサチョウ|Tosa-gun Tosa-cho
+39364|土佐郡大川村|トサグンオオカワムラ|Tosa-gun Okawa-mura
+39386|吾川郡いの町|アガワグンイノチョウ|Agawa-gun Ino-cho
+39387|吾川郡仁淀川町|アガワグンニヨドガワチョウ|Agawa-gun Niyodogawa-cho
+39401|高岡郡中土佐町|タカオカグンナカトサチョウ|Takaoka-gun Nakatosa-cho
+39402|高岡郡佐川町|タカオカグンサカワチョウ|Takaoka-gun Sakawa-cho
+39403|高岡郡越知町|タカオカグンオチチョウ|Takaoka-gun Ochi-cho
+39405|高岡郡檮原町|タカオカグンユスハラチョウ|Takaoka-gun Yusuhara-cho
+39410|高岡郡日高村|タカオカグンヒダカムラ|Takaoka-gun Hidaka-mura
+39411|高岡郡津野町|タカオカグンツノチョウ|Takaoka-gun Tsuno-cho
+39412|高岡郡四万十町|タカオカグンシマントチョウ|Takaoka-gun Shimanto-cho
+39424|幡多郡大月町|ハタグンオオツキチョウ|Hata-gun Otsuki-cho
+39427|幡多郡三原村|ハタグンミハラムラ|Hata-gun Mihara-mura
+39428|幡多郡黒潮町|ハタグンクロシオチョウ|Hata-gun Kuroshio-cho
+40101|北九州市門司区|キタキュウシュウシモジク|Kitakyushu-shi Moji-ku
+40103|北九州市若松区|キタキュウシュウシワカマツク|Kitakyushu-shi Wakamatsu-ku
+40105|北九州市戸畑区|キタキュウシュウシトバタク|Kitakyushu-shi Tobata-ku
+40106|北九州市小倉北区|キタキュウシュウシコクラキタク|Kitakyushu-shi Kokurakita-ku
+40107|北九州市小倉南区|キタキュウシュウシコクラミナミク|Kitakyushu-shi Kokuraminami-ku
+40108|北九州市八幡東区|キタキュウシュウシヤハタヒガシク|Kitakyushu-shi Yahatahigashi-ku
+40109|北九州市八幡西区|キタキュウシュウシヤハタニシク|Kitakyushu-shi Yahatanishi-ku
+40131|福岡市東区|フクオカシヒガシク|Fukuoka-shi Higashi-ku
+40132|福岡市博多区|フクオカシハカタク|Fukuoka-shi Hakata-ku
+40133|福岡市中央区|フクオカシチュウオウク|Fukuoka-shi Chuo-ku
+40134|福岡市南区|フクオカシミナミク|Fukuoka-shi Minami-ku
+40135|福岡市西区|フクオカシニシク|Fukuoka-shi Nishi-ku
+40136|福岡市城南区|フクオカシジョウナンク|Fukuoka-shi Jonan-ku
+40137|福岡市早良区|フクオカシサワラク|Fukuoka-shi Sawara-ku
+40202|大牟田市|オオムタシ|Omuta-shi
+40203|久留米市|クルメシ|Kurume-shi
+40204|直方市|ノオガタシ|Nogata-shi
+40205|飯塚市|イイヅカシ|Iizuka-shi
+40206|田川市|タガワシ|Tagawa-shi
+40207|柳川市|ヤナガワシ|Yanagawa-shi
+40210|八女市|ヤメシ|Yame-shi
+40211|筑後市|チクゴシ|Chikugo-shi
+40212|大川市|オオカワシ|Okawa-shi
+40213|行橋市|ユクハシシ|Yukuhashi-shi
+40214|豊前市|ブゼンシ|Buzen-shi
+40215|中間市|ナカマシ|Nakama-shi
+40216|小郡市|オゴオリシ|Ogori-shi
+40217|筑紫野市|チクシノシ|Chikushino-shi
+40218|春日市|カスガシ|Kasuga-shi
+40219|大野城市|オオノジョウシ|Onojo-shi
+40220|宗像市|ムナカタシ|Munakata-shi
+40221|太宰府市|ダザイフシ|Dazaifu-shi
+40223|古賀市|コガシ|Koga-shi
+40224|福津市|フクツシ|Fukutsu-shi
+40225|うきは市|ウキハシ|Ukiha-shi
+40226|宮若市|ミヤワカシ|Miyawaka-shi
+40227|嘉麻市|カマシ|Kama-shi
+40228|朝倉市|アサクラシ|Asakura-shi
+40229|みやま市|ミヤマシ|Miyama-shi
+40230|糸島市|イトシマシ|Itoshima-shi
+40231|那珂川市|ナカガワシ|Nakagawa-shi
+40341|糟屋郡宇美町|カスヤグンウミマチ|Kasuya-gun Umi-machi
+40342|糟屋郡篠栗町|カスヤグンササグリマチ|Kasuya-gun Sasaguri-machi
+40343|糟屋郡志免町|カスヤグンシメマチ|Kasuya-gun Shime-machi
+40344|糟屋郡須恵町|カスヤグンスエマチ|Kasuya-gun Sue-machi
+40345|糟屋郡新宮町|カスヤグンシングウマチ|Kasuya-gun Shingu-machi
+40348|糟屋郡久山町|カスヤグンヒサヤママチ|Kasuya-gun Hisayama-machi
+40349|糟屋郡粕屋町|カスヤグンカスヤマチ|Kasuya-gun Kasuya-machi
+40381|遠賀郡芦屋町|オンガグンアシヤマチ|Onga-gun Ashiya-machi
+40382|遠賀郡水巻町|オンガグンミズマキマチ|Onga-gun Mizumaki-machi
+40383|遠賀郡岡垣町|オンガグンオカガキマチ|Onga-gun Okagaki-machi
+40384|遠賀郡遠賀町|オンガグンオンガチョウ|Onga-gun Onga-cho
+40401|鞍手郡小竹町|クラテグンコタケマチ|Kurate-gun Kotake-machi
+40402|鞍手郡鞍手町|クラテグンクラテマチ|Kurate-gun Kurate-machi
+40421|嘉穂郡桂川町|カホグンケイセンマチ|Kaho-gun Keisen-machi
+40447|朝倉郡筑前町|アサクラグンチクゼンマチ|Asakura-gun Chikuzen-machi
+40448|朝倉郡東峰村|アサクラグントウホウムラ|Asakura-gun Toho-mura
+40503|三井郡大刀洗町|ミイグンタチアライマチ|Mii-gun Tachiarai-machi
+40522|三潴郡大木町|ミズマグンオオキマチ|Mizuma-gun Oki-machi
+40544|八女郡広川町|ヤメグンヒロカワマチ|Yame-gun Hirokawa-machi
+40601|田川郡香春町|タガワグンカワラマチ|Tagawa-gun Kawara-machi
+40602|田川郡添田町|タガワグンソエダマチ|Tagawa-gun Soeda-machi
+40604|田川郡糸田町|タガワグンイトダマチ|Tagawa-gun Itoda-machi
+40605|田川郡川崎町|タガワグンカワサキマチ|Tagawa-gun Kawasaki-machi
+40608|田川郡大任町|タガワグンオオトウマチ|Tagawa-gun Oto-machi
+40609|田川郡赤村|タガワグンアカムラ|Tagawa-gun Aka-mura
+40610|田川郡福智町|タガワグンフクチマチ|Tagawa-gun Fukuchi-machi
+40621|京都郡苅田町|ミヤコグンカンダマチ|Miyako-gun Kanda-machi
+40625|京都郡みやこ町|ミヤコグンミヤコマチ|Miyako-gun Miyako-machi
+40642|築上郡吉富町|チクジョウグンヨシトミマチ|Chikujo-gun Yoshitomi-machi
+40646|築上郡上毛町|チクジョウグンコウゲマチ|Chikujo-gun Koge-machi
+40647|築上郡築上町|チクジョウグンチクジョウマチ|Chikujo-gun Chikujo-machi
+41201|佐賀市|サガシ|Saga-shi
+41202|唐津市|カラツシ|Karatsu-shi
+41203|鳥栖市|トスシ|Tosu-shi
+41204|多久市|タクシ|Taku-shi
+41205|伊万里市|イマリシ|Imari-shi
+41206|武雄市|タケオシ|Takeo-shi
+41207|鹿島市|カシマシ|Kashima-shi
+41208|小城市|オギシ|Ogi-shi
+41209|嬉野市|ウレシノシ|Ureshino-shi
+41210|神埼市|カンザキシ|Kanzaki-shi
+41327|神埼郡吉野ヶ里町|カンザキグンヨシノガリチョウ|Kanzaki-gun Yoshinogari-cho
+41341|三養基郡基山町|ミヤキグンキヤマチョウ|Miyaki-gun Kiyama-cho
+41345|三養基郡上峰町|ミヤキグンカミミネチョウ|Miyaki-gun Kamimine-cho
+41346|三養基郡みやき町|ミヤキグンミヤキチョウ|Miyaki-gun Miyaki-cho
+41387|東松浦郡玄海町|ヒガシマツウラグンゲンカイチョウ|Higashimatsura-gun Genkai-cho
+41401|西松浦郡有田町|ニシマツウラグンアリタチョウ|Nishimatsura-gun Arita-cho
+41423|杵島郡大町町|キシマグンオオマチチョウ|Kishima-gun Omachi-cho
+41424|杵島郡江北町|キシマグンコウホクマチ|Kishima-gun Kohoku-machi
+41425|杵島郡白石町|キシマグンシロイシチョウ|Kishima-gun Shiroishi-cho
+41441|藤津郡太良町|フジツグンタラチョウ|Fujitsu-gun Tara-cho
+42201|長崎市|ナガサキシ|Nagasaki-shi
+42202|佐世保市|サセボシ|Sasebo-shi
+42203|島原市|シマバラシ|Shimabara-shi
+42204|諫早市|イサハヤシ|Isahaya-shi
+42205|大村市|オオムラシ|Omura-shi
+42207|平戸市|ヒラドシ|Hirado-shi
+42208|松浦市|マツウラシ|Matsura-shi
+42209|対馬市|ツシマシ|Tsushima-shi
+42210|壱岐市|イキシ|Iki-shi
+42211|五島市|ゴトウシ|Goto-shi
+42212|西海市|サイカイシ|Saikai-shi
+42213|雲仙市|ウンゼンシ|Unzen-shi
+42214|南島原市|ミナミシマバラシ|Minamishimabara-shi
+42307|西彼杵郡長与町|ニシソノギグンナガヨチョウ|Nishisonogi-gun Nagayo-cho
+42308|西彼杵郡時津町|ニシソノギグントギツチョウ|Nishisonogi-gun Togitsu-cho
+42321|東彼杵郡東彼杵町|ヒガシソノギグンヒガシソノギチョウ|Higashisonogi-gun Higashisonogi-cho
+42322|東彼杵郡川棚町|ヒガシソノギグンカワタナチョウ|Higashisonogi-gun Kawatana-cho
+42323|東彼杵郡波佐見町|ヒガシソノギグンハサミチョウ|Higashisonogi-gun Hasami-cho
+42383|北松浦郡小値賀町|キタマツウラグンオヂカチョウ|Kitamatsura-gun Ojika-cho
+42391|北松浦郡佐々町|キタマツウラグンサザチョウ|Kitamatsura-gun Saza-cho
+42411|南松浦郡新上五島町|ミナミマツウラグンシンカミゴトウチョウ|Minamimatsura-gun Shinkamigoto-cho
+43101|熊本市中央区|クマモトシチュウオウク|Kumamoto-shi Chuo-ku
+43102|熊本市東区|クマモトシヒガシク|Kumamoto-shi Higashi-ku
+43103|熊本市西区|クマモトシニシク|Kumamoto-shi Nishi-ku
+43104|熊本市南区|クマモトシミナミク|Kumamoto-shi Minami-ku
+43105|熊本市北区|クマモトシキタク|Kumamoto-shi Kita-ku
+43202|八代市|ヤツシロシ|Yatsushiro-shi
+43203|人吉市|ヒトヨシシ|Hitoyoshi-shi
+43204|荒尾市|アラオシ|Arao-shi
+43205|水俣市|ミナマタシ|Minamata-shi
+43206|玉名市|タマナシ|Tamana-shi
+43208|山鹿市|ヤマガシ|Yamaga-shi
+43210|菊池市|キクチシ|Kikuchi-shi
+43211|宇土市|ウトシ|Uto-shi
+43212|上天草市|カミアマクサシ|Kamiamakusa-shi
+43213|宇城市|ウキシ|Uki-shi
+43214|阿蘇市|アソシ|Aso-shi
+43215|天草市|アマクサシ|Amakusa-shi
+43216|合志市|コウシシ|Koshi-shi
+43348|下益城郡美里町|シモマシキグンミサトマチ|Shimomashiki-gun Misato-machi
+43364|玉名郡玉東町|タマナグンギョクトウマチ|Tamana-gun Gyokuto-machi
+43367|玉名郡南関町|タマナグンナンカンマチ|Tamana-gun Nankan-machi
+43368|玉名郡長洲町|タマナグンナガスマチ|Tamana-gun Nagasu-machi
+43369|玉名郡和水町|タマナグンナゴミマチ|Tamana-gun Nagomi-machi
+43403|菊池郡大津町|キクチグンオオヅマチ|Kikuchi-gun Ozu-machi
+43404|菊池郡菊陽町|キクチグンキクヨウマチ|Kikuchi-gun Kikuyo-machi
+43423|阿蘇郡南小国町|アソグンミナミオグニマチ|Aso-gun Minamioguni-machi
+43424|阿蘇郡小国町|アソグンオグニマチ|Aso-gun Oguni-machi
+43425|阿蘇郡産山村|アソグンウブヤマムラ|Aso-gun Ubuyama-mura
+43428|阿蘇郡高森町|アソグンタカモリマチ|Aso-gun Takamori-machi
+43432|阿蘇郡西原村|アソグンニシハラムラ|Aso-gun Nishihara-mura
+43433|阿蘇郡南阿蘇村|アソグンミナミアソムラ|Aso-gun Minamiaso-mura
+43441|上益城郡御船町|カミマシキグンミフネマチ|Kamimashiki-gun Mifune-machi
+43442|上益城郡嘉島町|カミマシキグンカシママチ|Kamimashiki-gun Kashima-machi
+43443|上益城郡益城町|カミマシキグンマシキマチ|Kamimashiki-gun Mashiki-machi
+43444|上益城郡甲佐町|カミマシキグンコウサマチ|Kamimashiki-gun Kosa-machi
+43447|上益城郡山都町|カミマシキグンヤマトチョウ|Kamimashiki-gun Yamato-cho
+43468|八代郡氷川町|ヤツシログンヒカワチョウ|Yatsushiro-gun Hikawa-cho
+43482|葦北郡芦北町|アシキタグンアシキタマチ|Ashikita-gun Ashikita-machi
+43484|葦北郡津奈木町|アシキタグンツナギマチ|Ashikita-gun Tsunagi-machi
+43501|球磨郡錦町|クマグンニシキマチ|Kuma-gun Nishiki-machi
+43505|球磨郡多良木町|クマグンタラギマチ|Kuma-gun Taragi-machi
+43507|球磨郡水上村|クマグンミズカミムラ|Kuma-gun Mizukami-mura
+43510|球磨郡相良村|クマグンサガラムラ|Kuma-gun Sagara-mura
+43511|球磨郡五木村|クマグンイツキムラ|Kuma-gun Itsuki-mura
+43512|球磨郡山江村|クマグンヤマエムラ|Kuma-gun Yamae-mura
+43513|球磨郡球磨村|クマグンクマムラ|Kuma-gun Kuma-mura
+43514|球磨郡あさぎり町|クマグンアサギリチョウ|Kuma-gun Asagiri-cho
+43531|天草郡苓北町|アマクサグンレイホクマチ|Amakusa-gun Reihoku-machi
+44201|大分市|オオイタシ|Oita-shi
+44202|別府市|ベップシ|Beppu-shi
+44203|中津市|ナカツシ|Nakatsu-shi
+44204|日田市|ヒタシ|Hita-shi
+44205|佐伯市|サイキシ|Saiki-shi
+44206|臼杵市|ウスキシ|Usuki-shi
+44207|津久見市|ツクミシ|Tsukumi-shi
+44208|竹田市|タケタシ|Taketa-shi
+44209|豊後高田市|ブンゴタカダシ|Bungotakada-shi
+44210|杵築市|キツキシ|Kitsuki-shi
+44211|宇佐市|ウサシ|Usa-shi
+44212|豊後大野市|ブンゴオオノシ|Bungoono-shi
+44213|由布市|ユフシ|Yufu-shi
+44214|国東市|クニサキシ|Kunisaki-shi
+44322|東国東郡姫島村|ヒガシクニサキグンヒメシマムラ|Higashikunisaki-gun Himeshima-mura
+44341|速見郡日出町|ハヤミグンヒジマチ|Hayami-gun Hiji-machi
+44461|玖珠郡九重町|クスグンココノエマチ|Kusu-gun Kokonoe-machi
+44462|玖珠郡玖珠町|クスグンクスマチ|Kusu-gun Kusu-machi
+45201|宮崎市|ミヤザキシ|Miyazaki-shi
+45202|都城市|ミヤコノジョウシ|Miyakonojo-shi
+45203|延岡市|ノベオカシ|Nobeoka-shi
+45204|日南市|ニチナンシ|Nichinan-shi
+45205|小林市|コバヤシシ|Kobayashi-shi
+45206|日向市|ヒュウガシ|Hyuga-shi
+45207|串間市|クシマシ|Kushima-shi
+45208|西都市|サイトシ|Saito-shi
+45209|えびの市|エビノシ|Ebino-shi
+45341|北諸県郡三股町|キタモロカタグンミマタチョウ|Kitamorokata-gun Mimata-cho
+45361|西諸県郡高原町|ニシモロカタグンタカハルチョウ|Nishimorokata-gun Takaharu-cho
+45382|東諸県郡国富町|ヒガシモロカタグンクニトミチョウ|Higashimorokata-gun Kunitomi-cho
+45383|東諸県郡綾町|ヒガシモロカタグンアヤチョウ|Higashimorokata-gun Aya-cho
+45401|児湯郡高鍋町|コユグンタカナベチョウ|Koyu-gun Takanabe-cho
+45402|児湯郡新富町|コユグンシントミチョウ|Koyu-gun Shintomi-cho
+45403|児湯郡西米良村|コユグンニシメラソン|Koyu-gun Nishimera-son
+45404|児湯郡木城町|コユグンキジョウチョウ|Koyu-gun Kijo-cho
+45405|児湯郡川南町|コユグンカワミナミチョウ|Koyu-gun Kawaminami-cho
+45406|児湯郡都農町|コユグンツノチョウ|Koyu-gun Tsuno-cho
+45421|東臼杵郡門川町|ヒガシウスキグンカドガワチョウ|Higashiusuki-gun Kadogawa-cho
+45429|東臼杵郡諸塚村|ヒガシウスキグンモロツカソン|Higashiusuki-gun Morotsuka-son
+45430|東臼杵郡椎葉村|ヒガシウスキグンシイバソン|Higashiusuki-gun Shiiba-son
+45431|東臼杵郡美郷町|ヒガシウスキグンミサトチョウ|Higashiusuki-gun Misato-cho
+45441|西臼杵郡高千穂町|ニシウスキグンタカチホチョウ|Nishiusuki-gun Takachiho-cho
+45442|西臼杵郡日之影町|ニシウスキグンヒノカゲチョウ|Nishiusuki-gun Hinokage-cho
+45443|西臼杵郡五ヶ瀬町|ニシウスキグンゴカセチョウ|Nishiusuki-gun Gokase-cho
+46201|鹿児島市|カゴシマシ|Kagoshima-shi
+46203|鹿屋市|カノヤシ|Kanoya-shi
+46204|枕崎市|マクラザキシ|Makurazaki-shi
+46206|阿久根市|アクネシ|Akune-shi
+46208|出水市|イズミシ|Izumi-shi
+46210|指宿市|イブスキシ|Ibusuki-shi
+46213|西之表市|ニシノオモテシ|Nishinomote-shi
+46214|垂水市|タルミズシ|Tarumizu-shi
+46215|薩摩川内市|サツマセンダイシ|Satsumasendai-shi
+46216|日置市|ヒオキシ|Hioki-shi
+46217|曽於市|ソオシ|So-shi
+46218|霧島市|キリシマシ|Kirishima-shi
+46219|いちき串木野市|イチキクシキノシ|Ichikikushikino-shi
+46220|南さつま市|ミナミサツマシ|Minamisatsuma-shi
+46221|志布志市|シブシシ|Shibushi-shi
+46222|奄美市|アマミシ|Amami-shi
+46223|南九州市|ミナミキュウシュウシ|Minamikyushu-shi
+46224|伊佐市|イサシ|Isa-shi
+46225|姶良市|アイラシ|Aira-shi
+46303|鹿児島郡三島村|カゴシマグンミシマムラ|Kagoshima-gun Mishima-mura
+46304|鹿児島郡十島村|カゴシマグントシマムラ|Kagoshima-gun Toshima-mura
+46392|薩摩郡さつま町|サツマグンサツマチョウ|Satsuma-gun Satsuma-cho
+46404|出水郡長島町|イズミグンナガシマチョウ|Izumi-gun Nagashima-cho
+46452|姶良郡湧水町|アイラグンユウスイチョウ|Aira-gun Yusui-cho
+46468|曽於郡大崎町|ソオグンオオサキチョウ|So-gun Osaki-cho
+46482|肝属郡東串良町|キモツキグンヒガシクシラチョウ|Kimotsuki-gun Higashikushira-cho
+46490|肝属郡錦江町|キモツキグンキンコウチョウ|Kimotsuki-gun Kinko-cho
+46491|肝属郡南大隅町|キモツキグンミナミオオスミチョウ|Kimotsuki-gun Minamiosumi-cho
+46492|肝属郡肝付町|キモツキグンキモツキチョウ|Kimotsuki-gun Kimotsuki-cho
+46501|熊毛郡中種子町|クマゲグンナカタネチョウ|Kumage-gun Nakatane-cho
+46502|熊毛郡南種子町|クマゲグンミナミタネチョウ|Kumage-gun Minamitane-cho
+46505|熊毛郡屋久島町|クマゲグンヤクシマチョウ|Kumage-gun Yakushima-cho
+46523|大島郡大和村|オオシマグンヤマトソン|Oshima-gun Yamato-son
+46524|大島郡宇検村|オオシマグンウケンソン|Oshima-gun Uken-son
+46525|大島郡瀬戸内町|オオシマグンセトウチチョウ|Oshima-gun Setochi-cho
+46527|大島郡龍郷町|オオシマグンタツゴウチョウ|Oshima-gun Tatsugo-cho
+46529|大島郡喜界町|オオシマグンキカイチョウ|Oshima-gun Kikai-cho
+46530|大島郡徳之島町|オオシマグントクノシマチョウ|Oshima-gun Tokunoshima-cho
+46531|大島郡天城町|オオシマグンアマギチョウ|Oshima-gun Amagi-cho
+46532|大島郡伊仙町|オオシマグンイセンチョウ|Oshima-gun Isen-cho
+46533|大島郡和泊町|オオシマグンワドマリチョウ|Oshima-gun Wadomari-cho
+46534|大島郡知名町|オオシマグンチナチョウ|Oshima-gun China-cho
+46535|大島郡与論町|オオシマグンヨロンチョウ|Oshima-gun Yoron-cho
+47201|那覇市|ナハシ|Naha-shi
+47205|宜野湾市|ギノワンシ|Ginowan-shi
+47207|石垣市|イシガキシ|Ishigaki-shi
+47208|浦添市|ウラソエシ|Urasoe-shi
+47209|名護市|ナゴシ|Nago-shi
+47210|糸満市|イトマンシ|Itoman-shi
+47211|沖縄市|オキナワシ|Okinawa-shi
+47212|豊見城市|トミグスクシ|Tomigusuku-shi
+47213|うるま市|ウルマシ|Uruma-shi
+47214|宮古島市|ミヤコジマシ|Miyakojima-shi
+47215|南城市|ナンジョウシ|Nanjo-shi
+47301|国頭郡国頭村|クニガミグンクニガミソン|Kunigami-gun Kunigami-son
+47302|国頭郡大宜味村|クニガミグンオオギミソン|Kunigami-gun Ogimi-son
+47303|国頭郡東村|クニガミグンヒガシソン|Kunigami-gun Higashi-son
+47306|国頭郡今帰仁村|クニガミグンナキジンソン|Kunigami-gun Nakijin-son
+47308|国頭郡本部町|クニガミグンモトブチョウ|Kunigami-gun Motobu-cho
+47311|国頭郡恩納村|クニガミグンオンナソン|Kunigami-gun Onna-son
+47313|国頭郡宜野座村|クニガミグンギノザソン|Kunigami-gun Ginoza-son
+47314|国頭郡金武町|クニガミグンキンチョウ|Kunigami-gun Kin-cho
+47315|国頭郡伊江村|クニガミグンイエソン|Kunigami-gun Ie-son
+47324|中頭郡読谷村|ナカガミグンヨミタンソン|Nakagami-gun Yomitan-son
+47325|中頭郡嘉手納町|ナカガミグンカデナチョウ|Nakagami-gun Kadena-cho
+47326|中頭郡北谷町|ナカガミグンチャタンチョウ|Nakagami-gun Chatan-cho
+47327|中頭郡北中城村|ナカガミグンキタナカグスクソン|Nakagami-gun Kitanakagusuku-son
+47328|中頭郡中城村|ナカガミグンナカグスクソン|Nakagami-gun Nakagusuku-son
+47329|中頭郡西原町|ナカガミグンニシハラチョウ|Nakagami-gun Nishihara-cho
+47348|島尻郡与那原町|シマジリグンヨナバルチョウ|Shimajiri-gun Yonabaru-cho
+47350|島尻郡南風原町|シマジリグンハエバルチョウ|Shimajiri-gun Haebaru-cho
+47353|島尻郡渡嘉敷村|シマジリグントカシキソン|Shimajiri-gun Tokashiki-son
+47354|島尻郡座間味村|シマジリグンザマミソン|Shimajiri-gun Zamami-son
+47355|島尻郡粟国村|シマジリグンアグニソン|Shimajiri-gun Aguni-son
+47356|島尻郡渡名喜村|シマジリグントナキソン|Shimajiri-gun Tonaki-son
+47357|島尻郡南大東村|シマジリグンミナミダイトウソン|Shimajiri-gun Minamidaito-son
+47358|島尻郡北大東村|シマジリグンキタダイトウソン|Shimajiri-gun Kitadaito-son
+47359|島尻郡伊平屋村|シマジリグンイヘヤソン|Shimajiri-gun Iheya-son
+47360|島尻郡伊是名村|シマジリグンイゼナソン|Shimajiri-gun Izena-son
+47361|島尻郡久米島町|シマジリグンクメジマチョウ|Shimajiri-gun Kumejima-cho
+47362|島尻郡八重瀬町|シマジリグンヤエセチョウ|Shimajiri-gun Yaese-cho
+47375|宮古郡多良間村|ミヤコグンタラマソン|Miyako-gun Tarama-son
+47381|八重山郡竹富町|ヤエヤマグンタケトミチョウ|Yaeyama-gun Taketomi-cho
+47382|八重山郡与那国町|ヤエヤマグンヨナグニチョウ|Yaeyama-gun Yonaguni-cho`;
 
 /**
  * Every municipality (市区町村) by JIS X 0402 code, with its prefecture, official name, reading and romaji; a
@@ -17,1901 +1915,6 @@ import type { JapaneseMunicipality } from "../../types/japan";
  * // → "千代田区"
  * ```
  */
-const JP_MUNICIPALITIES: readonly JapaneseMunicipality[] = [
-  {"code":"01101","prefecture":"01","name":"札幌市中央区","kana":"サッポロシチュウオウク","romaji":"Sapporo-shi Chuo-ku"},
-  {"code":"01102","prefecture":"01","name":"札幌市北区","kana":"サッポロシキタク","romaji":"Sapporo-shi Kita-ku"},
-  {"code":"01103","prefecture":"01","name":"札幌市東区","kana":"サッポロシヒガシク","romaji":"Sapporo-shi Higashi-ku"},
-  {"code":"01104","prefecture":"01","name":"札幌市白石区","kana":"サッポロシシロイシク","romaji":"Sapporo-shi Shiroishi-ku"},
-  {"code":"01105","prefecture":"01","name":"札幌市豊平区","kana":"サッポロシトヨヒラク","romaji":"Sapporo-shi Toyohira-ku"},
-  {"code":"01106","prefecture":"01","name":"札幌市南区","kana":"サッポロシミナミク","romaji":"Sapporo-shi Minami-ku"},
-  {"code":"01107","prefecture":"01","name":"札幌市西区","kana":"サッポロシニシク","romaji":"Sapporo-shi Nishi-ku"},
-  {"code":"01108","prefecture":"01","name":"札幌市厚別区","kana":"サッポロシアツベツク","romaji":"Sapporo-shi Atsubetsu-ku"},
-  {"code":"01109","prefecture":"01","name":"札幌市手稲区","kana":"サッポロシテイネク","romaji":"Sapporo-shi Teine-ku"},
-  {"code":"01110","prefecture":"01","name":"札幌市清田区","kana":"サッポロシキヨタク","romaji":"Sapporo-shi Kiyota-ku"},
-  {"code":"01202","prefecture":"01","name":"函館市","kana":"ハコダテシ","romaji":"Hakodate-shi"},
-  {"code":"01203","prefecture":"01","name":"小樽市","kana":"オタルシ","romaji":"Otaru-shi"},
-  {"code":"01204","prefecture":"01","name":"旭川市","kana":"アサヒカワシ","romaji":"Asahikawa-shi"},
-  {"code":"01205","prefecture":"01","name":"室蘭市","kana":"ムロランシ","romaji":"Muroran-shi"},
-  {"code":"01206","prefecture":"01","name":"釧路市","kana":"クシロシ","romaji":"Kushiro-shi"},
-  {"code":"01207","prefecture":"01","name":"帯広市","kana":"オビヒロシ","romaji":"Obihiro-shi"},
-  {"code":"01208","prefecture":"01","name":"北見市","kana":"キタミシ","romaji":"Kitami-shi"},
-  {"code":"01209","prefecture":"01","name":"夕張市","kana":"ユウバリシ","romaji":"Yubari-shi"},
-  {"code":"01210","prefecture":"01","name":"岩見沢市","kana":"イワミザワシ","romaji":"Iwamizawa-shi"},
-  {"code":"01211","prefecture":"01","name":"網走市","kana":"アバシリシ","romaji":"Abashiri-shi"},
-  {"code":"01212","prefecture":"01","name":"留萌市","kana":"ルモイシ","romaji":"Rumoi-shi"},
-  {"code":"01213","prefecture":"01","name":"苫小牧市","kana":"トマコマイシ","romaji":"Tomakomai-shi"},
-  {"code":"01214","prefecture":"01","name":"稚内市","kana":"ワッカナイシ","romaji":"Wakkanai-shi"},
-  {"code":"01215","prefecture":"01","name":"美唄市","kana":"ビバイシ","romaji":"Bibai-shi"},
-  {"code":"01216","prefecture":"01","name":"芦別市","kana":"アシベツシ","romaji":"Ashibetsu-shi"},
-  {"code":"01217","prefecture":"01","name":"江別市","kana":"エベツシ","romaji":"Ebetsu-shi"},
-  {"code":"01218","prefecture":"01","name":"赤平市","kana":"アカビラシ","romaji":"Akabira-shi"},
-  {"code":"01219","prefecture":"01","name":"紋別市","kana":"モンベツシ","romaji":"Mombetsu-shi"},
-  {"code":"01220","prefecture":"01","name":"士別市","kana":"シベツシ","romaji":"Shibetsu-shi"},
-  {"code":"01221","prefecture":"01","name":"名寄市","kana":"ナヨロシ","romaji":"Nayoro-shi"},
-  {"code":"01222","prefecture":"01","name":"三笠市","kana":"ミカサシ","romaji":"Mikasa-shi"},
-  {"code":"01223","prefecture":"01","name":"根室市","kana":"ネムロシ","romaji":"Nemuro-shi"},
-  {"code":"01224","prefecture":"01","name":"千歳市","kana":"チトセシ","romaji":"Chitose-shi"},
-  {"code":"01225","prefecture":"01","name":"滝川市","kana":"タキカワシ","romaji":"Takikawa-shi"},
-  {"code":"01226","prefecture":"01","name":"砂川市","kana":"スナガワシ","romaji":"Sunagawa-shi"},
-  {"code":"01227","prefecture":"01","name":"歌志内市","kana":"ウタシナイシ","romaji":"Utashinai-shi"},
-  {"code":"01228","prefecture":"01","name":"深川市","kana":"フカガワシ","romaji":"Fukagawa-shi"},
-  {"code":"01229","prefecture":"01","name":"富良野市","kana":"フラノシ","romaji":"Furano-shi"},
-  {"code":"01230","prefecture":"01","name":"登別市","kana":"ノボリベツシ","romaji":"Noboribetsu-shi"},
-  {"code":"01231","prefecture":"01","name":"恵庭市","kana":"エニワシ","romaji":"Eniwa-shi"},
-  {"code":"01233","prefecture":"01","name":"伊達市","kana":"ダテシ","romaji":"Date-shi"},
-  {"code":"01234","prefecture":"01","name":"北広島市","kana":"キタヒロシマシ","romaji":"Kitahiroshima-shi"},
-  {"code":"01235","prefecture":"01","name":"石狩市","kana":"イシカリシ","romaji":"Ishikari-shi"},
-  {"code":"01236","prefecture":"01","name":"北斗市","kana":"ホクトシ","romaji":"Hokuto-shi"},
-  {"code":"01303","prefecture":"01","name":"石狩郡当別町","kana":"イシカリグントウベツチョウ","romaji":"Ishikari-gun Tobetsu-cho"},
-  {"code":"01304","prefecture":"01","name":"石狩郡新篠津村","kana":"イシカリグンシンシノツムラ","romaji":"Ishikari-gun Shinshinotsu-mura"},
-  {"code":"01331","prefecture":"01","name":"松前郡松前町","kana":"マツマエグンマツマエチョウ","romaji":"Matsumae-gun Matsumae-cho"},
-  {"code":"01332","prefecture":"01","name":"松前郡福島町","kana":"マツマエグンフクシマチョウ","romaji":"Matsumae-gun Fukushima-cho"},
-  {"code":"01333","prefecture":"01","name":"上磯郡知内町","kana":"カミイソグンシリウチチョウ","romaji":"Kamiiso-gun Shiriuchi-cho"},
-  {"code":"01334","prefecture":"01","name":"上磯郡木古内町","kana":"カミイソグンキコナイチョウ","romaji":"Kamiiso-gun Kikonai-cho"},
-  {"code":"01337","prefecture":"01","name":"亀田郡七飯町","kana":"カメダグンナナエチョウ","romaji":"Kameda-gun Nanae-cho"},
-  {"code":"01343","prefecture":"01","name":"茅部郡鹿部町","kana":"カヤベグンシカベチョウ","romaji":"Kayabe-gun Shikabe-cho"},
-  {"code":"01345","prefecture":"01","name":"茅部郡森町","kana":"カヤベグンモリマチ","romaji":"Kayabe-gun Mori-machi"},
-  {"code":"01346","prefecture":"01","name":"二海郡八雲町","kana":"フタミグンヤクモチョウ","romaji":"Futami-gun Yakumo-cho"},
-  {"code":"01347","prefecture":"01","name":"山越郡長万部町","kana":"ヤマコシグンオシャマンベチョウ","romaji":"Yamakoshi-gun Oshamambe-cho"},
-  {"code":"01361","prefecture":"01","name":"檜山郡江差町","kana":"ヒヤマグンエサシチョウ","romaji":"Hiyama-gun Esashi-cho"},
-  {"code":"01362","prefecture":"01","name":"檜山郡上ノ国町","kana":"ヒヤマグンカミノクニチョウ","romaji":"Hiyama-gun Kaminokuni-cho"},
-  {"code":"01363","prefecture":"01","name":"檜山郡厚沢部町","kana":"ヒヤマグンアッサブチョウ","romaji":"Hiyama-gun Assabu-cho"},
-  {"code":"01364","prefecture":"01","name":"爾志郡乙部町","kana":"ニシグンオトベチョウ","romaji":"Nishi-gun Otobe-cho"},
-  {"code":"01367","prefecture":"01","name":"奥尻郡奥尻町","kana":"オクシリグンオクシリチョウ","romaji":"Okushiri-gun Okushiri-cho"},
-  {"code":"01370","prefecture":"01","name":"瀬棚郡今金町","kana":"セタナグンイマカネチョウ","romaji":"Setana-gun Imakane-cho"},
-  {"code":"01371","prefecture":"01","name":"久遠郡せたな町","kana":"クドウグンセタナチョウ","romaji":"Kudo-gun Setana-cho"},
-  {"code":"01391","prefecture":"01","name":"島牧郡島牧村","kana":"シママキグンシママキムラ","romaji":"Shimamaki-gun Shimamaki-mura"},
-  {"code":"01392","prefecture":"01","name":"寿都郡寿都町","kana":"スッツグンスッツチョウ","romaji":"Suttsu-gun Suttsu-cho"},
-  {"code":"01393","prefecture":"01","name":"寿都郡黒松内町","kana":"スッツグンクロマツナイチョウ","romaji":"Suttsu-gun Kuromatsunai-cho"},
-  {"code":"01394","prefecture":"01","name":"磯谷郡蘭越町","kana":"イソヤグンランコシチョウ","romaji":"Isoya-gun Rankoshi-cho"},
-  {"code":"01395","prefecture":"01","name":"虻田郡ニセコ町","kana":"アブタグンニセコチョウ","romaji":"Abuta-gun Niseko-cho"},
-  {"code":"01396","prefecture":"01","name":"虻田郡真狩村","kana":"アブタグンマッカリムラ","romaji":"Abuta-gun Makkari-mura"},
-  {"code":"01397","prefecture":"01","name":"虻田郡留寿都村","kana":"アブタグンルスツムラ","romaji":"Abuta-gun Rusutsu-mura"},
-  {"code":"01398","prefecture":"01","name":"虻田郡喜茂別町","kana":"アブタグンキモベツチョウ","romaji":"Abuta-gun Kimobetsu-cho"},
-  {"code":"01399","prefecture":"01","name":"虻田郡京極町","kana":"アブタグンキョウゴクチョウ","romaji":"Abuta-gun Kyogoku-cho"},
-  {"code":"01400","prefecture":"01","name":"虻田郡倶知安町","kana":"アブタグンクッチャンチョウ","romaji":"Abuta-gun Kutchan-cho"},
-  {"code":"01401","prefecture":"01","name":"岩内郡共和町","kana":"イワナイグンキョウワチョウ","romaji":"Iwanai-gun Kyowa-cho"},
-  {"code":"01402","prefecture":"01","name":"岩内郡岩内町","kana":"イワナイグンイワナイチョウ","romaji":"Iwanai-gun Iwanai-cho"},
-  {"code":"01403","prefecture":"01","name":"古宇郡泊村","kana":"フルウグントマリムラ","romaji":"Furu-gun Tomari-mura"},
-  {"code":"01404","prefecture":"01","name":"古宇郡神恵内村","kana":"フルウグンカモエナイムラ","romaji":"Furu-gun Kamoenai-mura"},
-  {"code":"01405","prefecture":"01","name":"積丹郡積丹町","kana":"シャコタングンシャコタンチョウ","romaji":"Shakotan-gun Shakotan-cho"},
-  {"code":"01406","prefecture":"01","name":"古平郡古平町","kana":"フルビラグンフルビラチョウ","romaji":"Furubira-gun Furubira-cho"},
-  {"code":"01407","prefecture":"01","name":"余市郡仁木町","kana":"ヨイチグンニキチョウ","romaji":"Yoichi-gun Niki-cho"},
-  {"code":"01408","prefecture":"01","name":"余市郡余市町","kana":"ヨイチグンヨイチチョウ","romaji":"Yoichi-gun Yoichi-cho"},
-  {"code":"01409","prefecture":"01","name":"余市郡赤井川村","kana":"ヨイチグンアカイガワムラ","romaji":"Yoichi-gun Akaigawa-mura"},
-  {"code":"01423","prefecture":"01","name":"空知郡南幌町","kana":"ソラチグンナンポロチョウ","romaji":"Sorachi-gun Namporo-cho"},
-  {"code":"01424","prefecture":"01","name":"空知郡奈井江町","kana":"ソラチグンナイエチョウ","romaji":"Sorachi-gun Naie-cho"},
-  {"code":"01425","prefecture":"01","name":"空知郡上砂川町","kana":"ソラチグンカミスナガワチョウ","romaji":"Sorachi-gun Kamisunagawa-cho"},
-  {"code":"01427","prefecture":"01","name":"夕張郡由仁町","kana":"ユウバリグンユニチョウ","romaji":"Yubari-gun Yuni-cho"},
-  {"code":"01428","prefecture":"01","name":"夕張郡長沼町","kana":"ユウバリグンナガヌマチョウ","romaji":"Yubari-gun Naganuma-cho"},
-  {"code":"01429","prefecture":"01","name":"夕張郡栗山町","kana":"ユウバリグンクリヤマチョウ","romaji":"Yubari-gun Kuriyama-cho"},
-  {"code":"01430","prefecture":"01","name":"樺戸郡月形町","kana":"カバトグンツキガタチョウ","romaji":"Kabato-gun Tsukigata-cho"},
-  {"code":"01431","prefecture":"01","name":"樺戸郡浦臼町","kana":"カバトグンウラウスチョウ","romaji":"Kabato-gun Urausu-cho"},
-  {"code":"01432","prefecture":"01","name":"樺戸郡新十津川町","kana":"カバトグンシントツカワチョウ","romaji":"Kabato-gun Shintotsukawa-cho"},
-  {"code":"01433","prefecture":"01","name":"雨竜郡妹背牛町","kana":"ウリュウグンモセウシチョウ","romaji":"Uryu-gun Moseushi-cho"},
-  {"code":"01434","prefecture":"01","name":"雨竜郡秩父別町","kana":"ウリュウグンチップベツチョウ","romaji":"Uryu-gun Chippubetsu-cho"},
-  {"code":"01436","prefecture":"01","name":"雨竜郡雨竜町","kana":"ウリュウグンウリュウチョウ","romaji":"Uryu-gun Uryu-cho"},
-  {"code":"01437","prefecture":"01","name":"雨竜郡北竜町","kana":"ウリュウグンホクリュウチョウ","romaji":"Uryu-gun Hokuryu-cho"},
-  {"code":"01438","prefecture":"01","name":"雨竜郡沼田町","kana":"ウリュウグンヌマタチョウ","romaji":"Uryu-gun Numata-cho"},
-  {"code":"01452","prefecture":"01","name":"上川郡鷹栖町","kana":"カミカワグンタカスチョウ","romaji":"Kamikawa-gun Takasu-cho"},
-  {"code":"01453","prefecture":"01","name":"上川郡東神楽町","kana":"カミカワグンヒガシカグラチョウ","romaji":"Kamikawa-gun Higashikagura-cho"},
-  {"code":"01454","prefecture":"01","name":"上川郡当麻町","kana":"カミカワグントウマチョウ","romaji":"Kamikawa-gun Toma-cho"},
-  {"code":"01455","prefecture":"01","name":"上川郡比布町","kana":"カミカワグンピップチョウ","romaji":"Kamikawa-gun Pippu-cho"},
-  {"code":"01456","prefecture":"01","name":"上川郡愛別町","kana":"カミカワグンアイベツチョウ","romaji":"Kamikawa-gun Aibetsu-cho"},
-  {"code":"01457","prefecture":"01","name":"上川郡上川町","kana":"カミカワグンカミカワチョウ","romaji":"Kamikawa-gun Kamikawa-cho"},
-  {"code":"01458","prefecture":"01","name":"上川郡東川町","kana":"カミカワグンヒガシカワチョウ","romaji":"Kamikawa-gun Higashikawa-cho"},
-  {"code":"01459","prefecture":"01","name":"上川郡美瑛町","kana":"カミカワグンビエイチョウ","romaji":"Kamikawa-gun Biei-cho"},
-  {"code":"01460","prefecture":"01","name":"空知郡上富良野町","kana":"ソラチグンカミフラノチョウ","romaji":"Sorachi-gun Kamifurano-cho"},
-  {"code":"01461","prefecture":"01","name":"空知郡中富良野町","kana":"ソラチグンナカフラノチョウ","romaji":"Sorachi-gun Nakafurano-cho"},
-  {"code":"01462","prefecture":"01","name":"空知郡南富良野町","kana":"ソラチグンミナミフラノチョウ","romaji":"Sorachi-gun Minamifurano-cho"},
-  {"code":"01463","prefecture":"01","name":"勇払郡占冠村","kana":"ユウフツグンシムカップムラ","romaji":"Yufutsu-gun Shimukappu-mura"},
-  {"code":"01464","prefecture":"01","name":"上川郡和寒町","kana":"カミカワグンワッサムチョウ","romaji":"Kamikawa-gun Wassamu-cho"},
-  {"code":"01465","prefecture":"01","name":"上川郡剣淵町","kana":"カミカワグンケンブチチョウ","romaji":"Kamikawa-gun Kembuchi-cho"},
-  {"code":"01468","prefecture":"01","name":"上川郡下川町","kana":"カミカワグンシモカワチョウ","romaji":"Kamikawa-gun Shimokawa-cho"},
-  {"code":"01469","prefecture":"01","name":"中川郡美深町","kana":"ナカガワグンビフカチョウ","romaji":"Nakagawa-gun Bifuka-cho"},
-  {"code":"01470","prefecture":"01","name":"中川郡音威子府村","kana":"ナカガワグンオトイネップムラ","romaji":"Nakagawa-gun Otoineppu-mura"},
-  {"code":"01471","prefecture":"01","name":"中川郡中川町","kana":"ナカガワグンナカガワチョウ","romaji":"Nakagawa-gun Nakagawa-cho"},
-  {"code":"01472","prefecture":"01","name":"雨竜郡幌加内町","kana":"ウリュウグンホロカナイチョウ","romaji":"Uryu-gun Horokanai-cho"},
-  {"code":"01481","prefecture":"01","name":"増毛郡増毛町","kana":"マシケグンマシケチョウ","romaji":"Mashike-gun Mashike-cho"},
-  {"code":"01482","prefecture":"01","name":"留萌郡小平町","kana":"ルモイグンオビラチョウ","romaji":"Rumoi-gun Obira-cho"},
-  {"code":"01483","prefecture":"01","name":"苫前郡苫前町","kana":"トママエグントママエチョウ","romaji":"Tomamae-gun Tomamae-cho"},
-  {"code":"01484","prefecture":"01","name":"苫前郡羽幌町","kana":"トママエグンハボロチョウ","romaji":"Tomamae-gun Haboro-cho"},
-  {"code":"01485","prefecture":"01","name":"苫前郡初山別村","kana":"トママエグンショサンベツムラ","romaji":"Tomamae-gun Shosambetsu-mura"},
-  {"code":"01486","prefecture":"01","name":"天塩郡遠別町","kana":"テシオグンエンベツチョウ","romaji":"Teshio-gun Embetsu-cho"},
-  {"code":"01487","prefecture":"01","name":"天塩郡天塩町","kana":"テシオグンテシオチョウ","romaji":"Teshio-gun Teshio-cho"},
-  {"code":"01511","prefecture":"01","name":"宗谷郡猿払村","kana":"ソウヤグンサルフツムラ","romaji":"Soya-gun Sarufutsu-mura"},
-  {"code":"01512","prefecture":"01","name":"枝幸郡浜頓別町","kana":"エサシグンハマトンベツチョウ","romaji":"Esashi-gun Hamatombetsu-cho"},
-  {"code":"01513","prefecture":"01","name":"枝幸郡中頓別町","kana":"エサシグンナカトンベツチョウ","romaji":"Esashi-gun Nakatombetsu-cho"},
-  {"code":"01514","prefecture":"01","name":"枝幸郡枝幸町","kana":"エサシグンエサシチョウ","romaji":"Esashi-gun Esashi-cho"},
-  {"code":"01516","prefecture":"01","name":"天塩郡豊富町","kana":"テシオグントヨトミチョウ","romaji":"Teshio-gun Toyotomi-cho"},
-  {"code":"01517","prefecture":"01","name":"礼文郡礼文町","kana":"レブングンレブンチョウ","romaji":"Rebun-gun Rebun-cho"},
-  {"code":"01518","prefecture":"01","name":"利尻郡利尻町","kana":"リシリグンリシリチョウ","romaji":"Rishiri-gun Rishiri-cho"},
-  {"code":"01519","prefecture":"01","name":"利尻郡利尻富士町","kana":"リシリグンリシリフジチョウ","romaji":"Rishiri-gun Rishirifuji-cho"},
-  {"code":"01520","prefecture":"01","name":"天塩郡幌延町","kana":"テシオグンホロノベチョウ","romaji":"Teshio-gun Horonobe-cho"},
-  {"code":"01543","prefecture":"01","name":"網走郡美幌町","kana":"アバシリグンビホロチョウ","romaji":"Abashiri-gun Bihoro-cho"},
-  {"code":"01544","prefecture":"01","name":"網走郡津別町","kana":"アバシリグンツベツチョウ","romaji":"Abashiri-gun Tsubetsu-cho"},
-  {"code":"01545","prefecture":"01","name":"斜里郡斜里町","kana":"シャリグンシャリチョウ","romaji":"Shari-gun Shari-cho"},
-  {"code":"01546","prefecture":"01","name":"斜里郡清里町","kana":"シャリグンキヨサトチョウ","romaji":"Shari-gun Kiyosato-cho"},
-  {"code":"01547","prefecture":"01","name":"斜里郡小清水町","kana":"シャリグンコシミズチョウ","romaji":"Shari-gun Koshimizu-cho"},
-  {"code":"01549","prefecture":"01","name":"常呂郡訓子府町","kana":"トコログンクンネップチョウ","romaji":"Tokoro-gun Kunneppu-cho"},
-  {"code":"01550","prefecture":"01","name":"常呂郡置戸町","kana":"トコログンオケトチョウ","romaji":"Tokoro-gun Oketo-cho"},
-  {"code":"01552","prefecture":"01","name":"常呂郡佐呂間町","kana":"トコログンサロマチョウ","romaji":"Tokoro-gun Saroma-cho"},
-  {"code":"01555","prefecture":"01","name":"紋別郡遠軽町","kana":"モンベツグンエンガルチョウ","romaji":"Mombetsu-gun Engaru-cho"},
-  {"code":"01559","prefecture":"01","name":"紋別郡湧別町","kana":"モンベツグンユウベツチョウ","romaji":"Mombetsu-gun Yubetsu-cho"},
-  {"code":"01560","prefecture":"01","name":"紋別郡滝上町","kana":"モンベツグンタキノウエチョウ","romaji":"Mombetsu-gun Takinoe-cho"},
-  {"code":"01561","prefecture":"01","name":"紋別郡興部町","kana":"モンベツグンオコッペチョウ","romaji":"Mombetsu-gun Okoppe-cho"},
-  {"code":"01562","prefecture":"01","name":"紋別郡西興部村","kana":"モンベツグンニシオコッペムラ","romaji":"Mombetsu-gun Nishiokoppe-mura"},
-  {"code":"01563","prefecture":"01","name":"紋別郡雄武町","kana":"モンベツグンオウムチョウ","romaji":"Mombetsu-gun Omu-cho"},
-  {"code":"01564","prefecture":"01","name":"網走郡大空町","kana":"アバシリグンオオゾラチョウ","romaji":"Abashiri-gun Ozora-cho"},
-  {"code":"01571","prefecture":"01","name":"虻田郡豊浦町","kana":"アブタグントヨウラチョウ","romaji":"Abuta-gun Toyora-cho"},
-  {"code":"01575","prefecture":"01","name":"有珠郡壮瞥町","kana":"ウスグンソウベツチョウ","romaji":"Usu-gun Sobetsu-cho"},
-  {"code":"01578","prefecture":"01","name":"白老郡白老町","kana":"シラオイグンシラオイチョウ","romaji":"Shiraoi-gun Shiraoi-cho"},
-  {"code":"01581","prefecture":"01","name":"勇払郡厚真町","kana":"ユウフツグンアツマチョウ","romaji":"Yufutsu-gun Atsuma-cho"},
-  {"code":"01584","prefecture":"01","name":"虻田郡洞爺湖町","kana":"アブタグントウヤコチョウ","romaji":"Abuta-gun Toyako-cho"},
-  {"code":"01585","prefecture":"01","name":"勇払郡安平町","kana":"ユウフツグンアビラチョウ","romaji":"Yufutsu-gun Abira-cho"},
-  {"code":"01586","prefecture":"01","name":"勇払郡むかわ町","kana":"ユウフツグンムカワチョウ","romaji":"Yufutsu-gun Mukawa-cho"},
-  {"code":"01601","prefecture":"01","name":"沙流郡日高町","kana":"サルグンヒダカチョウ","romaji":"Saru-gun Hidaka-cho"},
-  {"code":"01602","prefecture":"01","name":"沙流郡平取町","kana":"サルグンビラトリチョウ","romaji":"Saru-gun Biratori-cho"},
-  {"code":"01604","prefecture":"01","name":"新冠郡新冠町","kana":"ニイカップグンニイカップチョウ","romaji":"Niikappu-gun Niikappu-cho"},
-  {"code":"01607","prefecture":"01","name":"浦河郡浦河町","kana":"ウラカワグンウラカワチョウ","romaji":"Urakawa-gun Urakawa-cho"},
-  {"code":"01608","prefecture":"01","name":"様似郡様似町","kana":"サマニグンサマニチョウ","romaji":"Samani-gun Samani-cho"},
-  {"code":"01609","prefecture":"01","name":"幌泉郡えりも町","kana":"ホロイズミグンエリモチョウ","romaji":"Horoizumi-gun Erimo-cho"},
-  {"code":"01610","prefecture":"01","name":"日高郡新ひだか町","kana":"ヒダカグンシンヒダカチョウ","romaji":"Hidaka-gun Shinhidaka-cho"},
-  {"code":"01631","prefecture":"01","name":"河東郡音更町","kana":"カトウグンオトフケチョウ","romaji":"Kato-gun Otofuke-cho"},
-  {"code":"01632","prefecture":"01","name":"河東郡士幌町","kana":"カトウグンシホロチョウ","romaji":"Kato-gun Shihoro-cho"},
-  {"code":"01633","prefecture":"01","name":"河東郡上士幌町","kana":"カトウグンカミシホロチョウ","romaji":"Kato-gun Kamishihoro-cho"},
-  {"code":"01634","prefecture":"01","name":"河東郡鹿追町","kana":"カトウグンシカオイチョウ","romaji":"Kato-gun Shikaoi-cho"},
-  {"code":"01635","prefecture":"01","name":"上川郡新得町","kana":"カミカワグンシントクチョウ","romaji":"Kamikawa-gun Shintoku-cho"},
-  {"code":"01636","prefecture":"01","name":"上川郡清水町","kana":"カミカワグンシミズチョウ","romaji":"Kamikawa-gun Shimizu-cho"},
-  {"code":"01637","prefecture":"01","name":"河西郡芽室町","kana":"カサイグンメムロチョウ","romaji":"Kasai-gun Memuro-cho"},
-  {"code":"01638","prefecture":"01","name":"河西郡中札内村","kana":"カサイグンナカサツナイムラ","romaji":"Kasai-gun Nakasatsunai-mura"},
-  {"code":"01639","prefecture":"01","name":"河西郡更別村","kana":"カサイグンサラベツムラ","romaji":"Kasai-gun Sarabetsu-mura"},
-  {"code":"01641","prefecture":"01","name":"広尾郡大樹町","kana":"ヒロオグンタイキチョウ","romaji":"Hiro-gun Taiki-cho"},
-  {"code":"01642","prefecture":"01","name":"広尾郡広尾町","kana":"ヒロオグンヒロオチョウ","romaji":"Hiro-gun Hiro-cho"},
-  {"code":"01643","prefecture":"01","name":"中川郡幕別町","kana":"ナカガワグンマクベツチョウ","romaji":"Nakagawa-gun Makubetsu-cho"},
-  {"code":"01644","prefecture":"01","name":"中川郡池田町","kana":"ナカガワグンイケダチョウ","romaji":"Nakagawa-gun Ikeda-cho"},
-  {"code":"01645","prefecture":"01","name":"中川郡豊頃町","kana":"ナカガワグントヨコロチョウ","romaji":"Nakagawa-gun Toyokoro-cho"},
-  {"code":"01646","prefecture":"01","name":"中川郡本別町","kana":"ナカガワグンホンベツチョウ","romaji":"Nakagawa-gun Hombetsu-cho"},
-  {"code":"01647","prefecture":"01","name":"足寄郡足寄町","kana":"アショログンアショロチョウ","romaji":"Ashoro-gun Ashoro-cho"},
-  {"code":"01648","prefecture":"01","name":"足寄郡陸別町","kana":"アショログンリクベツチョウ","romaji":"Ashoro-gun Rikubetsu-cho"},
-  {"code":"01649","prefecture":"01","name":"十勝郡浦幌町","kana":"トカチグンウラホロチョウ","romaji":"Tokachi-gun Urahoro-cho"},
-  {"code":"01661","prefecture":"01","name":"釧路郡釧路町","kana":"クシログンクシロチョウ","romaji":"Kushiro-gun Kushiro-cho"},
-  {"code":"01662","prefecture":"01","name":"厚岸郡厚岸町","kana":"アッケシグンアッケシチョウ","romaji":"Akkeshi-gun Akkeshi-cho"},
-  {"code":"01663","prefecture":"01","name":"厚岸郡浜中町","kana":"アッケシグンハマナカチョウ","romaji":"Akkeshi-gun Hamanaka-cho"},
-  {"code":"01664","prefecture":"01","name":"川上郡標茶町","kana":"カワカミグンシベチャチョウ","romaji":"Kawakami-gun Shibecha-cho"},
-  {"code":"01665","prefecture":"01","name":"川上郡弟子屈町","kana":"カワカミグンテシカガチョウ","romaji":"Kawakami-gun Teshikaga-cho"},
-  {"code":"01667","prefecture":"01","name":"阿寒郡鶴居村","kana":"アカングンツルイムラ","romaji":"Akan-gun Tsurui-mura"},
-  {"code":"01668","prefecture":"01","name":"白糠郡白糠町","kana":"シラヌカグンシラヌカチョウ","romaji":"Shiranuka-gun Shiranuka-cho"},
-  {"code":"01691","prefecture":"01","name":"野付郡別海町","kana":"ノツケグンベツカイチョウ","romaji":"Notsuke-gun Betsukai-cho"},
-  {"code":"01692","prefecture":"01","name":"標津郡中標津町","kana":"シベツグンナカシベツチョウ","romaji":"Shibetsu-gun Nakashibetsu-cho"},
-  {"code":"01693","prefecture":"01","name":"標津郡標津町","kana":"シベツグンシベツチョウ","romaji":"Shibetsu-gun Shibetsu-cho"},
-  {"code":"01694","prefecture":"01","name":"目梨郡羅臼町","kana":"メナシグンラウスチョウ","romaji":"Menashi-gun Rausu-cho"},
-  {"code":"02201","prefecture":"02","name":"青森市","kana":"アオモリシ","romaji":"Aomori-shi"},
-  {"code":"02202","prefecture":"02","name":"弘前市","kana":"ヒロサキシ","romaji":"Hirosaki-shi"},
-  {"code":"02203","prefecture":"02","name":"八戸市","kana":"ハチノヘシ","romaji":"Hachinohe-shi"},
-  {"code":"02204","prefecture":"02","name":"黒石市","kana":"クロイシシ","romaji":"Kuroishi-shi"},
-  {"code":"02205","prefecture":"02","name":"五所川原市","kana":"ゴショガワラシ","romaji":"Goshogawara-shi"},
-  {"code":"02206","prefecture":"02","name":"十和田市","kana":"トワダシ","romaji":"Towada-shi"},
-  {"code":"02207","prefecture":"02","name":"三沢市","kana":"ミサワシ","romaji":"Misawa-shi"},
-  {"code":"02208","prefecture":"02","name":"むつ市","kana":"ムツシ","romaji":"Mutsu-shi"},
-  {"code":"02209","prefecture":"02","name":"つがる市","kana":"ツガルシ","romaji":"Tsugaru-shi"},
-  {"code":"02210","prefecture":"02","name":"平川市","kana":"ヒラカワシ","romaji":"Hirakawa-shi"},
-  {"code":"02301","prefecture":"02","name":"東津軽郡平内町","kana":"ヒガシツガルグンヒラナイマチ","romaji":"Higashitsugaru-gun Hiranai-machi"},
-  {"code":"02303","prefecture":"02","name":"東津軽郡今別町","kana":"ヒガシツガルグンイマベツマチ","romaji":"Higashitsugaru-gun Imabetsu-machi"},
-  {"code":"02304","prefecture":"02","name":"東津軽郡蓬田村","kana":"ヒガシツガルグンヨモギタムラ","romaji":"Higashitsugaru-gun Yomogita-mura"},
-  {"code":"02307","prefecture":"02","name":"東津軽郡外ケ浜町","kana":"ヒガシツガルグンソトガハママチ","romaji":"Higashitsugaru-gun Sotogahama-machi"},
-  {"code":"02321","prefecture":"02","name":"西津軽郡鰺ヶ沢町","kana":"ニシツガルグンアジガサワマチ","romaji":"Nishitsugaru-gun Ajigasawa-machi"},
-  {"code":"02323","prefecture":"02","name":"西津軽郡深浦町","kana":"ニシツガルグンフカウラマチ","romaji":"Nishitsugaru-gun Fukaura-machi"},
-  {"code":"02343","prefecture":"02","name":"中津軽郡西目屋村","kana":"ナカツガルグンニシメヤムラ","romaji":"Nakatsugaru-gun Nishimeya-mura"},
-  {"code":"02361","prefecture":"02","name":"南津軽郡藤崎町","kana":"ミナミツガルグンフジサキマチ","romaji":"Minamitsugaru-gun Fujisaki-machi"},
-  {"code":"02362","prefecture":"02","name":"南津軽郡大鰐町","kana":"ミナミツガルグンオオワニマチ","romaji":"Minamitsugaru-gun Owani-machi"},
-  {"code":"02367","prefecture":"02","name":"南津軽郡田舎館村","kana":"ミナミツガルグンイナカダテムラ","romaji":"Minamitsugaru-gun Inakadate-mura"},
-  {"code":"02381","prefecture":"02","name":"北津軽郡板柳町","kana":"キタツガルグンイタヤナギマチ","romaji":"Kitatsugaru-gun Itayanagi-machi"},
-  {"code":"02384","prefecture":"02","name":"北津軽郡鶴田町","kana":"キタツガルグンツルタマチ","romaji":"Kitatsugaru-gun Tsuruta-machi"},
-  {"code":"02387","prefecture":"02","name":"北津軽郡中泊町","kana":"キタツガルグンナカドマリマチ","romaji":"Kitatsugaru-gun Nakadomari-machi"},
-  {"code":"02401","prefecture":"02","name":"上北郡野辺地町","kana":"カミキタグンノヘジマチ","romaji":"Kamikita-gun Noheji-machi"},
-  {"code":"02402","prefecture":"02","name":"上北郡七戸町","kana":"カミキタグンシチノヘマチ","romaji":"Kamikita-gun Shichinohe-machi"},
-  {"code":"02405","prefecture":"02","name":"上北郡六戸町","kana":"カミキタグンロクノヘマチ","romaji":"Kamikita-gun Rokunohe-machi"},
-  {"code":"02406","prefecture":"02","name":"上北郡横浜町","kana":"カミキタグンヨコハママチ","romaji":"Kamikita-gun Yokohama-machi"},
-  {"code":"02408","prefecture":"02","name":"上北郡東北町","kana":"カミキタグントウホクマチ","romaji":"Kamikita-gun Tohoku-machi"},
-  {"code":"02411","prefecture":"02","name":"上北郡六ヶ所村","kana":"カミキタグンロッカショムラ","romaji":"Kamikita-gun Rokkasho-mura"},
-  {"code":"02412","prefecture":"02","name":"上北郡おいらせ町","kana":"カミキタグンオイラセチョウ","romaji":"Kamikita-gun Oirase-cho"},
-  {"code":"02423","prefecture":"02","name":"下北郡大間町","kana":"シモキタグンオオママチ","romaji":"Shimokita-gun Oma-machi"},
-  {"code":"02424","prefecture":"02","name":"下北郡東通村","kana":"シモキタグンヒガシドオリムラ","romaji":"Shimokita-gun Higashidori-mura"},
-  {"code":"02425","prefecture":"02","name":"下北郡風間浦村","kana":"シモキタグンカザマウラムラ","romaji":"Shimokita-gun Kazamaura-mura"},
-  {"code":"02426","prefecture":"02","name":"下北郡佐井村","kana":"シモキタグンサイムラ","romaji":"Shimokita-gun Sai-mura"},
-  {"code":"02441","prefecture":"02","name":"三戸郡三戸町","kana":"サンノヘグンサンノヘマチ","romaji":"Sannohe-gun Sannohe-machi"},
-  {"code":"02442","prefecture":"02","name":"三戸郡五戸町","kana":"サンノヘグンゴノヘマチ","romaji":"Sannohe-gun Gonohe-machi"},
-  {"code":"02443","prefecture":"02","name":"三戸郡田子町","kana":"サンノヘグンタッコマチ","romaji":"Sannohe-gun Takko-machi"},
-  {"code":"02445","prefecture":"02","name":"三戸郡南部町","kana":"サンノヘグンナンブチョウ","romaji":"Sannohe-gun Nambu-cho"},
-  {"code":"02446","prefecture":"02","name":"三戸郡階上町","kana":"サンノヘグンハシカミチョウ","romaji":"Sannohe-gun Hashikami-cho"},
-  {"code":"02450","prefecture":"02","name":"三戸郡新郷村","kana":"サンノヘグンシンゴウムラ","romaji":"Sannohe-gun Shingo-mura"},
-  {"code":"03201","prefecture":"03","name":"盛岡市","kana":"モリオカシ","romaji":"Morioka-shi"},
-  {"code":"03202","prefecture":"03","name":"宮古市","kana":"ミヤコシ","romaji":"Miyako-shi"},
-  {"code":"03203","prefecture":"03","name":"大船渡市","kana":"オオフナトシ","romaji":"Ofunato-shi"},
-  {"code":"03205","prefecture":"03","name":"花巻市","kana":"ハナマキシ","romaji":"Hanamaki-shi"},
-  {"code":"03206","prefecture":"03","name":"北上市","kana":"キタカミシ","romaji":"Kitakami-shi"},
-  {"code":"03207","prefecture":"03","name":"久慈市","kana":"クジシ","romaji":"Kuji-shi"},
-  {"code":"03208","prefecture":"03","name":"遠野市","kana":"トオノシ","romaji":"Tono-shi"},
-  {"code":"03209","prefecture":"03","name":"一関市","kana":"イチノセキシ","romaji":"Ichinoseki-shi"},
-  {"code":"03210","prefecture":"03","name":"陸前高田市","kana":"リクゼンタカタシ","romaji":"Rikuzentakata-shi"},
-  {"code":"03211","prefecture":"03","name":"釜石市","kana":"カマイシシ","romaji":"Kamaishi-shi"},
-  {"code":"03213","prefecture":"03","name":"二戸市","kana":"ニノヘシ","romaji":"Ninohe-shi"},
-  {"code":"03214","prefecture":"03","name":"八幡平市","kana":"ハチマンタイシ","romaji":"Hachimantai-shi"},
-  {"code":"03215","prefecture":"03","name":"奥州市","kana":"オウシュウシ","romaji":"Oshu-shi"},
-  {"code":"03216","prefecture":"03","name":"滝沢市","kana":"タキザワシ","romaji":"Takizawa-shi"},
-  {"code":"03301","prefecture":"03","name":"岩手郡雫石町","kana":"イワテグンシズクイシチョウ","romaji":"Iwate-gun Shizukuishi-cho"},
-  {"code":"03302","prefecture":"03","name":"岩手郡葛巻町","kana":"イワテグンクズマキマチ","romaji":"Iwate-gun Kuzumaki-machi"},
-  {"code":"03303","prefecture":"03","name":"岩手郡岩手町","kana":"イワテグンイワテマチ","romaji":"Iwate-gun Iwate-machi"},
-  {"code":"03321","prefecture":"03","name":"紫波郡紫波町","kana":"シワグンシワチョウ","romaji":"Shiwa-gun Shiwa-cho"},
-  {"code":"03322","prefecture":"03","name":"紫波郡矢巾町","kana":"シワグンヤハバチョウ","romaji":"Shiwa-gun Yahaba-cho"},
-  {"code":"03366","prefecture":"03","name":"和賀郡西和賀町","kana":"ワガグンニシワガマチ","romaji":"Waga-gun Nishiwaga-machi"},
-  {"code":"03381","prefecture":"03","name":"胆沢郡金ケ崎町","kana":"イサワグンカネガサキチョウ","romaji":"Isawa-gun Kanegasaki-cho"},
-  {"code":"03402","prefecture":"03","name":"西磐井郡平泉町","kana":"ニシイワイグンヒライズミチョウ","romaji":"Nishiiwai-gun Hiraizumi-cho"},
-  {"code":"03441","prefecture":"03","name":"気仙郡住田町","kana":"ケセングンスミタチョウ","romaji":"Kesen-gun Sumita-cho"},
-  {"code":"03461","prefecture":"03","name":"上閉伊郡大槌町","kana":"カミヘイグンオオツチチョウ","romaji":"Kamihei-gun Otsuchi-cho"},
-  {"code":"03482","prefecture":"03","name":"下閉伊郡山田町","kana":"シモヘイグンヤマダマチ","romaji":"Shimohei-gun Yamada-machi"},
-  {"code":"03483","prefecture":"03","name":"下閉伊郡岩泉町","kana":"シモヘイグンイワイズミチョウ","romaji":"Shimohei-gun Iwaizumi-cho"},
-  {"code":"03484","prefecture":"03","name":"下閉伊郡田野畑村","kana":"シモヘイグンタノハタムラ","romaji":"Shimohei-gun Tanohata-mura"},
-  {"code":"03485","prefecture":"03","name":"下閉伊郡普代村","kana":"シモヘイグンフダイムラ","romaji":"Shimohei-gun Fudai-mura"},
-  {"code":"03501","prefecture":"03","name":"九戸郡軽米町","kana":"クノヘグンカルマイマチ","romaji":"Kunohe-gun Karumai-machi"},
-  {"code":"03503","prefecture":"03","name":"九戸郡野田村","kana":"クノヘグンノダムラ","romaji":"Kunohe-gun Noda-mura"},
-  {"code":"03506","prefecture":"03","name":"九戸郡九戸村","kana":"クノヘグンクノヘムラ","romaji":"Kunohe-gun Kunohe-mura"},
-  {"code":"03507","prefecture":"03","name":"九戸郡洋野町","kana":"クノヘグンヒロノチョウ","romaji":"Kunohe-gun Hirono-cho"},
-  {"code":"03524","prefecture":"03","name":"二戸郡一戸町","kana":"ニノヘグンイチノヘマチ","romaji":"Ninohe-gun Ichinohe-machi"},
-  {"code":"04101","prefecture":"04","name":"仙台市青葉区","kana":"センダイシアオバク","romaji":"Sendai-shi Aoba-ku"},
-  {"code":"04102","prefecture":"04","name":"仙台市宮城野区","kana":"センダイシミヤギノク","romaji":"Sendai-shi Miyagino-ku"},
-  {"code":"04103","prefecture":"04","name":"仙台市若林区","kana":"センダイシワカバヤシク","romaji":"Sendai-shi Wakabayashi-ku"},
-  {"code":"04104","prefecture":"04","name":"仙台市太白区","kana":"センダイシタイハクク","romaji":"Sendai-shi Taihaku-ku"},
-  {"code":"04105","prefecture":"04","name":"仙台市泉区","kana":"センダイシイズミク","romaji":"Sendai-shi Izumi-ku"},
-  {"code":"04202","prefecture":"04","name":"石巻市","kana":"イシノマキシ","romaji":"Ishinomaki-shi"},
-  {"code":"04203","prefecture":"04","name":"塩竈市","kana":"シオガマシ","romaji":"Shiogama-shi"},
-  {"code":"04205","prefecture":"04","name":"気仙沼市","kana":"ケセンヌマシ","romaji":"Kesennuma-shi"},
-  {"code":"04206","prefecture":"04","name":"白石市","kana":"シロイシシ","romaji":"Shiroishi-shi"},
-  {"code":"04207","prefecture":"04","name":"名取市","kana":"ナトリシ","romaji":"Natori-shi"},
-  {"code":"04208","prefecture":"04","name":"角田市","kana":"カクダシ","romaji":"Kakuda-shi"},
-  {"code":"04209","prefecture":"04","name":"多賀城市","kana":"タガジョウシ","romaji":"Tagajo-shi"},
-  {"code":"04211","prefecture":"04","name":"岩沼市","kana":"イワヌマシ","romaji":"Iwanuma-shi"},
-  {"code":"04212","prefecture":"04","name":"登米市","kana":"トメシ","romaji":"Tome-shi"},
-  {"code":"04213","prefecture":"04","name":"栗原市","kana":"クリハラシ","romaji":"Kurihara-shi"},
-  {"code":"04214","prefecture":"04","name":"東松島市","kana":"ヒガシマツシマシ","romaji":"Higashimatsushima-shi"},
-  {"code":"04215","prefecture":"04","name":"大崎市","kana":"オオサキシ","romaji":"Osaki-shi"},
-  {"code":"04216","prefecture":"04","name":"富谷市","kana":"トミヤシ","romaji":"Tomiya-shi"},
-  {"code":"04301","prefecture":"04","name":"刈田郡蔵王町","kana":"カッタグンザオウマチ","romaji":"Katta-gun Zao-machi"},
-  {"code":"04302","prefecture":"04","name":"刈田郡七ヶ宿町","kana":"カッタグンシチカシュクマチ","romaji":"Katta-gun Shichikashuku-machi"},
-  {"code":"04321","prefecture":"04","name":"柴田郡大河原町","kana":"シバタグンオオガワラマチ","romaji":"Shibata-gun Ogawara-machi"},
-  {"code":"04322","prefecture":"04","name":"柴田郡村田町","kana":"シバタグンムラタマチ","romaji":"Shibata-gun Murata-machi"},
-  {"code":"04323","prefecture":"04","name":"柴田郡柴田町","kana":"シバタグンシバタマチ","romaji":"Shibata-gun Shibata-machi"},
-  {"code":"04324","prefecture":"04","name":"柴田郡川崎町","kana":"シバタグンカワサキマチ","romaji":"Shibata-gun Kawasaki-machi"},
-  {"code":"04341","prefecture":"04","name":"伊具郡丸森町","kana":"イググンマルモリマチ","romaji":"Igu-gun Marumori-machi"},
-  {"code":"04361","prefecture":"04","name":"亘理郡亘理町","kana":"ワタリグンワタリチョウ","romaji":"Watari-gun Watari-cho"},
-  {"code":"04362","prefecture":"04","name":"亘理郡山元町","kana":"ワタリグンヤマモトチョウ","romaji":"Watari-gun Yamamoto-cho"},
-  {"code":"04401","prefecture":"04","name":"宮城郡松島町","kana":"ミヤギグンマツシママチ","romaji":"Miyagi-gun Matsushima-machi"},
-  {"code":"04404","prefecture":"04","name":"宮城郡七ヶ浜町","kana":"ミヤギグンシチガハママチ","romaji":"Miyagi-gun Shichigahama-machi"},
-  {"code":"04406","prefecture":"04","name":"宮城郡利府町","kana":"ミヤギグンリフチョウ","romaji":"Miyagi-gun Rifu-cho"},
-  {"code":"04421","prefecture":"04","name":"黒川郡大和町","kana":"クロカワグンタイワチョウ","romaji":"Kurokawa-gun Taiwa-cho"},
-  {"code":"04422","prefecture":"04","name":"黒川郡大郷町","kana":"クロカワグンオオサトチョウ","romaji":"Kurokawa-gun Osato-cho"},
-  {"code":"04424","prefecture":"04","name":"黒川郡大衡村","kana":"クロカワグンオオヒラムラ","romaji":"Kurokawa-gun Ohira-mura"},
-  {"code":"04444","prefecture":"04","name":"加美郡色麻町","kana":"カミグンシカマチョウ","romaji":"Kami-gun Shikama-cho"},
-  {"code":"04445","prefecture":"04","name":"加美郡加美町","kana":"カミグンカミマチ","romaji":"Kami-gun Kami-machi"},
-  {"code":"04501","prefecture":"04","name":"遠田郡涌谷町","kana":"トオダグンワクヤチョウ","romaji":"Toda-gun Wakuya-cho"},
-  {"code":"04505","prefecture":"04","name":"遠田郡美里町","kana":"トオダグンミサトマチ","romaji":"Toda-gun Misato-machi"},
-  {"code":"04581","prefecture":"04","name":"牡鹿郡女川町","kana":"オシカグンオナガワチョウ","romaji":"Oshika-gun Onagawa-cho"},
-  {"code":"04606","prefecture":"04","name":"本吉郡南三陸町","kana":"モトヨシグンミナミサンリクチョウ","romaji":"Motoyoshi-gun Minamisanriku-cho"},
-  {"code":"05201","prefecture":"05","name":"秋田市","kana":"アキタシ","romaji":"Akita-shi"},
-  {"code":"05202","prefecture":"05","name":"能代市","kana":"ノシロシ","romaji":"Noshiro-shi"},
-  {"code":"05203","prefecture":"05","name":"横手市","kana":"ヨコテシ","romaji":"Yokote-shi"},
-  {"code":"05204","prefecture":"05","name":"大館市","kana":"オオダテシ","romaji":"Odate-shi"},
-  {"code":"05206","prefecture":"05","name":"男鹿市","kana":"オガシ","romaji":"Oga-shi"},
-  {"code":"05207","prefecture":"05","name":"湯沢市","kana":"ユザワシ","romaji":"Yuzawa-shi"},
-  {"code":"05209","prefecture":"05","name":"鹿角市","kana":"カヅノシ","romaji":"Kazuno-shi"},
-  {"code":"05210","prefecture":"05","name":"由利本荘市","kana":"ユリホンジョウシ","romaji":"Yurihonjo-shi"},
-  {"code":"05211","prefecture":"05","name":"潟上市","kana":"カタガミシ","romaji":"Katagami-shi"},
-  {"code":"05212","prefecture":"05","name":"大仙市","kana":"ダイセンシ","romaji":"Daisen-shi"},
-  {"code":"05213","prefecture":"05","name":"北秋田市","kana":"キタアキタシ","romaji":"Kitaakita-shi"},
-  {"code":"05214","prefecture":"05","name":"にかほ市","kana":"ニカホシ","romaji":"Nikaho-shi"},
-  {"code":"05215","prefecture":"05","name":"仙北市","kana":"センボクシ","romaji":"Semboku-shi"},
-  {"code":"05303","prefecture":"05","name":"鹿角郡小坂町","kana":"カヅノグンコサカマチ","romaji":"Kazuno-gun Kosaka-machi"},
-  {"code":"05327","prefecture":"05","name":"北秋田郡上小阿仁村","kana":"キタアキタグンカミコアニムラ","romaji":"Kitaakita-gun Kamikoani-mura"},
-  {"code":"05346","prefecture":"05","name":"山本郡藤里町","kana":"ヤマモトグンフジサトマチ","romaji":"Yamamoto-gun Fujisato-machi"},
-  {"code":"05348","prefecture":"05","name":"山本郡三種町","kana":"ヤマモトグンミタネチョウ","romaji":"Yamamoto-gun Mitane-cho"},
-  {"code":"05349","prefecture":"05","name":"山本郡八峰町","kana":"ヤマモトグンハッポウチョウ","romaji":"Yamamoto-gun Happo-cho"},
-  {"code":"05361","prefecture":"05","name":"南秋田郡五城目町","kana":"ミナミアキタグンゴジョウメマチ","romaji":"Minamiakita-gun Gojome-machi"},
-  {"code":"05363","prefecture":"05","name":"南秋田郡八郎潟町","kana":"ミナミアキタグンハチロウガタマチ","romaji":"Minamiakita-gun Hachirogata-machi"},
-  {"code":"05366","prefecture":"05","name":"南秋田郡井川町","kana":"ミナミアキタグンイカワマチ","romaji":"Minamiakita-gun Ikawa-machi"},
-  {"code":"05368","prefecture":"05","name":"南秋田郡大潟村","kana":"ミナミアキタグンオオガタムラ","romaji":"Minamiakita-gun Ogata-mura"},
-  {"code":"05434","prefecture":"05","name":"仙北郡美郷町","kana":"センボクグンミサトチョウ","romaji":"Semboku-gun Misato-cho"},
-  {"code":"05463","prefecture":"05","name":"雄勝郡羽後町","kana":"オガチグンウゴマチ","romaji":"Ogachi-gun Ugo-machi"},
-  {"code":"05464","prefecture":"05","name":"雄勝郡東成瀬村","kana":"オガチグンヒガシナルセムラ","romaji":"Ogachi-gun Higashinaruse-mura"},
-  {"code":"06201","prefecture":"06","name":"山形市","kana":"ヤマガタシ","romaji":"Yamagata-shi"},
-  {"code":"06202","prefecture":"06","name":"米沢市","kana":"ヨネザワシ","romaji":"Yonezawa-shi"},
-  {"code":"06203","prefecture":"06","name":"鶴岡市","kana":"ツルオカシ","romaji":"Tsuruoka-shi"},
-  {"code":"06204","prefecture":"06","name":"酒田市","kana":"サカタシ","romaji":"Sakata-shi"},
-  {"code":"06205","prefecture":"06","name":"新庄市","kana":"シンジョウシ","romaji":"Shinjo-shi"},
-  {"code":"06206","prefecture":"06","name":"寒河江市","kana":"サガエシ","romaji":"Sagae-shi"},
-  {"code":"06207","prefecture":"06","name":"上山市","kana":"カミノヤマシ","romaji":"Kaminoyama-shi"},
-  {"code":"06208","prefecture":"06","name":"村山市","kana":"ムラヤマシ","romaji":"Murayama-shi"},
-  {"code":"06209","prefecture":"06","name":"長井市","kana":"ナガイシ","romaji":"Nagai-shi"},
-  {"code":"06210","prefecture":"06","name":"天童市","kana":"テンドウシ","romaji":"Tendo-shi"},
-  {"code":"06211","prefecture":"06","name":"東根市","kana":"ヒガシネシ","romaji":"Higashine-shi"},
-  {"code":"06212","prefecture":"06","name":"尾花沢市","kana":"オバナザワシ","romaji":"Obanazawa-shi"},
-  {"code":"06213","prefecture":"06","name":"南陽市","kana":"ナンヨウシ","romaji":"Nanyo-shi"},
-  {"code":"06301","prefecture":"06","name":"東村山郡山辺町","kana":"ヒガシムラヤマグンヤマノベマチ","romaji":"Higashimurayama-gun Yamanobe-machi"},
-  {"code":"06302","prefecture":"06","name":"東村山郡中山町","kana":"ヒガシムラヤマグンナカヤママチ","romaji":"Higashimurayama-gun Nakayama-machi"},
-  {"code":"06321","prefecture":"06","name":"西村山郡河北町","kana":"ニシムラヤマグンカホクチョウ","romaji":"Nishimurayama-gun Kahoku-cho"},
-  {"code":"06322","prefecture":"06","name":"西村山郡西川町","kana":"ニシムラヤマグンニシカワマチ","romaji":"Nishimurayama-gun Nishikawa-machi"},
-  {"code":"06323","prefecture":"06","name":"西村山郡朝日町","kana":"ニシムラヤマグンアサヒマチ","romaji":"Nishimurayama-gun Asahi-machi"},
-  {"code":"06324","prefecture":"06","name":"西村山郡大江町","kana":"ニシムラヤマグンオオエマチ","romaji":"Nishimurayama-gun Oe-machi"},
-  {"code":"06341","prefecture":"06","name":"北村山郡大石田町","kana":"キタムラヤマグンオオイシダマチ","romaji":"Kitamurayama-gun Oishida-machi"},
-  {"code":"06361","prefecture":"06","name":"最上郡金山町","kana":"モガミグンカネヤママチ","romaji":"Mogami-gun Kaneyama-machi"},
-  {"code":"06362","prefecture":"06","name":"最上郡最上町","kana":"モガミグンモガミマチ","romaji":"Mogami-gun Mogami-machi"},
-  {"code":"06363","prefecture":"06","name":"最上郡舟形町","kana":"モガミグンフナガタマチ","romaji":"Mogami-gun Funagata-machi"},
-  {"code":"06364","prefecture":"06","name":"最上郡真室川町","kana":"モガミグンマムロガワマチ","romaji":"Mogami-gun Mamurogawa-machi"},
-  {"code":"06365","prefecture":"06","name":"最上郡大蔵村","kana":"モガミグンオオクラムラ","romaji":"Mogami-gun Okura-mura"},
-  {"code":"06366","prefecture":"06","name":"最上郡鮭川村","kana":"モガミグンサケガワムラ","romaji":"Mogami-gun Sakegawa-mura"},
-  {"code":"06367","prefecture":"06","name":"最上郡戸沢村","kana":"モガミグントザワムラ","romaji":"Mogami-gun Tozawa-mura"},
-  {"code":"06381","prefecture":"06","name":"東置賜郡高畠町","kana":"ヒガシオキタマグンタカハタマチ","romaji":"Higashiokitama-gun Takahata-machi"},
-  {"code":"06382","prefecture":"06","name":"東置賜郡川西町","kana":"ヒガシオキタマグンカワニシマチ","romaji":"Higashiokitama-gun Kawanishi-machi"},
-  {"code":"06401","prefecture":"06","name":"西置賜郡小国町","kana":"ニシオキタマグンオグニマチ","romaji":"Nishiokitama-gun Oguni-machi"},
-  {"code":"06402","prefecture":"06","name":"西置賜郡白鷹町","kana":"ニシオキタマグンシラタカマチ","romaji":"Nishiokitama-gun Shirataka-machi"},
-  {"code":"06403","prefecture":"06","name":"西置賜郡飯豊町","kana":"ニシオキタマグンイイデマチ","romaji":"Nishiokitama-gun Iide-machi"},
-  {"code":"06426","prefecture":"06","name":"東田川郡三川町","kana":"ヒガシタガワグンミカワマチ","romaji":"Higashitagawa-gun Mikawa-machi"},
-  {"code":"06428","prefecture":"06","name":"東田川郡庄内町","kana":"ヒガシタガワグンショウナイマチ","romaji":"Higashitagawa-gun Shonai-machi"},
-  {"code":"06461","prefecture":"06","name":"飽海郡遊佐町","kana":"アクミグンユザマチ","romaji":"Akumi-gun Yuza-machi"},
-  {"code":"07201","prefecture":"07","name":"福島市","kana":"フクシマシ","romaji":"Fukushima-shi"},
-  {"code":"07202","prefecture":"07","name":"会津若松市","kana":"アイヅワカマツシ","romaji":"Aizuwakamatsu-shi"},
-  {"code":"07203","prefecture":"07","name":"郡山市","kana":"コオリヤマシ","romaji":"Koriyama-shi"},
-  {"code":"07204","prefecture":"07","name":"いわき市","kana":"イワキシ","romaji":"Iwaki-shi"},
-  {"code":"07205","prefecture":"07","name":"白河市","kana":"シラカワシ","romaji":"Shirakawa-shi"},
-  {"code":"07207","prefecture":"07","name":"須賀川市","kana":"スカガワシ","romaji":"Sukagawa-shi"},
-  {"code":"07208","prefecture":"07","name":"喜多方市","kana":"キタカタシ","romaji":"Kitakata-shi"},
-  {"code":"07209","prefecture":"07","name":"相馬市","kana":"ソウマシ","romaji":"Soma-shi"},
-  {"code":"07210","prefecture":"07","name":"二本松市","kana":"ニホンマツシ","romaji":"Nihommatsu-shi"},
-  {"code":"07211","prefecture":"07","name":"田村市","kana":"タムラシ","romaji":"Tamura-shi"},
-  {"code":"07212","prefecture":"07","name":"南相馬市","kana":"ミナミソウマシ","romaji":"Minamisoma-shi"},
-  {"code":"07213","prefecture":"07","name":"伊達市","kana":"ダテシ","romaji":"Date-shi"},
-  {"code":"07214","prefecture":"07","name":"本宮市","kana":"モトミヤシ","romaji":"Motomiya-shi"},
-  {"code":"07301","prefecture":"07","name":"伊達郡桑折町","kana":"ダテグンコオリマチ","romaji":"Date-gun Kori-machi"},
-  {"code":"07303","prefecture":"07","name":"伊達郡国見町","kana":"ダテグンクニミマチ","romaji":"Date-gun Kunimi-machi"},
-  {"code":"07308","prefecture":"07","name":"伊達郡川俣町","kana":"ダテグンカワマタマチ","romaji":"Date-gun Kawamata-machi"},
-  {"code":"07322","prefecture":"07","name":"安達郡大玉村","kana":"アダチグンオオタマムラ","romaji":"Adachi-gun Otama-mura"},
-  {"code":"07342","prefecture":"07","name":"岩瀬郡鏡石町","kana":"イワセグンカガミイシマチ","romaji":"Iwase-gun Kagamiishi-machi"},
-  {"code":"07344","prefecture":"07","name":"岩瀬郡天栄村","kana":"イワセグンテンエイムラ","romaji":"Iwase-gun Tenei-mura"},
-  {"code":"07362","prefecture":"07","name":"南会津郡下郷町","kana":"ミナミアイヅグンシモゴウマチ","romaji":"Minamiaizu-gun Shimogo-machi"},
-  {"code":"07364","prefecture":"07","name":"南会津郡檜枝岐村","kana":"ミナミアイヅグンヒノエマタムラ","romaji":"Minamiaizu-gun Hinoemata-mura"},
-  {"code":"07367","prefecture":"07","name":"南会津郡只見町","kana":"ミナミアイヅグンタダミマチ","romaji":"Minamiaizu-gun Tadami-machi"},
-  {"code":"07368","prefecture":"07","name":"南会津郡南会津町","kana":"ミナミアイヅグンミナミアイヅマチ","romaji":"Minamiaizu-gun Minamiaizu-machi"},
-  {"code":"07402","prefecture":"07","name":"耶麻郡北塩原村","kana":"ヤマグンキタシオバラムラ","romaji":"Yama-gun Kitashiobara-mura"},
-  {"code":"07405","prefecture":"07","name":"耶麻郡西会津町","kana":"ヤマグンニシアイヅマチ","romaji":"Yama-gun Nishiaizu-machi"},
-  {"code":"07407","prefecture":"07","name":"耶麻郡磐梯町","kana":"ヤマグンバンダイマチ","romaji":"Yama-gun Bandai-machi"},
-  {"code":"07408","prefecture":"07","name":"耶麻郡猪苗代町","kana":"ヤマグンイナワシロマチ","romaji":"Yama-gun Inawashiro-machi"},
-  {"code":"07421","prefecture":"07","name":"河沼郡会津坂下町","kana":"カワヌマグンアイヅバンゲマチ","romaji":"Kawanuma-gun Aizubange-machi"},
-  {"code":"07422","prefecture":"07","name":"河沼郡湯川村","kana":"カワヌマグンユガワムラ","romaji":"Kawanuma-gun Yugawa-mura"},
-  {"code":"07423","prefecture":"07","name":"河沼郡柳津町","kana":"カワヌマグンヤナイヅマチ","romaji":"Kawanuma-gun Yanaizu-machi"},
-  {"code":"07444","prefecture":"07","name":"大沼郡三島町","kana":"オオヌマグンミシママチ","romaji":"Onuma-gun Mishima-machi"},
-  {"code":"07445","prefecture":"07","name":"大沼郡金山町","kana":"オオヌマグンカネヤママチ","romaji":"Onuma-gun Kaneyama-machi"},
-  {"code":"07446","prefecture":"07","name":"大沼郡昭和村","kana":"オオヌマグンショウワムラ","romaji":"Onuma-gun Showa-mura"},
-  {"code":"07447","prefecture":"07","name":"大沼郡会津美里町","kana":"オオヌマグンアイヅミサトマチ","romaji":"Onuma-gun Aizumisato-machi"},
-  {"code":"07461","prefecture":"07","name":"西白河郡西郷村","kana":"ニシシラカワグンニシゴウムラ","romaji":"Nishishirakawa-gun Nishigo-mura"},
-  {"code":"07464","prefecture":"07","name":"西白河郡泉崎村","kana":"ニシシラカワグンイズミザキムラ","romaji":"Nishishirakawa-gun Izumizaki-mura"},
-  {"code":"07465","prefecture":"07","name":"西白河郡中島村","kana":"ニシシラカワグンナカジマムラ","romaji":"Nishishirakawa-gun Nakajima-mura"},
-  {"code":"07466","prefecture":"07","name":"西白河郡矢吹町","kana":"ニシシラカワグンヤブキマチ","romaji":"Nishishirakawa-gun Yabuki-machi"},
-  {"code":"07481","prefecture":"07","name":"東白川郡棚倉町","kana":"ヒガシシラカワグンタナグラマチ","romaji":"Higashishirakawa-gun Tanagura-machi"},
-  {"code":"07482","prefecture":"07","name":"東白川郡矢祭町","kana":"ヒガシシラカワグンヤマツリマチ","romaji":"Higashishirakawa-gun Yamatsuri-machi"},
-  {"code":"07483","prefecture":"07","name":"東白川郡塙町","kana":"ヒガシシラカワグンハナワマチ","romaji":"Higashishirakawa-gun Hanawa-machi"},
-  {"code":"07484","prefecture":"07","name":"東白川郡鮫川村","kana":"ヒガシシラカワグンサメガワムラ","romaji":"Higashishirakawa-gun Samegawa-mura"},
-  {"code":"07501","prefecture":"07","name":"石川郡石川町","kana":"イシカワグンイシカワマチ","romaji":"Ishikawa-gun Ishikawa-machi"},
-  {"code":"07502","prefecture":"07","name":"石川郡玉川村","kana":"イシカワグンタマカワムラ","romaji":"Ishikawa-gun Tamakawa-mura"},
-  {"code":"07503","prefecture":"07","name":"石川郡平田村","kana":"イシカワグンヒラタムラ","romaji":"Ishikawa-gun Hirata-mura"},
-  {"code":"07504","prefecture":"07","name":"石川郡浅川町","kana":"イシカワグンアサカワマチ","romaji":"Ishikawa-gun Asakawa-machi"},
-  {"code":"07505","prefecture":"07","name":"石川郡古殿町","kana":"イシカワグンフルドノマチ","romaji":"Ishikawa-gun Furudono-machi"},
-  {"code":"07521","prefecture":"07","name":"田村郡三春町","kana":"タムラグンミハルマチ","romaji":"Tamura-gun Miharu-machi"},
-  {"code":"07522","prefecture":"07","name":"田村郡小野町","kana":"タムラグンオノマチ","romaji":"Tamura-gun Ono-machi"},
-  {"code":"07541","prefecture":"07","name":"双葉郡広野町","kana":"フタバグンヒロノマチ","romaji":"Futaba-gun Hirono-machi"},
-  {"code":"07542","prefecture":"07","name":"双葉郡楢葉町","kana":"フタバグンナラハマチ","romaji":"Futaba-gun Naraha-machi"},
-  {"code":"07543","prefecture":"07","name":"双葉郡富岡町","kana":"フタバグントミオカマチ","romaji":"Futaba-gun Tomioka-machi"},
-  {"code":"07544","prefecture":"07","name":"双葉郡川内村","kana":"フタバグンカワウチムラ","romaji":"Futaba-gun Kawauchi-mura"},
-  {"code":"07545","prefecture":"07","name":"双葉郡大熊町","kana":"フタバグンオオクママチ","romaji":"Futaba-gun Okuma-machi"},
-  {"code":"07546","prefecture":"07","name":"双葉郡双葉町","kana":"フタバグンフタバマチ","romaji":"Futaba-gun Futaba-machi"},
-  {"code":"07547","prefecture":"07","name":"双葉郡浪江町","kana":"フタバグンナミエマチ","romaji":"Futaba-gun Namie-machi"},
-  {"code":"07548","prefecture":"07","name":"双葉郡葛尾村","kana":"フタバグンカツラオムラ","romaji":"Futaba-gun Katsurao-mura"},
-  {"code":"07561","prefecture":"07","name":"相馬郡新地町","kana":"ソウマグンシンチマチ","romaji":"Soma-gun Shinchi-machi"},
-  {"code":"07564","prefecture":"07","name":"相馬郡飯舘村","kana":"ソウマグンイイタテムラ","romaji":"Soma-gun Iitate-mura"},
-  {"code":"08201","prefecture":"08","name":"水戸市","kana":"ミトシ","romaji":"Mito-shi"},
-  {"code":"08202","prefecture":"08","name":"日立市","kana":"ヒタチシ","romaji":"Hitachi-shi"},
-  {"code":"08203","prefecture":"08","name":"土浦市","kana":"ツチウラシ","romaji":"Tsuchiura-shi"},
-  {"code":"08204","prefecture":"08","name":"古河市","kana":"コガシ","romaji":"Koga-shi"},
-  {"code":"08205","prefecture":"08","name":"石岡市","kana":"イシオカシ","romaji":"Ishioka-shi"},
-  {"code":"08207","prefecture":"08","name":"結城市","kana":"ユウキシ","romaji":"Yuki-shi"},
-  {"code":"08208","prefecture":"08","name":"龍ヶ崎市","kana":"リュウガサキシ","romaji":"Ryugasaki-shi"},
-  {"code":"08210","prefecture":"08","name":"下妻市","kana":"シモツマシ","romaji":"Shimotsuma-shi"},
-  {"code":"08211","prefecture":"08","name":"常総市","kana":"ジョウソウシ","romaji":"Joso-shi"},
-  {"code":"08212","prefecture":"08","name":"常陸太田市","kana":"ヒタチオオタシ","romaji":"Hitachiota-shi"},
-  {"code":"08214","prefecture":"08","name":"高萩市","kana":"タカハギシ","romaji":"Takahagi-shi"},
-  {"code":"08215","prefecture":"08","name":"北茨城市","kana":"キタイバラキシ","romaji":"Kitaibaraki-shi"},
-  {"code":"08216","prefecture":"08","name":"笠間市","kana":"カサマシ","romaji":"Kasama-shi"},
-  {"code":"08217","prefecture":"08","name":"取手市","kana":"トリデシ","romaji":"Toride-shi"},
-  {"code":"08219","prefecture":"08","name":"牛久市","kana":"ウシクシ","romaji":"Ushiku-shi"},
-  {"code":"08220","prefecture":"08","name":"つくば市","kana":"ツクバシ","romaji":"Tsukuba-shi"},
-  {"code":"08221","prefecture":"08","name":"ひたちなか市","kana":"ヒタチナカシ","romaji":"Hitachinaka-shi"},
-  {"code":"08222","prefecture":"08","name":"鹿嶋市","kana":"カシマシ","romaji":"Kashima-shi"},
-  {"code":"08223","prefecture":"08","name":"潮来市","kana":"イタコシ","romaji":"Itako-shi"},
-  {"code":"08224","prefecture":"08","name":"守谷市","kana":"モリヤシ","romaji":"Moriya-shi"},
-  {"code":"08225","prefecture":"08","name":"常陸大宮市","kana":"ヒタチオオミヤシ","romaji":"Hitachiomiya-shi"},
-  {"code":"08226","prefecture":"08","name":"那珂市","kana":"ナカシ","romaji":"Naka-shi"},
-  {"code":"08227","prefecture":"08","name":"筑西市","kana":"チクセイシ","romaji":"Chikusei-shi"},
-  {"code":"08228","prefecture":"08","name":"坂東市","kana":"バンドウシ","romaji":"Bando-shi"},
-  {"code":"08229","prefecture":"08","name":"稲敷市","kana":"イナシキシ","romaji":"Inashiki-shi"},
-  {"code":"08230","prefecture":"08","name":"かすみがうら市","kana":"カスミガウラシ","romaji":"Kasumigaura-shi"},
-  {"code":"08231","prefecture":"08","name":"桜川市","kana":"サクラガワシ","romaji":"Sakuragawa-shi"},
-  {"code":"08232","prefecture":"08","name":"神栖市","kana":"カミスシ","romaji":"Kamisu-shi"},
-  {"code":"08233","prefecture":"08","name":"行方市","kana":"ナメガタシ","romaji":"Namegata-shi"},
-  {"code":"08234","prefecture":"08","name":"鉾田市","kana":"ホコタシ","romaji":"Hokota-shi"},
-  {"code":"08235","prefecture":"08","name":"つくばみらい市","kana":"ツクバミライシ","romaji":"Tsukubamirai-shi"},
-  {"code":"08236","prefecture":"08","name":"小美玉市","kana":"オミタマシ","romaji":"Omitama-shi"},
-  {"code":"08302","prefecture":"08","name":"東茨城郡茨城町","kana":"ヒガシイバラキグンイバラキマチ","romaji":"Higashiibaraki-gun Ibaraki-machi"},
-  {"code":"08309","prefecture":"08","name":"東茨城郡大洗町","kana":"ヒガシイバラキグンオオアライマチ","romaji":"Higashiibaraki-gun Oarai-machi"},
-  {"code":"08310","prefecture":"08","name":"東茨城郡城里町","kana":"ヒガシイバラキグンシロサトマチ","romaji":"Higashiibaraki-gun Shirosato-machi"},
-  {"code":"08341","prefecture":"08","name":"那珂郡東海村","kana":"ナカグントウカイムラ","romaji":"Naka-gun Tokai-mura"},
-  {"code":"08364","prefecture":"08","name":"久慈郡大子町","kana":"クジグンダイゴマチ","romaji":"Kuji-gun Daigo-machi"},
-  {"code":"08442","prefecture":"08","name":"稲敷郡美浦村","kana":"イナシキグンミホムラ","romaji":"Inashiki-gun Miho-mura"},
-  {"code":"08443","prefecture":"08","name":"稲敷郡阿見町","kana":"イナシキグンアミマチ","romaji":"Inashiki-gun Ami-machi"},
-  {"code":"08447","prefecture":"08","name":"稲敷郡河内町","kana":"イナシキグンカワチマチ","romaji":"Inashiki-gun Kawachi-machi"},
-  {"code":"08521","prefecture":"08","name":"結城郡八千代町","kana":"ユウキグンヤチヨマチ","romaji":"Yuki-gun Yachiyo-machi"},
-  {"code":"08542","prefecture":"08","name":"猿島郡五霞町","kana":"サシマグンゴカマチ","romaji":"Sashima-gun Goka-machi"},
-  {"code":"08546","prefecture":"08","name":"猿島郡境町","kana":"サシマグンサカイマチ","romaji":"Sashima-gun Sakai-machi"},
-  {"code":"08564","prefecture":"08","name":"北相馬郡利根町","kana":"キタソウマグントネマチ","romaji":"Kitasoma-gun Tone-machi"},
-  {"code":"09201","prefecture":"09","name":"宇都宮市","kana":"ウツノミヤシ","romaji":"Utsunomiya-shi"},
-  {"code":"09202","prefecture":"09","name":"足利市","kana":"アシカガシ","romaji":"Ashikaga-shi"},
-  {"code":"09203","prefecture":"09","name":"栃木市","kana":"トチギシ","romaji":"Tochigi-shi"},
-  {"code":"09204","prefecture":"09","name":"佐野市","kana":"サノシ","romaji":"Sano-shi"},
-  {"code":"09205","prefecture":"09","name":"鹿沼市","kana":"カヌマシ","romaji":"Kanuma-shi"},
-  {"code":"09206","prefecture":"09","name":"日光市","kana":"ニッコウシ","romaji":"Nikko-shi"},
-  {"code":"09208","prefecture":"09","name":"小山市","kana":"オヤマシ","romaji":"Oyama-shi"},
-  {"code":"09209","prefecture":"09","name":"真岡市","kana":"モオカシ","romaji":"Moka-shi"},
-  {"code":"09210","prefecture":"09","name":"大田原市","kana":"オオタワラシ","romaji":"Otawara-shi"},
-  {"code":"09211","prefecture":"09","name":"矢板市","kana":"ヤイタシ","romaji":"Yaita-shi"},
-  {"code":"09213","prefecture":"09","name":"那須塩原市","kana":"ナスシオバラシ","romaji":"Nasushiobara-shi"},
-  {"code":"09214","prefecture":"09","name":"さくら市","kana":"サクラシ","romaji":"Sakura-shi"},
-  {"code":"09215","prefecture":"09","name":"那須烏山市","kana":"ナスカラスヤマシ","romaji":"Nasukarasuyama-shi"},
-  {"code":"09216","prefecture":"09","name":"下野市","kana":"シモツケシ","romaji":"Shimotsuke-shi"},
-  {"code":"09301","prefecture":"09","name":"河内郡上三川町","kana":"カワチグンカミノカワマチ","romaji":"Kawachi-gun Kaminokawa-machi"},
-  {"code":"09342","prefecture":"09","name":"芳賀郡益子町","kana":"ハガグンマシコマチ","romaji":"Haga-gun Mashiko-machi"},
-  {"code":"09343","prefecture":"09","name":"芳賀郡茂木町","kana":"ハガグンモテギマチ","romaji":"Haga-gun Motegi-machi"},
-  {"code":"09344","prefecture":"09","name":"芳賀郡市貝町","kana":"ハガグンイチカイマチ","romaji":"Haga-gun Ichikai-machi"},
-  {"code":"09345","prefecture":"09","name":"芳賀郡芳賀町","kana":"ハガグンハガマチ","romaji":"Haga-gun Haga-machi"},
-  {"code":"09361","prefecture":"09","name":"下都賀郡壬生町","kana":"シモツガグンミブマチ","romaji":"Shimotsuga-gun Mibu-machi"},
-  {"code":"09364","prefecture":"09","name":"下都賀郡野木町","kana":"シモツガグンノギマチ","romaji":"Shimotsuga-gun Nogi-machi"},
-  {"code":"09384","prefecture":"09","name":"塩谷郡塩谷町","kana":"シオヤグンシオヤマチ","romaji":"Shioya-gun Shioya-machi"},
-  {"code":"09386","prefecture":"09","name":"塩谷郡高根沢町","kana":"シオヤグンタカネザワマチ","romaji":"Shioya-gun Takanezawa-machi"},
-  {"code":"09407","prefecture":"09","name":"那須郡那須町","kana":"ナスグンナスマチ","romaji":"Nasu-gun Nasu-machi"},
-  {"code":"09411","prefecture":"09","name":"那須郡那珂川町","kana":"ナスグンナカガワマチ","romaji":"Nasu-gun Nakagawa-machi"},
-  {"code":"10201","prefecture":"10","name":"前橋市","kana":"マエバシシ","romaji":"Maebashi-shi"},
-  {"code":"10202","prefecture":"10","name":"高崎市","kana":"タカサキシ","romaji":"Takasaki-shi"},
-  {"code":"10203","prefecture":"10","name":"桐生市","kana":"キリュウシ","romaji":"Kiryu-shi"},
-  {"code":"10204","prefecture":"10","name":"伊勢崎市","kana":"イセサキシ","romaji":"Isesaki-shi"},
-  {"code":"10205","prefecture":"10","name":"太田市","kana":"オオタシ","romaji":"Ota-shi"},
-  {"code":"10206","prefecture":"10","name":"沼田市","kana":"ヌマタシ","romaji":"Numata-shi"},
-  {"code":"10207","prefecture":"10","name":"館林市","kana":"タテバヤシシ","romaji":"Tatebayashi-shi"},
-  {"code":"10208","prefecture":"10","name":"渋川市","kana":"シブカワシ","romaji":"Shibukawa-shi"},
-  {"code":"10209","prefecture":"10","name":"藤岡市","kana":"フジオカシ","romaji":"Fujioka-shi"},
-  {"code":"10210","prefecture":"10","name":"富岡市","kana":"トミオカシ","romaji":"Tomioka-shi"},
-  {"code":"10211","prefecture":"10","name":"安中市","kana":"アンナカシ","romaji":"Annaka-shi"},
-  {"code":"10212","prefecture":"10","name":"みどり市","kana":"ミドリシ","romaji":"Midori-shi"},
-  {"code":"10344","prefecture":"10","name":"北群馬郡榛東村","kana":"キタグンマグンシントウムラ","romaji":"Kitagumma-gun Shinto-mura"},
-  {"code":"10345","prefecture":"10","name":"北群馬郡吉岡町","kana":"キタグンマグンヨシオカマチ","romaji":"Kitagumma-gun Yoshioka-machi"},
-  {"code":"10366","prefecture":"10","name":"多野郡上野村","kana":"タノグンウエノムラ","romaji":"Tano-gun Ueno-mura"},
-  {"code":"10367","prefecture":"10","name":"多野郡神流町","kana":"タノグンカンナマチ","romaji":"Tano-gun Kanna-machi"},
-  {"code":"10382","prefecture":"10","name":"甘楽郡下仁田町","kana":"カンラグンシモニタマチ","romaji":"Kanra-gun Shimonita-machi"},
-  {"code":"10383","prefecture":"10","name":"甘楽郡南牧村","kana":"カンラグンナンモクムラ","romaji":"Kanra-gun Nammoku-mura"},
-  {"code":"10384","prefecture":"10","name":"甘楽郡甘楽町","kana":"カンラグンカンラマチ","romaji":"Kanra-gun Kanra-machi"},
-  {"code":"10421","prefecture":"10","name":"吾妻郡中之条町","kana":"アガツマグンナカノジョウマチ","romaji":"Agatsuma-gun Nakanojo-machi"},
-  {"code":"10424","prefecture":"10","name":"吾妻郡長野原町","kana":"アガツマグンナガノハラマチ","romaji":"Agatsuma-gun Naganohara-machi"},
-  {"code":"10425","prefecture":"10","name":"吾妻郡嬬恋村","kana":"アガツマグンツマゴイムラ","romaji":"Agatsuma-gun Tsumagoi-mura"},
-  {"code":"10426","prefecture":"10","name":"吾妻郡草津町","kana":"アガツマグンクサツマチ","romaji":"Agatsuma-gun Kusatsu-machi"},
-  {"code":"10428","prefecture":"10","name":"吾妻郡高山村","kana":"アガツマグンタカヤマムラ","romaji":"Agatsuma-gun Takayama-mura"},
-  {"code":"10429","prefecture":"10","name":"吾妻郡東吾妻町","kana":"アガツマグンヒガシアガツママチ","romaji":"Agatsuma-gun Higashiagatsuma-machi"},
-  {"code":"10443","prefecture":"10","name":"利根郡片品村","kana":"トネグンカタシナムラ","romaji":"Tone-gun Katashina-mura"},
-  {"code":"10444","prefecture":"10","name":"利根郡川場村","kana":"トネグンカワバムラ","romaji":"Tone-gun Kawaba-mura"},
-  {"code":"10448","prefecture":"10","name":"利根郡昭和村","kana":"トネグンショウワムラ","romaji":"Tone-gun Showa-mura"},
-  {"code":"10449","prefecture":"10","name":"利根郡みなかみ町","kana":"トネグンミナカミマチ","romaji":"Tone-gun Minakami-machi"},
-  {"code":"10464","prefecture":"10","name":"佐波郡玉村町","kana":"サワグンタマムラマチ","romaji":"Sawa-gun Tamamura-machi"},
-  {"code":"10521","prefecture":"10","name":"邑楽郡板倉町","kana":"オウラグンイタクラマチ","romaji":"Ora-gun Itakura-machi"},
-  {"code":"10522","prefecture":"10","name":"邑楽郡明和町","kana":"オウラグンメイワマチ","romaji":"Ora-gun Meiwa-machi"},
-  {"code":"10523","prefecture":"10","name":"邑楽郡千代田町","kana":"オウラグンチヨダマチ","romaji":"Ora-gun Chiyoda-machi"},
-  {"code":"10524","prefecture":"10","name":"邑楽郡大泉町","kana":"オウラグンオオイズミマチ","romaji":"Ora-gun Oizumi-machi"},
-  {"code":"10525","prefecture":"10","name":"邑楽郡邑楽町","kana":"オウラグンオウラマチ","romaji":"Ora-gun Ora-machi"},
-  {"code":"11101","prefecture":"11","name":"さいたま市西区","kana":"サイタマシニシク","romaji":"Saitama-shi Nishi-ku"},
-  {"code":"11102","prefecture":"11","name":"さいたま市北区","kana":"サイタマシキタク","romaji":"Saitama-shi Kita-ku"},
-  {"code":"11103","prefecture":"11","name":"さいたま市大宮区","kana":"サイタマシオオミヤク","romaji":"Saitama-shi Omiya-ku"},
-  {"code":"11104","prefecture":"11","name":"さいたま市見沼区","kana":"サイタマシミヌマク","romaji":"Saitama-shi Minuma-ku"},
-  {"code":"11105","prefecture":"11","name":"さいたま市中央区","kana":"サイタマシチュウオウク","romaji":"Saitama-shi Chuo-ku"},
-  {"code":"11106","prefecture":"11","name":"さいたま市桜区","kana":"サイタマシサクラク","romaji":"Saitama-shi Sakura-ku"},
-  {"code":"11107","prefecture":"11","name":"さいたま市浦和区","kana":"サイタマシウラワク","romaji":"Saitama-shi Urawa-ku"},
-  {"code":"11108","prefecture":"11","name":"さいたま市南区","kana":"サイタマシミナミク","romaji":"Saitama-shi Minami-ku"},
-  {"code":"11109","prefecture":"11","name":"さいたま市緑区","kana":"サイタマシミドリク","romaji":"Saitama-shi Midori-ku"},
-  {"code":"11110","prefecture":"11","name":"さいたま市岩槻区","kana":"サイタマシイワツキク","romaji":"Saitama-shi Iwatsuki-ku"},
-  {"code":"11201","prefecture":"11","name":"川越市","kana":"カワゴエシ","romaji":"Kawagoe-shi"},
-  {"code":"11202","prefecture":"11","name":"熊谷市","kana":"クマガヤシ","romaji":"Kumagaya-shi"},
-  {"code":"11203","prefecture":"11","name":"川口市","kana":"カワグチシ","romaji":"Kawaguchi-shi"},
-  {"code":"11206","prefecture":"11","name":"行田市","kana":"ギョウダシ","romaji":"Gyoda-shi"},
-  {"code":"11207","prefecture":"11","name":"秩父市","kana":"チチブシ","romaji":"Chichibu-shi"},
-  {"code":"11208","prefecture":"11","name":"所沢市","kana":"トコロザワシ","romaji":"Tokorozawa-shi"},
-  {"code":"11209","prefecture":"11","name":"飯能市","kana":"ハンノウシ","romaji":"Hanno-shi"},
-  {"code":"11210","prefecture":"11","name":"加須市","kana":"カゾシ","romaji":"Kazo-shi"},
-  {"code":"11211","prefecture":"11","name":"本庄市","kana":"ホンジョウシ","romaji":"Honjo-shi"},
-  {"code":"11212","prefecture":"11","name":"東松山市","kana":"ヒガシマツヤマシ","romaji":"Higashimatsuyama-shi"},
-  {"code":"11214","prefecture":"11","name":"春日部市","kana":"カスカベシ","romaji":"Kasukabe-shi"},
-  {"code":"11215","prefecture":"11","name":"狭山市","kana":"サヤマシ","romaji":"Sayama-shi"},
-  {"code":"11216","prefecture":"11","name":"羽生市","kana":"ハニュウシ","romaji":"Hanyu-shi"},
-  {"code":"11217","prefecture":"11","name":"鴻巣市","kana":"コウノスシ","romaji":"Konosu-shi"},
-  {"code":"11218","prefecture":"11","name":"深谷市","kana":"フカヤシ","romaji":"Fukaya-shi"},
-  {"code":"11219","prefecture":"11","name":"上尾市","kana":"アゲオシ","romaji":"Ageo-shi"},
-  {"code":"11221","prefecture":"11","name":"草加市","kana":"ソウカシ","romaji":"Soka-shi"},
-  {"code":"11222","prefecture":"11","name":"越谷市","kana":"コシガヤシ","romaji":"Koshigaya-shi"},
-  {"code":"11223","prefecture":"11","name":"蕨市","kana":"ワラビシ","romaji":"Warabi-shi"},
-  {"code":"11224","prefecture":"11","name":"戸田市","kana":"トダシ","romaji":"Toda-shi"},
-  {"code":"11225","prefecture":"11","name":"入間市","kana":"イルマシ","romaji":"Iruma-shi"},
-  {"code":"11227","prefecture":"11","name":"朝霞市","kana":"アサカシ","romaji":"Asaka-shi"},
-  {"code":"11228","prefecture":"11","name":"志木市","kana":"シキシ","romaji":"Shiki-shi"},
-  {"code":"11229","prefecture":"11","name":"和光市","kana":"ワコウシ","romaji":"Wako-shi"},
-  {"code":"11230","prefecture":"11","name":"新座市","kana":"ニイザシ","romaji":"Niiza-shi"},
-  {"code":"11231","prefecture":"11","name":"桶川市","kana":"オケガワシ","romaji":"Okegawa-shi"},
-  {"code":"11232","prefecture":"11","name":"久喜市","kana":"クキシ","romaji":"Kuki-shi"},
-  {"code":"11233","prefecture":"11","name":"北本市","kana":"キタモトシ","romaji":"Kitamoto-shi"},
-  {"code":"11234","prefecture":"11","name":"八潮市","kana":"ヤシオシ","romaji":"Yashio-shi"},
-  {"code":"11235","prefecture":"11","name":"富士見市","kana":"フジミシ","romaji":"Fujimi-shi"},
-  {"code":"11237","prefecture":"11","name":"三郷市","kana":"ミサトシ","romaji":"Misato-shi"},
-  {"code":"11238","prefecture":"11","name":"蓮田市","kana":"ハスダシ","romaji":"Hasuda-shi"},
-  {"code":"11239","prefecture":"11","name":"坂戸市","kana":"サカドシ","romaji":"Sakado-shi"},
-  {"code":"11240","prefecture":"11","name":"幸手市","kana":"サッテシ","romaji":"Satte-shi"},
-  {"code":"11241","prefecture":"11","name":"鶴ヶ島市","kana":"ツルガシマシ","romaji":"Tsurugashima-shi"},
-  {"code":"11242","prefecture":"11","name":"日高市","kana":"ヒダカシ","romaji":"Hidaka-shi"},
-  {"code":"11243","prefecture":"11","name":"吉川市","kana":"ヨシカワシ","romaji":"Yoshikawa-shi"},
-  {"code":"11245","prefecture":"11","name":"ふじみ野市","kana":"フジミノシ","romaji":"Fujimino-shi"},
-  {"code":"11246","prefecture":"11","name":"白岡市","kana":"シラオカシ","romaji":"Shiraoka-shi"},
-  {"code":"11301","prefecture":"11","name":"北足立郡伊奈町","kana":"キタアダチグンイナマチ","romaji":"Kitaadachi-gun Ina-machi"},
-  {"code":"11324","prefecture":"11","name":"入間郡三芳町","kana":"イルマグンミヨシマチ","romaji":"Iruma-gun Miyoshi-machi"},
-  {"code":"11326","prefecture":"11","name":"入間郡毛呂山町","kana":"イルマグンモロヤママチ","romaji":"Iruma-gun Moroyama-machi"},
-  {"code":"11327","prefecture":"11","name":"入間郡越生町","kana":"イルマグンオゴセマチ","romaji":"Iruma-gun Ogose-machi"},
-  {"code":"11341","prefecture":"11","name":"比企郡滑川町","kana":"ヒキグンナメガワマチ","romaji":"Hiki-gun Namegawa-machi"},
-  {"code":"11342","prefecture":"11","name":"比企郡嵐山町","kana":"ヒキグンランザンマチ","romaji":"Hiki-gun Ranzan-machi"},
-  {"code":"11343","prefecture":"11","name":"比企郡小川町","kana":"ヒキグンオガワマチ","romaji":"Hiki-gun Ogawa-machi"},
-  {"code":"11346","prefecture":"11","name":"比企郡川島町","kana":"ヒキグンカワジママチ","romaji":"Hiki-gun Kawajima-machi"},
-  {"code":"11347","prefecture":"11","name":"比企郡吉見町","kana":"ヒキグンヨシミマチ","romaji":"Hiki-gun Yoshimi-machi"},
-  {"code":"11348","prefecture":"11","name":"比企郡鳩山町","kana":"ヒキグンハトヤママチ","romaji":"Hiki-gun Hatoyama-machi"},
-  {"code":"11349","prefecture":"11","name":"比企郡ときがわ町","kana":"ヒキグントキガワマチ","romaji":"Hiki-gun Tokigawa-machi"},
-  {"code":"11361","prefecture":"11","name":"秩父郡横瀬町","kana":"チチブグンヨコゼマチ","romaji":"Chichibu-gun Yokoze-machi"},
-  {"code":"11362","prefecture":"11","name":"秩父郡皆野町","kana":"チチブグンミナノマチ","romaji":"Chichibu-gun Minano-machi"},
-  {"code":"11363","prefecture":"11","name":"秩父郡長瀞町","kana":"チチブグンナガトロマチ","romaji":"Chichibu-gun Nagatoro-machi"},
-  {"code":"11365","prefecture":"11","name":"秩父郡小鹿野町","kana":"チチブグンオガノマチ","romaji":"Chichibu-gun Ogano-machi"},
-  {"code":"11369","prefecture":"11","name":"秩父郡東秩父村","kana":"チチブグンヒガシチチブムラ","romaji":"Chichibu-gun Higashichichibu-mura"},
-  {"code":"11381","prefecture":"11","name":"児玉郡美里町","kana":"コダマグンミサトマチ","romaji":"Kodama-gun Misato-machi"},
-  {"code":"11383","prefecture":"11","name":"児玉郡神川町","kana":"コダマグンカミカワマチ","romaji":"Kodama-gun Kamikawa-machi"},
-  {"code":"11385","prefecture":"11","name":"児玉郡上里町","kana":"コダマグンカミサトマチ","romaji":"Kodama-gun Kamisato-machi"},
-  {"code":"11408","prefecture":"11","name":"大里郡寄居町","kana":"オオサトグンヨリイマチ","romaji":"Osato-gun Yorii-machi"},
-  {"code":"11442","prefecture":"11","name":"南埼玉郡宮代町","kana":"ミナミサイタマグンミヤシロマチ","romaji":"Minamisaitama-gun Miyashiro-machi"},
-  {"code":"11464","prefecture":"11","name":"北葛飾郡杉戸町","kana":"キタカツシカグンスギトマチ","romaji":"Kitakatsushika-gun Sugito-machi"},
-  {"code":"11465","prefecture":"11","name":"北葛飾郡松伏町","kana":"キタカツシカグンマツブシマチ","romaji":"Kitakatsushika-gun Matsubushi-machi"},
-  {"code":"12101","prefecture":"12","name":"千葉市中央区","kana":"チバシチュウオウク","romaji":"Chiba-shi Chuo-ku"},
-  {"code":"12102","prefecture":"12","name":"千葉市花見川区","kana":"チバシハナミガワク","romaji":"Chiba-shi Hanamigawa-ku"},
-  {"code":"12103","prefecture":"12","name":"千葉市稲毛区","kana":"チバシイナゲク","romaji":"Chiba-shi Inage-ku"},
-  {"code":"12104","prefecture":"12","name":"千葉市若葉区","kana":"チバシワカバク","romaji":"Chiba-shi Wakaba-ku"},
-  {"code":"12105","prefecture":"12","name":"千葉市緑区","kana":"チバシミドリク","romaji":"Chiba-shi Midori-ku"},
-  {"code":"12106","prefecture":"12","name":"千葉市美浜区","kana":"チバシミハマク","romaji":"Chiba-shi Mihama-ku"},
-  {"code":"12202","prefecture":"12","name":"銚子市","kana":"チョウシシ","romaji":"Choshi-shi"},
-  {"code":"12203","prefecture":"12","name":"市川市","kana":"イチカワシ","romaji":"Ichikawa-shi"},
-  {"code":"12204","prefecture":"12","name":"船橋市","kana":"フナバシシ","romaji":"Funabashi-shi"},
-  {"code":"12205","prefecture":"12","name":"館山市","kana":"タテヤマシ","romaji":"Tateyama-shi"},
-  {"code":"12206","prefecture":"12","name":"木更津市","kana":"キサラヅシ","romaji":"Kisarazu-shi"},
-  {"code":"12207","prefecture":"12","name":"松戸市","kana":"マツドシ","romaji":"Matsudo-shi"},
-  {"code":"12208","prefecture":"12","name":"野田市","kana":"ノダシ","romaji":"Noda-shi"},
-  {"code":"12210","prefecture":"12","name":"茂原市","kana":"モバラシ","romaji":"Mobara-shi"},
-  {"code":"12211","prefecture":"12","name":"成田市","kana":"ナリタシ","romaji":"Narita-shi"},
-  {"code":"12212","prefecture":"12","name":"佐倉市","kana":"サクラシ","romaji":"Sakura-shi"},
-  {"code":"12213","prefecture":"12","name":"東金市","kana":"トウガネシ","romaji":"Togane-shi"},
-  {"code":"12215","prefecture":"12","name":"旭市","kana":"アサヒシ","romaji":"Asahi-shi"},
-  {"code":"12216","prefecture":"12","name":"習志野市","kana":"ナラシノシ","romaji":"Narashino-shi"},
-  {"code":"12217","prefecture":"12","name":"柏市","kana":"カシワシ","romaji":"Kashiwa-shi"},
-  {"code":"12218","prefecture":"12","name":"勝浦市","kana":"カツウラシ","romaji":"Katsura-shi"},
-  {"code":"12219","prefecture":"12","name":"市原市","kana":"イチハラシ","romaji":"Ichihara-shi"},
-  {"code":"12220","prefecture":"12","name":"流山市","kana":"ナガレヤマシ","romaji":"Nagareyama-shi"},
-  {"code":"12221","prefecture":"12","name":"八千代市","kana":"ヤチヨシ","romaji":"Yachiyo-shi"},
-  {"code":"12222","prefecture":"12","name":"我孫子市","kana":"アビコシ","romaji":"Abiko-shi"},
-  {"code":"12223","prefecture":"12","name":"鴨川市","kana":"カモガワシ","romaji":"Kamogawa-shi"},
-  {"code":"12224","prefecture":"12","name":"鎌ヶ谷市","kana":"カマガヤシ","romaji":"Kamagaya-shi"},
-  {"code":"12225","prefecture":"12","name":"君津市","kana":"キミツシ","romaji":"Kimitsu-shi"},
-  {"code":"12226","prefecture":"12","name":"富津市","kana":"フッツシ","romaji":"Futtsu-shi"},
-  {"code":"12227","prefecture":"12","name":"浦安市","kana":"ウラヤスシ","romaji":"Urayasu-shi"},
-  {"code":"12228","prefecture":"12","name":"四街道市","kana":"ヨツカイドウシ","romaji":"Yotsukaido-shi"},
-  {"code":"12229","prefecture":"12","name":"袖ヶ浦市","kana":"ソデガウラシ","romaji":"Sodegaura-shi"},
-  {"code":"12230","prefecture":"12","name":"八街市","kana":"ヤチマタシ","romaji":"Yachimata-shi"},
-  {"code":"12231","prefecture":"12","name":"印西市","kana":"インザイシ","romaji":"Inzai-shi"},
-  {"code":"12232","prefecture":"12","name":"白井市","kana":"シロイシ","romaji":"Shiroi-shi"},
-  {"code":"12233","prefecture":"12","name":"富里市","kana":"トミサトシ","romaji":"Tomisato-shi"},
-  {"code":"12234","prefecture":"12","name":"南房総市","kana":"ミナミボウソウシ","romaji":"Minamiboso-shi"},
-  {"code":"12235","prefecture":"12","name":"匝瑳市","kana":"ソウサシ","romaji":"Sosa-shi"},
-  {"code":"12236","prefecture":"12","name":"香取市","kana":"カトリシ","romaji":"Katori-shi"},
-  {"code":"12237","prefecture":"12","name":"山武市","kana":"サンムシ","romaji":"Sammu-shi"},
-  {"code":"12238","prefecture":"12","name":"いすみ市","kana":"イスミシ","romaji":"Isumi-shi"},
-  {"code":"12239","prefecture":"12","name":"大網白里市","kana":"オオアミシラサトシ","romaji":"Oamishirasato-shi"},
-  {"code":"12322","prefecture":"12","name":"印旛郡酒々井町","kana":"インバグンシスイマチ","romaji":"Imba-gun Shisui-machi"},
-  {"code":"12329","prefecture":"12","name":"印旛郡栄町","kana":"インバグンサカエマチ","romaji":"Imba-gun Sakae-machi"},
-  {"code":"12342","prefecture":"12","name":"香取郡神崎町","kana":"カトリグンコウザキマチ","romaji":"Katori-gun Kozaki-machi"},
-  {"code":"12347","prefecture":"12","name":"香取郡多古町","kana":"カトリグンタコマチ","romaji":"Katori-gun Tako-machi"},
-  {"code":"12349","prefecture":"12","name":"香取郡東庄町","kana":"カトリグントウノショウマチ","romaji":"Katori-gun Tonosho-machi"},
-  {"code":"12403","prefecture":"12","name":"山武郡九十九里町","kana":"サンブグンクジュウクリマチ","romaji":"Sambu-gun Kujukuri-machi"},
-  {"code":"12409","prefecture":"12","name":"山武郡芝山町","kana":"サンブグンシバヤママチ","romaji":"Sambu-gun Shibayama-machi"},
-  {"code":"12410","prefecture":"12","name":"山武郡横芝光町","kana":"サンブグンヨコシバヒカリマチ","romaji":"Sambu-gun Yokoshibahikari-machi"},
-  {"code":"12421","prefecture":"12","name":"長生郡一宮町","kana":"チョウセイグンイチノミヤマチ","romaji":"Chosei-gun Ichinomiya-machi"},
-  {"code":"12422","prefecture":"12","name":"長生郡睦沢町","kana":"チョウセイグンムツザワマチ","romaji":"Chosei-gun Mutsuzawa-machi"},
-  {"code":"12423","prefecture":"12","name":"長生郡長生村","kana":"チョウセイグンチョウセイムラ","romaji":"Chosei-gun Chosei-mura"},
-  {"code":"12424","prefecture":"12","name":"長生郡白子町","kana":"チョウセイグンシラコマチ","romaji":"Chosei-gun Shirako-machi"},
-  {"code":"12426","prefecture":"12","name":"長生郡長柄町","kana":"チョウセイグンナガラマチ","romaji":"Chosei-gun Nagara-machi"},
-  {"code":"12427","prefecture":"12","name":"長生郡長南町","kana":"チョウセイグンチョウナンマチ","romaji":"Chosei-gun Chonan-machi"},
-  {"code":"12441","prefecture":"12","name":"夷隅郡大多喜町","kana":"イスミグンオオタキマチ","romaji":"Isumi-gun Otaki-machi"},
-  {"code":"12443","prefecture":"12","name":"夷隅郡御宿町","kana":"イスミグンオンジュクマチ","romaji":"Isumi-gun Onjuku-machi"},
-  {"code":"12463","prefecture":"12","name":"安房郡鋸南町","kana":"アワグンキョナンマチ","romaji":"Awa-gun Kyonan-machi"},
-  {"code":"13101","prefecture":"13","name":"千代田区","kana":"チヨダク","romaji":"Chiyoda-ku"},
-  {"code":"13102","prefecture":"13","name":"中央区","kana":"チュウオウク","romaji":"Chuo-ku"},
-  {"code":"13103","prefecture":"13","name":"港区","kana":"ミナトク","romaji":"Minato-ku"},
-  {"code":"13104","prefecture":"13","name":"新宿区","kana":"シンジュクク","romaji":"Shinjuku-ku"},
-  {"code":"13105","prefecture":"13","name":"文京区","kana":"ブンキョウク","romaji":"Bunkyo-ku"},
-  {"code":"13106","prefecture":"13","name":"台東区","kana":"タイトウク","romaji":"Taito-ku"},
-  {"code":"13107","prefecture":"13","name":"墨田区","kana":"スミダク","romaji":"Sumida-ku"},
-  {"code":"13108","prefecture":"13","name":"江東区","kana":"コウトウク","romaji":"Koto-ku"},
-  {"code":"13109","prefecture":"13","name":"品川区","kana":"シナガワク","romaji":"Shinagawa-ku"},
-  {"code":"13110","prefecture":"13","name":"目黒区","kana":"メグロク","romaji":"Meguro-ku"},
-  {"code":"13111","prefecture":"13","name":"大田区","kana":"オオタク","romaji":"Ota-ku"},
-  {"code":"13112","prefecture":"13","name":"世田谷区","kana":"セタガヤク","romaji":"Setagaya-ku"},
-  {"code":"13113","prefecture":"13","name":"渋谷区","kana":"シブヤク","romaji":"Shibuya-ku"},
-  {"code":"13114","prefecture":"13","name":"中野区","kana":"ナカノク","romaji":"Nakano-ku"},
-  {"code":"13115","prefecture":"13","name":"杉並区","kana":"スギナミク","romaji":"Suginami-ku"},
-  {"code":"13116","prefecture":"13","name":"豊島区","kana":"トシマク","romaji":"Toshima-ku"},
-  {"code":"13117","prefecture":"13","name":"北区","kana":"キタク","romaji":"Kita-ku"},
-  {"code":"13118","prefecture":"13","name":"荒川区","kana":"アラカワク","romaji":"Arakawa-ku"},
-  {"code":"13119","prefecture":"13","name":"板橋区","kana":"イタバシク","romaji":"Itabashi-ku"},
-  {"code":"13120","prefecture":"13","name":"練馬区","kana":"ネリマク","romaji":"Nerima-ku"},
-  {"code":"13121","prefecture":"13","name":"足立区","kana":"アダチク","romaji":"Adachi-ku"},
-  {"code":"13122","prefecture":"13","name":"葛飾区","kana":"カツシカク","romaji":"Katsushika-ku"},
-  {"code":"13123","prefecture":"13","name":"江戸川区","kana":"エドガワク","romaji":"Edogawa-ku"},
-  {"code":"13201","prefecture":"13","name":"八王子市","kana":"ハチオウジシ","romaji":"Hachioji-shi"},
-  {"code":"13202","prefecture":"13","name":"立川市","kana":"タチカワシ","romaji":"Tachikawa-shi"},
-  {"code":"13203","prefecture":"13","name":"武蔵野市","kana":"ムサシノシ","romaji":"Musashino-shi"},
-  {"code":"13204","prefecture":"13","name":"三鷹市","kana":"ミタカシ","romaji":"Mitaka-shi"},
-  {"code":"13205","prefecture":"13","name":"青梅市","kana":"オウメシ","romaji":"Ome-shi"},
-  {"code":"13206","prefecture":"13","name":"府中市","kana":"フチュウシ","romaji":"Fuchu-shi"},
-  {"code":"13207","prefecture":"13","name":"昭島市","kana":"アキシマシ","romaji":"Akishima-shi"},
-  {"code":"13208","prefecture":"13","name":"調布市","kana":"チョウフシ","romaji":"Chofu-shi"},
-  {"code":"13209","prefecture":"13","name":"町田市","kana":"マチダシ","romaji":"Machida-shi"},
-  {"code":"13210","prefecture":"13","name":"小金井市","kana":"コガネイシ","romaji":"Koganei-shi"},
-  {"code":"13211","prefecture":"13","name":"小平市","kana":"コダイラシ","romaji":"Kodaira-shi"},
-  {"code":"13212","prefecture":"13","name":"日野市","kana":"ヒノシ","romaji":"Hino-shi"},
-  {"code":"13213","prefecture":"13","name":"東村山市","kana":"ヒガシムラヤマシ","romaji":"Higashimurayama-shi"},
-  {"code":"13214","prefecture":"13","name":"国分寺市","kana":"コクブンジシ","romaji":"Kokubunji-shi"},
-  {"code":"13215","prefecture":"13","name":"国立市","kana":"クニタチシ","romaji":"Kunitachi-shi"},
-  {"code":"13218","prefecture":"13","name":"福生市","kana":"フッサシ","romaji":"Fussa-shi"},
-  {"code":"13219","prefecture":"13","name":"狛江市","kana":"コマエシ","romaji":"Komae-shi"},
-  {"code":"13220","prefecture":"13","name":"東大和市","kana":"ヒガシヤマトシ","romaji":"Higashiyamato-shi"},
-  {"code":"13221","prefecture":"13","name":"清瀬市","kana":"キヨセシ","romaji":"Kiyose-shi"},
-  {"code":"13222","prefecture":"13","name":"東久留米市","kana":"ヒガシクルメシ","romaji":"Higashikurume-shi"},
-  {"code":"13223","prefecture":"13","name":"武蔵村山市","kana":"ムサシムラヤマシ","romaji":"Musashimurayama-shi"},
-  {"code":"13224","prefecture":"13","name":"多摩市","kana":"タマシ","romaji":"Tama-shi"},
-  {"code":"13225","prefecture":"13","name":"稲城市","kana":"イナギシ","romaji":"Inagi-shi"},
-  {"code":"13227","prefecture":"13","name":"羽村市","kana":"ハムラシ","romaji":"Hamura-shi"},
-  {"code":"13228","prefecture":"13","name":"あきる野市","kana":"アキルノシ","romaji":"Akiruno-shi"},
-  {"code":"13229","prefecture":"13","name":"西東京市","kana":"ニシトウキョウシ","romaji":"Nishitokyo-shi"},
-  {"code":"13303","prefecture":"13","name":"西多摩郡瑞穂町","kana":"ニシタマグンミズホマチ","romaji":"Nishitama-gun Mizuho-machi"},
-  {"code":"13305","prefecture":"13","name":"西多摩郡日の出町","kana":"ニシタマグンヒノデマチ","romaji":"Nishitama-gun Hinode-machi"},
-  {"code":"13307","prefecture":"13","name":"西多摩郡檜原村","kana":"ニシタマグンヒノハラムラ","romaji":"Nishitama-gun Hinohara-mura"},
-  {"code":"13308","prefecture":"13","name":"西多摩郡奥多摩町","kana":"ニシタマグンオクタママチ","romaji":"Nishitama-gun Okutama-machi"},
-  {"code":"13361","prefecture":"13","name":"大島町","kana":"オオシママチ","romaji":"Oshima-machi"},
-  {"code":"13363","prefecture":"13","name":"新島村","kana":"ニイジマムラ","romaji":"Niijima-mura"},
-  {"code":"13364","prefecture":"13","name":"神津島村","kana":"コウヅシマムラ","romaji":"Kozushima-mura"},
-  {"code":"13381","prefecture":"13","name":"三宅村","kana":"ミヤケムラ","romaji":"Miyake-mura"},
-  {"code":"13382","prefecture":"13","name":"御蔵島村","kana":"ミクラジマムラ","romaji":"Mikurajima-mura"},
-  {"code":"13401","prefecture":"13","name":"八丈町","kana":"ハチジョウマチ","romaji":"Hachijo-machi"},
-  {"code":"13402","prefecture":"13","name":"青ヶ島村","kana":"アオガシマムラ","romaji":"Aogashima-mura"},
-  {"code":"13421","prefecture":"13","name":"小笠原村","kana":"オガサワラムラ","romaji":"Ogasawara-mura"},
-  {"code":"14101","prefecture":"14","name":"横浜市鶴見区","kana":"ヨコハマシツルミク","romaji":"Yokohama-shi Tsurumi-ku"},
-  {"code":"14102","prefecture":"14","name":"横浜市神奈川区","kana":"ヨコハマシカナガワク","romaji":"Yokohama-shi Kanagawa-ku"},
-  {"code":"14103","prefecture":"14","name":"横浜市西区","kana":"ヨコハマシニシク","romaji":"Yokohama-shi Nishi-ku"},
-  {"code":"14104","prefecture":"14","name":"横浜市中区","kana":"ヨコハマシナカク","romaji":"Yokohama-shi Naka-ku"},
-  {"code":"14105","prefecture":"14","name":"横浜市南区","kana":"ヨコハマシミナミク","romaji":"Yokohama-shi Minami-ku"},
-  {"code":"14106","prefecture":"14","name":"横浜市保土ケ谷区","kana":"ヨコハマシホドガヤク","romaji":"Yokohama-shi Hodogaya-ku"},
-  {"code":"14107","prefecture":"14","name":"横浜市磯子区","kana":"ヨコハマシイソゴク","romaji":"Yokohama-shi Isogo-ku"},
-  {"code":"14108","prefecture":"14","name":"横浜市金沢区","kana":"ヨコハマシカナザワク","romaji":"Yokohama-shi Kanazawa-ku"},
-  {"code":"14109","prefecture":"14","name":"横浜市港北区","kana":"ヨコハマシコウホクク","romaji":"Yokohama-shi Kohoku-ku"},
-  {"code":"14110","prefecture":"14","name":"横浜市戸塚区","kana":"ヨコハマシトツカク","romaji":"Yokohama-shi Totsuka-ku"},
-  {"code":"14111","prefecture":"14","name":"横浜市港南区","kana":"ヨコハマシコウナンク","romaji":"Yokohama-shi Konan-ku"},
-  {"code":"14112","prefecture":"14","name":"横浜市旭区","kana":"ヨコハマシアサヒク","romaji":"Yokohama-shi Asahi-ku"},
-  {"code":"14113","prefecture":"14","name":"横浜市緑区","kana":"ヨコハマシミドリク","romaji":"Yokohama-shi Midori-ku"},
-  {"code":"14114","prefecture":"14","name":"横浜市瀬谷区","kana":"ヨコハマシセヤク","romaji":"Yokohama-shi Seya-ku"},
-  {"code":"14115","prefecture":"14","name":"横浜市栄区","kana":"ヨコハマシサカエク","romaji":"Yokohama-shi Sakae-ku"},
-  {"code":"14116","prefecture":"14","name":"横浜市泉区","kana":"ヨコハマシイズミク","romaji":"Yokohama-shi Izumi-ku"},
-  {"code":"14117","prefecture":"14","name":"横浜市青葉区","kana":"ヨコハマシアオバク","romaji":"Yokohama-shi Aoba-ku"},
-  {"code":"14118","prefecture":"14","name":"横浜市都筑区","kana":"ヨコハマシツヅキク","romaji":"Yokohama-shi Tsuzuki-ku"},
-  {"code":"14131","prefecture":"14","name":"川崎市川崎区","kana":"カワサキシカワサキク","romaji":"Kawasaki-shi Kawasaki-ku"},
-  {"code":"14132","prefecture":"14","name":"川崎市幸区","kana":"カワサキシサイワイク","romaji":"Kawasaki-shi Saiwai-ku"},
-  {"code":"14133","prefecture":"14","name":"川崎市中原区","kana":"カワサキシナカハラク","romaji":"Kawasaki-shi Nakahara-ku"},
-  {"code":"14134","prefecture":"14","name":"川崎市高津区","kana":"カワサキシタカツク","romaji":"Kawasaki-shi Takatsu-ku"},
-  {"code":"14135","prefecture":"14","name":"川崎市多摩区","kana":"カワサキシタマク","romaji":"Kawasaki-shi Tama-ku"},
-  {"code":"14136","prefecture":"14","name":"川崎市宮前区","kana":"カワサキシミヤマエク","romaji":"Kawasaki-shi Miyamae-ku"},
-  {"code":"14137","prefecture":"14","name":"川崎市麻生区","kana":"カワサキシアサオク","romaji":"Kawasaki-shi Asao-ku"},
-  {"code":"14151","prefecture":"14","name":"相模原市緑区","kana":"サガミハラシミドリク","romaji":"Sagamihara-shi Midori-ku"},
-  {"code":"14152","prefecture":"14","name":"相模原市中央区","kana":"サガミハラシチュウオウク","romaji":"Sagamihara-shi Chuo-ku"},
-  {"code":"14153","prefecture":"14","name":"相模原市南区","kana":"サガミハラシミナミク","romaji":"Sagamihara-shi Minami-ku"},
-  {"code":"14201","prefecture":"14","name":"横須賀市","kana":"ヨコスカシ","romaji":"Yokosuka-shi"},
-  {"code":"14203","prefecture":"14","name":"平塚市","kana":"ヒラツカシ","romaji":"Hiratsuka-shi"},
-  {"code":"14204","prefecture":"14","name":"鎌倉市","kana":"カマクラシ","romaji":"Kamakura-shi"},
-  {"code":"14205","prefecture":"14","name":"藤沢市","kana":"フジサワシ","romaji":"Fujisawa-shi"},
-  {"code":"14206","prefecture":"14","name":"小田原市","kana":"オダワラシ","romaji":"Odawara-shi"},
-  {"code":"14207","prefecture":"14","name":"茅ヶ崎市","kana":"チガサキシ","romaji":"Chigasaki-shi"},
-  {"code":"14208","prefecture":"14","name":"逗子市","kana":"ズシシ","romaji":"Zushi-shi"},
-  {"code":"14210","prefecture":"14","name":"三浦市","kana":"ミウラシ","romaji":"Miura-shi"},
-  {"code":"14211","prefecture":"14","name":"秦野市","kana":"ハダノシ","romaji":"Hadano-shi"},
-  {"code":"14212","prefecture":"14","name":"厚木市","kana":"アツギシ","romaji":"Atsugi-shi"},
-  {"code":"14213","prefecture":"14","name":"大和市","kana":"ヤマトシ","romaji":"Yamato-shi"},
-  {"code":"14214","prefecture":"14","name":"伊勢原市","kana":"イセハラシ","romaji":"Isehara-shi"},
-  {"code":"14215","prefecture":"14","name":"海老名市","kana":"エビナシ","romaji":"Ebina-shi"},
-  {"code":"14216","prefecture":"14","name":"座間市","kana":"ザマシ","romaji":"Zama-shi"},
-  {"code":"14217","prefecture":"14","name":"南足柄市","kana":"ミナミアシガラシ","romaji":"Minamiashigara-shi"},
-  {"code":"14218","prefecture":"14","name":"綾瀬市","kana":"アヤセシ","romaji":"Ayase-shi"},
-  {"code":"14301","prefecture":"14","name":"三浦郡葉山町","kana":"ミウラグンハヤママチ","romaji":"Miura-gun Hayama-machi"},
-  {"code":"14321","prefecture":"14","name":"高座郡寒川町","kana":"コウザグンサムカワマチ","romaji":"Koza-gun Samukawa-machi"},
-  {"code":"14341","prefecture":"14","name":"中郡大磯町","kana":"ナカグンオオイソマチ","romaji":"Naka-gun Oiso-machi"},
-  {"code":"14342","prefecture":"14","name":"中郡二宮町","kana":"ナカグンニノミヤマチ","romaji":"Naka-gun Ninomiya-machi"},
-  {"code":"14361","prefecture":"14","name":"足柄上郡中井町","kana":"アシガラカミグンナカイマチ","romaji":"Ashigarakami-gun Nakai-machi"},
-  {"code":"14362","prefecture":"14","name":"足柄上郡大井町","kana":"アシガラカミグンオオイマチ","romaji":"Ashigarakami-gun Oi-machi"},
-  {"code":"14363","prefecture":"14","name":"足柄上郡松田町","kana":"アシガラカミグンマツダマチ","romaji":"Ashigarakami-gun Matsuda-machi"},
-  {"code":"14364","prefecture":"14","name":"足柄上郡山北町","kana":"アシガラカミグンヤマキタマチ","romaji":"Ashigarakami-gun Yamakita-machi"},
-  {"code":"14366","prefecture":"14","name":"足柄上郡開成町","kana":"アシガラカミグンカイセイマチ","romaji":"Ashigarakami-gun Kaisei-machi"},
-  {"code":"14382","prefecture":"14","name":"足柄下郡箱根町","kana":"アシガラシモグンハコネマチ","romaji":"Ashigarashimo-gun Hakone-machi"},
-  {"code":"14383","prefecture":"14","name":"足柄下郡真鶴町","kana":"アシガラシモグンマナヅルマチ","romaji":"Ashigarashimo-gun Manazuru-machi"},
-  {"code":"14384","prefecture":"14","name":"足柄下郡湯河原町","kana":"アシガラシモグンユガワラマチ","romaji":"Ashigarashimo-gun Yugawara-machi"},
-  {"code":"14401","prefecture":"14","name":"愛甲郡愛川町","kana":"アイコウグンアイカワマチ","romaji":"Aiko-gun Aikawa-machi"},
-  {"code":"14402","prefecture":"14","name":"愛甲郡清川村","kana":"アイコウグンキヨカワムラ","romaji":"Aiko-gun Kiyokawa-mura"},
-  {"code":"15101","prefecture":"15","name":"新潟市北区","kana":"ニイガタシキタク","romaji":"Niigata-shi Kita-ku"},
-  {"code":"15102","prefecture":"15","name":"新潟市東区","kana":"ニイガタシヒガシク","romaji":"Niigata-shi Higashi-ku"},
-  {"code":"15103","prefecture":"15","name":"新潟市中央区","kana":"ニイガタシチュウオウク","romaji":"Niigata-shi Chuo-ku"},
-  {"code":"15104","prefecture":"15","name":"新潟市江南区","kana":"ニイガタシコウナンク","romaji":"Niigata-shi Konan-ku"},
-  {"code":"15105","prefecture":"15","name":"新潟市秋葉区","kana":"ニイガタシアキハク","romaji":"Niigata-shi Akiha-ku"},
-  {"code":"15106","prefecture":"15","name":"新潟市南区","kana":"ニイガタシミナミク","romaji":"Niigata-shi Minami-ku"},
-  {"code":"15107","prefecture":"15","name":"新潟市西区","kana":"ニイガタシニシク","romaji":"Niigata-shi Nishi-ku"},
-  {"code":"15108","prefecture":"15","name":"新潟市西蒲区","kana":"ニイガタシニシカンク","romaji":"Niigata-shi Nishikan-ku"},
-  {"code":"15202","prefecture":"15","name":"長岡市","kana":"ナガオカシ","romaji":"Nagaoka-shi"},
-  {"code":"15204","prefecture":"15","name":"三条市","kana":"サンジョウシ","romaji":"Sanjo-shi"},
-  {"code":"15205","prefecture":"15","name":"柏崎市","kana":"カシワザキシ","romaji":"Kashiwazaki-shi"},
-  {"code":"15206","prefecture":"15","name":"新発田市","kana":"シバタシ","romaji":"Shibata-shi"},
-  {"code":"15208","prefecture":"15","name":"小千谷市","kana":"オヂヤシ","romaji":"Ojiya-shi"},
-  {"code":"15209","prefecture":"15","name":"加茂市","kana":"カモシ","romaji":"Kamo-shi"},
-  {"code":"15210","prefecture":"15","name":"十日町市","kana":"トオカマチシ","romaji":"Tokamachi-shi"},
-  {"code":"15211","prefecture":"15","name":"見附市","kana":"ミツケシ","romaji":"Mitsuke-shi"},
-  {"code":"15212","prefecture":"15","name":"村上市","kana":"ムラカミシ","romaji":"Murakami-shi"},
-  {"code":"15213","prefecture":"15","name":"燕市","kana":"ツバメシ","romaji":"Tsubame-shi"},
-  {"code":"15216","prefecture":"15","name":"糸魚川市","kana":"イトイガワシ","romaji":"Itoigawa-shi"},
-  {"code":"15217","prefecture":"15","name":"妙高市","kana":"ミョウコウシ","romaji":"Myoko-shi"},
-  {"code":"15218","prefecture":"15","name":"五泉市","kana":"ゴセンシ","romaji":"Gosen-shi"},
-  {"code":"15222","prefecture":"15","name":"上越市","kana":"ジョウエツシ","romaji":"Joetsu-shi"},
-  {"code":"15223","prefecture":"15","name":"阿賀野市","kana":"アガノシ","romaji":"Agano-shi"},
-  {"code":"15224","prefecture":"15","name":"佐渡市","kana":"サドシ","romaji":"Sado-shi"},
-  {"code":"15225","prefecture":"15","name":"魚沼市","kana":"ウオヌマシ","romaji":"Uonuma-shi"},
-  {"code":"15226","prefecture":"15","name":"南魚沼市","kana":"ミナミウオヌマシ","romaji":"Minamiuonuma-shi"},
-  {"code":"15227","prefecture":"15","name":"胎内市","kana":"タイナイシ","romaji":"Tainai-shi"},
-  {"code":"15307","prefecture":"15","name":"北蒲原郡聖籠町","kana":"キタカンバラグンセイロウマチ","romaji":"Kitakambara-gun Seiro-machi"},
-  {"code":"15342","prefecture":"15","name":"西蒲原郡弥彦村","kana":"ニシカンバラグンヤヒコムラ","romaji":"Nishikambara-gun Yahiko-mura"},
-  {"code":"15361","prefecture":"15","name":"南蒲原郡田上町","kana":"ミナミカンバラグンタガミマチ","romaji":"Minamikambara-gun Tagami-machi"},
-  {"code":"15385","prefecture":"15","name":"東蒲原郡阿賀町","kana":"ヒガシカンバラグンアガマチ","romaji":"Higashikambara-gun Aga-machi"},
-  {"code":"15405","prefecture":"15","name":"三島郡出雲崎町","kana":"サントウグンイズモザキマチ","romaji":"Santo-gun Izumozaki-machi"},
-  {"code":"15461","prefecture":"15","name":"南魚沼郡湯沢町","kana":"ミナミウオヌマグンユザワマチ","romaji":"Minamiuonuma-gun Yuzawa-machi"},
-  {"code":"15482","prefecture":"15","name":"中魚沼郡津南町","kana":"ナカウオヌマグンツナンマチ","romaji":"Nakauonuma-gun Tsunan-machi"},
-  {"code":"15504","prefecture":"15","name":"刈羽郡刈羽村","kana":"カリワグンカリワムラ","romaji":"Kariwa-gun Kariwa-mura"},
-  {"code":"15581","prefecture":"15","name":"岩船郡関川村","kana":"イワフネグンセキカワムラ","romaji":"Iwafune-gun Sekikawa-mura"},
-  {"code":"15586","prefecture":"15","name":"岩船郡粟島浦村","kana":"イワフネグンアワシマウラムラ","romaji":"Iwafune-gun Awashimaura-mura"},
-  {"code":"16201","prefecture":"16","name":"富山市","kana":"トヤマシ","romaji":"Toyama-shi"},
-  {"code":"16202","prefecture":"16","name":"高岡市","kana":"タカオカシ","romaji":"Takaoka-shi"},
-  {"code":"16204","prefecture":"16","name":"魚津市","kana":"ウオヅシ","romaji":"Uozu-shi"},
-  {"code":"16205","prefecture":"16","name":"氷見市","kana":"ヒミシ","romaji":"Himi-shi"},
-  {"code":"16206","prefecture":"16","name":"滑川市","kana":"ナメリカワシ","romaji":"Namerikawa-shi"},
-  {"code":"16207","prefecture":"16","name":"黒部市","kana":"クロベシ","romaji":"Kurobe-shi"},
-  {"code":"16208","prefecture":"16","name":"砺波市","kana":"トナミシ","romaji":"Tonami-shi"},
-  {"code":"16209","prefecture":"16","name":"小矢部市","kana":"オヤベシ","romaji":"Oyabe-shi"},
-  {"code":"16210","prefecture":"16","name":"南砺市","kana":"ナントシ","romaji":"Nanto-shi"},
-  {"code":"16211","prefecture":"16","name":"射水市","kana":"イミズシ","romaji":"Imizu-shi"},
-  {"code":"16321","prefecture":"16","name":"中新川郡舟橋村","kana":"ナカニイカワグンフナハシムラ","romaji":"Nakaniikawa-gun Funahashi-mura"},
-  {"code":"16322","prefecture":"16","name":"中新川郡上市町","kana":"ナカニイカワグンカミイチマチ","romaji":"Nakaniikawa-gun Kamiichi-machi"},
-  {"code":"16323","prefecture":"16","name":"中新川郡立山町","kana":"ナカニイカワグンタテヤママチ","romaji":"Nakaniikawa-gun Tateyama-machi"},
-  {"code":"16342","prefecture":"16","name":"下新川郡入善町","kana":"シモニイカワグンニュウゼンマチ","romaji":"Shimoniikawa-gun Nyuzen-machi"},
-  {"code":"16343","prefecture":"16","name":"下新川郡朝日町","kana":"シモニイカワグンアサヒマチ","romaji":"Shimoniikawa-gun Asahi-machi"},
-  {"code":"17201","prefecture":"17","name":"金沢市","kana":"カナザワシ","romaji":"Kanazawa-shi"},
-  {"code":"17202","prefecture":"17","name":"七尾市","kana":"ナナオシ","romaji":"Nanao-shi"},
-  {"code":"17203","prefecture":"17","name":"小松市","kana":"コマツシ","romaji":"Komatsu-shi"},
-  {"code":"17204","prefecture":"17","name":"輪島市","kana":"ワジマシ","romaji":"Wajima-shi"},
-  {"code":"17205","prefecture":"17","name":"珠洲市","kana":"スズシ","romaji":"Suzu-shi"},
-  {"code":"17206","prefecture":"17","name":"加賀市","kana":"カガシ","romaji":"Kaga-shi"},
-  {"code":"17207","prefecture":"17","name":"羽咋市","kana":"ハクイシ","romaji":"Hakui-shi"},
-  {"code":"17209","prefecture":"17","name":"かほく市","kana":"カホクシ","romaji":"Kahoku-shi"},
-  {"code":"17210","prefecture":"17","name":"白山市","kana":"ハクサンシ","romaji":"Hakusan-shi"},
-  {"code":"17211","prefecture":"17","name":"能美市","kana":"ノミシ","romaji":"Nomi-shi"},
-  {"code":"17212","prefecture":"17","name":"野々市市","kana":"ノノイチシ","romaji":"Nonoichi-shi"},
-  {"code":"17324","prefecture":"17","name":"能美郡川北町","kana":"ノミグンカワキタマチ","romaji":"Nomi-gun Kawakita-machi"},
-  {"code":"17361","prefecture":"17","name":"河北郡津幡町","kana":"カホクグンツバタマチ","romaji":"Kahoku-gun Tsubata-machi"},
-  {"code":"17365","prefecture":"17","name":"河北郡内灘町","kana":"カホクグンウチナダマチ","romaji":"Kahoku-gun Uchinada-machi"},
-  {"code":"17384","prefecture":"17","name":"羽咋郡志賀町","kana":"ハクイグンシカマチ","romaji":"Hakui-gun Shika-machi"},
-  {"code":"17386","prefecture":"17","name":"羽咋郡宝達志水町","kana":"ハクイグンホウダツシミズチョウ","romaji":"Hakui-gun Hodatsushimizu-cho"},
-  {"code":"17407","prefecture":"17","name":"鹿島郡中能登町","kana":"カシマグンナカノトマチ","romaji":"Kashima-gun Nakanoto-machi"},
-  {"code":"17461","prefecture":"17","name":"鳳珠郡穴水町","kana":"ホウスグンアナミズマチ","romaji":"Hosu-gun Anamizu-machi"},
-  {"code":"17463","prefecture":"17","name":"鳳珠郡能登町","kana":"ホウスグンノトチョウ","romaji":"Hosu-gun Noto-cho"},
-  {"code":"18201","prefecture":"18","name":"福井市","kana":"フクイシ","romaji":"Fukui-shi"},
-  {"code":"18202","prefecture":"18","name":"敦賀市","kana":"ツルガシ","romaji":"Tsuruga-shi"},
-  {"code":"18204","prefecture":"18","name":"小浜市","kana":"オバマシ","romaji":"Obama-shi"},
-  {"code":"18205","prefecture":"18","name":"大野市","kana":"オオノシ","romaji":"Ono-shi"},
-  {"code":"18206","prefecture":"18","name":"勝山市","kana":"カツヤマシ","romaji":"Katsuyama-shi"},
-  {"code":"18207","prefecture":"18","name":"鯖江市","kana":"サバエシ","romaji":"Sabae-shi"},
-  {"code":"18208","prefecture":"18","name":"あわら市","kana":"アワラシ","romaji":"Awara-shi"},
-  {"code":"18209","prefecture":"18","name":"越前市","kana":"エチゼンシ","romaji":"Echizen-shi"},
-  {"code":"18210","prefecture":"18","name":"坂井市","kana":"サカイシ","romaji":"Sakai-shi"},
-  {"code":"18322","prefecture":"18","name":"吉田郡永平寺町","kana":"ヨシダグンエイヘイジチョウ","romaji":"Yoshida-gun Eiheiji-cho"},
-  {"code":"18382","prefecture":"18","name":"今立郡池田町","kana":"イマダテグンイケダチョウ","romaji":"Imadate-gun Ikeda-cho"},
-  {"code":"18404","prefecture":"18","name":"南条郡南越前町","kana":"ナンジョウグンミナミエチゼンチョウ","romaji":"Nanjo-gun Minamiechizen-cho"},
-  {"code":"18423","prefecture":"18","name":"丹生郡越前町","kana":"ニュウグンエチゼンチョウ","romaji":"Nyu-gun Echizen-cho"},
-  {"code":"18442","prefecture":"18","name":"三方郡美浜町","kana":"ミカタグンミハマチョウ","romaji":"Mikata-gun Mihama-cho"},
-  {"code":"18481","prefecture":"18","name":"大飯郡高浜町","kana":"オオイグンタカハマチョウ","romaji":"Oi-gun Takahama-cho"},
-  {"code":"18483","prefecture":"18","name":"大飯郡おおい町","kana":"オオイグンオオイチョウ","romaji":"Oi-gun Oi-cho"},
-  {"code":"18501","prefecture":"18","name":"三方上中郡若狭町","kana":"ミカタカミナカグンワカサチョウ","romaji":"Mikatakaminaka-gun Wakasa-cho"},
-  {"code":"19201","prefecture":"19","name":"甲府市","kana":"コウフシ","romaji":"Kofu-shi"},
-  {"code":"19202","prefecture":"19","name":"富士吉田市","kana":"フジヨシダシ","romaji":"Fujiyoshida-shi"},
-  {"code":"19204","prefecture":"19","name":"都留市","kana":"ツルシ","romaji":"Tsuru-shi"},
-  {"code":"19205","prefecture":"19","name":"山梨市","kana":"ヤマナシシ","romaji":"Yamanashi-shi"},
-  {"code":"19206","prefecture":"19","name":"大月市","kana":"オオツキシ","romaji":"Otsuki-shi"},
-  {"code":"19207","prefecture":"19","name":"韮崎市","kana":"ニラサキシ","romaji":"Nirasaki-shi"},
-  {"code":"19208","prefecture":"19","name":"南アルプス市","kana":"ミナミアルプスシ","romaji":"Minamiarupusu-shi"},
-  {"code":"19209","prefecture":"19","name":"北杜市","kana":"ホクトシ","romaji":"Hokuto-shi"},
-  {"code":"19210","prefecture":"19","name":"甲斐市","kana":"カイシ","romaji":"Kai-shi"},
-  {"code":"19211","prefecture":"19","name":"笛吹市","kana":"フエフキシ","romaji":"Fuefuki-shi"},
-  {"code":"19212","prefecture":"19","name":"上野原市","kana":"ウエノハラシ","romaji":"Uenohara-shi"},
-  {"code":"19213","prefecture":"19","name":"甲州市","kana":"コウシュウシ","romaji":"Koshu-shi"},
-  {"code":"19214","prefecture":"19","name":"中央市","kana":"チュウオウシ","romaji":"Chuo-shi"},
-  {"code":"19346","prefecture":"19","name":"西八代郡市川三郷町","kana":"ニシヤツシログンイチカワミサトチョウ","romaji":"Nishiyatsushiro-gun Ichikawamisato-cho"},
-  {"code":"19364","prefecture":"19","name":"南巨摩郡早川町","kana":"ミナミコマグンハヤカワチョウ","romaji":"Minamikoma-gun Hayakawa-cho"},
-  {"code":"19365","prefecture":"19","name":"南巨摩郡身延町","kana":"ミナミコマグンミノブチョウ","romaji":"Minamikoma-gun Minobu-cho"},
-  {"code":"19366","prefecture":"19","name":"南巨摩郡南部町","kana":"ミナミコマグンナンブチョウ","romaji":"Minamikoma-gun Nambu-cho"},
-  {"code":"19368","prefecture":"19","name":"南巨摩郡富士川町","kana":"ミナミコマグンフジカワチョウ","romaji":"Minamikoma-gun Fujikawa-cho"},
-  {"code":"19384","prefecture":"19","name":"中巨摩郡昭和町","kana":"ナカコマグンショウワチョウ","romaji":"Nakakoma-gun Showa-cho"},
-  {"code":"19422","prefecture":"19","name":"南都留郡道志村","kana":"ミナミツルグンドウシムラ","romaji":"Minamitsuru-gun Doshi-mura"},
-  {"code":"19423","prefecture":"19","name":"南都留郡西桂町","kana":"ミナミツルグンニシカツラチョウ","romaji":"Minamitsuru-gun Nishikatsura-cho"},
-  {"code":"19424","prefecture":"19","name":"南都留郡忍野村","kana":"ミナミツルグンオシノムラ","romaji":"Minamitsuru-gun Oshino-mura"},
-  {"code":"19425","prefecture":"19","name":"南都留郡山中湖村","kana":"ミナミツルグンヤマナカコムラ","romaji":"Minamitsuru-gun Yamanakako-mura"},
-  {"code":"19429","prefecture":"19","name":"南都留郡鳴沢村","kana":"ミナミツルグンナルサワムラ","romaji":"Minamitsuru-gun Narusawa-mura"},
-  {"code":"19430","prefecture":"19","name":"南都留郡富士河口湖町","kana":"ミナミツルグンフジカワグチコマチ","romaji":"Minamitsuru-gun Fujikawaguchiko-machi"},
-  {"code":"19442","prefecture":"19","name":"北都留郡小菅村","kana":"キタツルグンコスゲムラ","romaji":"Kitatsuru-gun Kosuge-mura"},
-  {"code":"19443","prefecture":"19","name":"北都留郡丹波山村","kana":"キタツルグンタバヤマムラ","romaji":"Kitatsuru-gun Tabayama-mura"},
-  {"code":"20201","prefecture":"20","name":"長野市","kana":"ナガノシ","romaji":"Nagano-shi"},
-  {"code":"20202","prefecture":"20","name":"松本市","kana":"マツモトシ","romaji":"Matsumoto-shi"},
-  {"code":"20203","prefecture":"20","name":"上田市","kana":"ウエダシ","romaji":"Ueda-shi"},
-  {"code":"20204","prefecture":"20","name":"岡谷市","kana":"オカヤシ","romaji":"Okaya-shi"},
-  {"code":"20205","prefecture":"20","name":"飯田市","kana":"イイダシ","romaji":"Iida-shi"},
-  {"code":"20206","prefecture":"20","name":"諏訪市","kana":"スワシ","romaji":"Suwa-shi"},
-  {"code":"20207","prefecture":"20","name":"須坂市","kana":"スザカシ","romaji":"Suzaka-shi"},
-  {"code":"20208","prefecture":"20","name":"小諸市","kana":"コモロシ","romaji":"Komoro-shi"},
-  {"code":"20209","prefecture":"20","name":"伊那市","kana":"イナシ","romaji":"Ina-shi"},
-  {"code":"20210","prefecture":"20","name":"駒ヶ根市","kana":"コマガネシ","romaji":"Komagane-shi"},
-  {"code":"20211","prefecture":"20","name":"中野市","kana":"ナカノシ","romaji":"Nakano-shi"},
-  {"code":"20212","prefecture":"20","name":"大町市","kana":"オオマチシ","romaji":"Omachi-shi"},
-  {"code":"20213","prefecture":"20","name":"飯山市","kana":"イイヤマシ","romaji":"Iiyama-shi"},
-  {"code":"20214","prefecture":"20","name":"茅野市","kana":"チノシ","romaji":"Chino-shi"},
-  {"code":"20215","prefecture":"20","name":"塩尻市","kana":"シオジリシ","romaji":"Shiojiri-shi"},
-  {"code":"20217","prefecture":"20","name":"佐久市","kana":"サクシ","romaji":"Saku-shi"},
-  {"code":"20218","prefecture":"20","name":"千曲市","kana":"チクマシ","romaji":"Chikuma-shi"},
-  {"code":"20219","prefecture":"20","name":"東御市","kana":"トウミシ","romaji":"Tomi-shi"},
-  {"code":"20220","prefecture":"20","name":"安曇野市","kana":"アヅミノシ","romaji":"Azumino-shi"},
-  {"code":"20303","prefecture":"20","name":"南佐久郡小海町","kana":"ミナミサクグンコウミマチ","romaji":"Minamisaku-gun Komi-machi"},
-  {"code":"20304","prefecture":"20","name":"南佐久郡川上村","kana":"ミナミサクグンカワカミムラ","romaji":"Minamisaku-gun Kawakami-mura"},
-  {"code":"20305","prefecture":"20","name":"南佐久郡南牧村","kana":"ミナミサクグンミナミマキムラ","romaji":"Minamisaku-gun Minamimaki-mura"},
-  {"code":"20306","prefecture":"20","name":"南佐久郡南相木村","kana":"ミナミサクグンミナミアイキムラ","romaji":"Minamisaku-gun Minamiaiki-mura"},
-  {"code":"20307","prefecture":"20","name":"南佐久郡北相木村","kana":"ミナミサクグンキタアイキムラ","romaji":"Minamisaku-gun Kitaaiki-mura"},
-  {"code":"20309","prefecture":"20","name":"南佐久郡佐久穂町","kana":"ミナミサクグンサクホマチ","romaji":"Minamisaku-gun Sakuho-machi"},
-  {"code":"20321","prefecture":"20","name":"北佐久郡軽井沢町","kana":"キタサクグンカルイザワマチ","romaji":"Kitasaku-gun Karuizawa-machi"},
-  {"code":"20323","prefecture":"20","name":"北佐久郡御代田町","kana":"キタサクグンミヨタマチ","romaji":"Kitasaku-gun Miyota-machi"},
-  {"code":"20324","prefecture":"20","name":"北佐久郡立科町","kana":"キタサクグンタテシナマチ","romaji":"Kitasaku-gun Tateshina-machi"},
-  {"code":"20349","prefecture":"20","name":"小県郡青木村","kana":"チイサガタグンアオキムラ","romaji":"Chiisagata-gun Aoki-mura"},
-  {"code":"20350","prefecture":"20","name":"小県郡長和町","kana":"チイサガタグンナガワマチ","romaji":"Chiisagata-gun Nagawa-machi"},
-  {"code":"20361","prefecture":"20","name":"諏訪郡下諏訪町","kana":"スワグンシモスワマチ","romaji":"Suwa-gun Shimosuwa-machi"},
-  {"code":"20362","prefecture":"20","name":"諏訪郡富士見町","kana":"スワグンフジミマチ","romaji":"Suwa-gun Fujimi-machi"},
-  {"code":"20363","prefecture":"20","name":"諏訪郡原村","kana":"スワグンハラムラ","romaji":"Suwa-gun Hara-mura"},
-  {"code":"20382","prefecture":"20","name":"上伊那郡辰野町","kana":"カミイナグンタツノマチ","romaji":"Kamiina-gun Tatsuno-machi"},
-  {"code":"20383","prefecture":"20","name":"上伊那郡箕輪町","kana":"カミイナグンミノワマチ","romaji":"Kamiina-gun Minowa-machi"},
-  {"code":"20384","prefecture":"20","name":"上伊那郡飯島町","kana":"カミイナグンイイジママチ","romaji":"Kamiina-gun Iijima-machi"},
-  {"code":"20385","prefecture":"20","name":"上伊那郡南箕輪村","kana":"カミイナグンミナミミノワムラ","romaji":"Kamiina-gun Minamiminowa-mura"},
-  {"code":"20386","prefecture":"20","name":"上伊那郡中川村","kana":"カミイナグンナカガワムラ","romaji":"Kamiina-gun Nakagawa-mura"},
-  {"code":"20388","prefecture":"20","name":"上伊那郡宮田村","kana":"カミイナグンミヤダムラ","romaji":"Kamiina-gun Miyada-mura"},
-  {"code":"20402","prefecture":"20","name":"下伊那郡松川町","kana":"シモイナグンマツカワマチ","romaji":"Shimoina-gun Matsukawa-machi"},
-  {"code":"20403","prefecture":"20","name":"下伊那郡高森町","kana":"シモイナグンタカモリマチ","romaji":"Shimoina-gun Takamori-machi"},
-  {"code":"20404","prefecture":"20","name":"下伊那郡阿南町","kana":"シモイナグンアナンチョウ","romaji":"Shimoina-gun Anan-cho"},
-  {"code":"20407","prefecture":"20","name":"下伊那郡阿智村","kana":"シモイナグンアチムラ","romaji":"Shimoina-gun Achi-mura"},
-  {"code":"20409","prefecture":"20","name":"下伊那郡平谷村","kana":"シモイナグンヒラヤムラ","romaji":"Shimoina-gun Hiraya-mura"},
-  {"code":"20410","prefecture":"20","name":"下伊那郡根羽村","kana":"シモイナグンネバムラ","romaji":"Shimoina-gun Neba-mura"},
-  {"code":"20411","prefecture":"20","name":"下伊那郡下條村","kana":"シモイナグンシモジョウムラ","romaji":"Shimoina-gun Shimojo-mura"},
-  {"code":"20412","prefecture":"20","name":"下伊那郡売木村","kana":"シモイナグンウルギムラ","romaji":"Shimoina-gun Urugi-mura"},
-  {"code":"20413","prefecture":"20","name":"下伊那郡天龍村","kana":"シモイナグンテンリュウムラ","romaji":"Shimoina-gun Tenryu-mura"},
-  {"code":"20414","prefecture":"20","name":"下伊那郡泰阜村","kana":"シモイナグンヤスオカムラ","romaji":"Shimoina-gun Yasuoka-mura"},
-  {"code":"20415","prefecture":"20","name":"下伊那郡喬木村","kana":"シモイナグンタカギムラ","romaji":"Shimoina-gun Takagi-mura"},
-  {"code":"20416","prefecture":"20","name":"下伊那郡豊丘村","kana":"シモイナグントヨオカムラ","romaji":"Shimoina-gun Toyoka-mura"},
-  {"code":"20417","prefecture":"20","name":"下伊那郡大鹿村","kana":"シモイナグンオオシカムラ","romaji":"Shimoina-gun Oshika-mura"},
-  {"code":"20422","prefecture":"20","name":"木曽郡上松町","kana":"キソグンアゲマツマチ","romaji":"Kiso-gun Agematsu-machi"},
-  {"code":"20423","prefecture":"20","name":"木曽郡南木曽町","kana":"キソグンナギソマチ","romaji":"Kiso-gun Nagiso-machi"},
-  {"code":"20425","prefecture":"20","name":"木曽郡木祖村","kana":"キソグンキソムラ","romaji":"Kiso-gun Kiso-mura"},
-  {"code":"20429","prefecture":"20","name":"木曽郡王滝村","kana":"キソグンオウタキムラ","romaji":"Kiso-gun Otaki-mura"},
-  {"code":"20430","prefecture":"20","name":"木曽郡大桑村","kana":"キソグンオオクワムラ","romaji":"Kiso-gun Okuwa-mura"},
-  {"code":"20432","prefecture":"20","name":"木曽郡木曽町","kana":"キソグンキソマチ","romaji":"Kiso-gun Kiso-machi"},
-  {"code":"20446","prefecture":"20","name":"東筑摩郡麻績村","kana":"ヒガシチクマグンオミムラ","romaji":"Higashichikuma-gun Omi-mura"},
-  {"code":"20448","prefecture":"20","name":"東筑摩郡生坂村","kana":"ヒガシチクマグンイクサカムラ","romaji":"Higashichikuma-gun Ikusaka-mura"},
-  {"code":"20450","prefecture":"20","name":"東筑摩郡山形村","kana":"ヒガシチクマグンヤマガタムラ","romaji":"Higashichikuma-gun Yamagata-mura"},
-  {"code":"20451","prefecture":"20","name":"東筑摩郡朝日村","kana":"ヒガシチクマグンアサヒムラ","romaji":"Higashichikuma-gun Asahi-mura"},
-  {"code":"20452","prefecture":"20","name":"東筑摩郡筑北村","kana":"ヒガシチクマグンチクホクムラ","romaji":"Higashichikuma-gun Chikuhoku-mura"},
-  {"code":"20481","prefecture":"20","name":"北安曇郡池田町","kana":"キタアヅミグンイケダマチ","romaji":"Kitaazumi-gun Ikeda-machi"},
-  {"code":"20482","prefecture":"20","name":"北安曇郡松川村","kana":"キタアヅミグンマツカワムラ","romaji":"Kitaazumi-gun Matsukawa-mura"},
-  {"code":"20485","prefecture":"20","name":"北安曇郡白馬村","kana":"キタアヅミグンハクバムラ","romaji":"Kitaazumi-gun Hakuba-mura"},
-  {"code":"20486","prefecture":"20","name":"北安曇郡小谷村","kana":"キタアヅミグンオタリムラ","romaji":"Kitaazumi-gun Otari-mura"},
-  {"code":"20521","prefecture":"20","name":"埴科郡坂城町","kana":"ハニシナグンサカキマチ","romaji":"Hanishina-gun Sakaki-machi"},
-  {"code":"20541","prefecture":"20","name":"上高井郡小布施町","kana":"カミタカイグンオブセマチ","romaji":"Kamitakai-gun Obuse-machi"},
-  {"code":"20543","prefecture":"20","name":"上高井郡高山村","kana":"カミタカイグンタカヤマムラ","romaji":"Kamitakai-gun Takayama-mura"},
-  {"code":"20561","prefecture":"20","name":"下高井郡山ノ内町","kana":"シモタカイグンヤマノウチマチ","romaji":"Shimotakai-gun Yamanochi-machi"},
-  {"code":"20562","prefecture":"20","name":"下高井郡木島平村","kana":"シモタカイグンキジマダイラムラ","romaji":"Shimotakai-gun Kijimadaira-mura"},
-  {"code":"20563","prefecture":"20","name":"下高井郡野沢温泉村","kana":"シモタカイグンノザワオンセンムラ","romaji":"Shimotakai-gun Nozawaonsen-mura"},
-  {"code":"20583","prefecture":"20","name":"上水内郡信濃町","kana":"カミミノチグンシナノマチ","romaji":"Kamiminochi-gun Shinano-machi"},
-  {"code":"20588","prefecture":"20","name":"上水内郡小川村","kana":"カミミノチグンオガワムラ","romaji":"Kamiminochi-gun Ogawa-mura"},
-  {"code":"20590","prefecture":"20","name":"上水内郡飯綱町","kana":"カミミノチグンイイヅナマチ","romaji":"Kamiminochi-gun Iizuna-machi"},
-  {"code":"20602","prefecture":"20","name":"下水内郡栄村","kana":"シモミノチグンサカエムラ","romaji":"Shimominochi-gun Sakae-mura"},
-  {"code":"21201","prefecture":"21","name":"岐阜市","kana":"ギフシ","romaji":"Gifu-shi"},
-  {"code":"21202","prefecture":"21","name":"大垣市","kana":"オオガキシ","romaji":"Ogaki-shi"},
-  {"code":"21203","prefecture":"21","name":"高山市","kana":"タカヤマシ","romaji":"Takayama-shi"},
-  {"code":"21204","prefecture":"21","name":"多治見市","kana":"タジミシ","romaji":"Tajimi-shi"},
-  {"code":"21205","prefecture":"21","name":"関市","kana":"セキシ","romaji":"Seki-shi"},
-  {"code":"21206","prefecture":"21","name":"中津川市","kana":"ナカツガワシ","romaji":"Nakatsugawa-shi"},
-  {"code":"21207","prefecture":"21","name":"美濃市","kana":"ミノシ","romaji":"Mino-shi"},
-  {"code":"21208","prefecture":"21","name":"瑞浪市","kana":"ミズナミシ","romaji":"Mizunami-shi"},
-  {"code":"21209","prefecture":"21","name":"羽島市","kana":"ハシマシ","romaji":"Hashima-shi"},
-  {"code":"21210","prefecture":"21","name":"恵那市","kana":"エナシ","romaji":"Ena-shi"},
-  {"code":"21211","prefecture":"21","name":"美濃加茂市","kana":"ミノカモシ","romaji":"Minokamo-shi"},
-  {"code":"21212","prefecture":"21","name":"土岐市","kana":"トキシ","romaji":"Toki-shi"},
-  {"code":"21213","prefecture":"21","name":"各務原市","kana":"カカミガハラシ","romaji":"Kakamigahara-shi"},
-  {"code":"21214","prefecture":"21","name":"可児市","kana":"カニシ","romaji":"Kani-shi"},
-  {"code":"21215","prefecture":"21","name":"山県市","kana":"ヤマガタシ","romaji":"Yamagata-shi"},
-  {"code":"21216","prefecture":"21","name":"瑞穂市","kana":"ミズホシ","romaji":"Mizuho-shi"},
-  {"code":"21217","prefecture":"21","name":"飛騨市","kana":"ヒダシ","romaji":"Hida-shi"},
-  {"code":"21218","prefecture":"21","name":"本巣市","kana":"モトスシ","romaji":"Motosu-shi"},
-  {"code":"21219","prefecture":"21","name":"郡上市","kana":"グジョウシ","romaji":"Gujo-shi"},
-  {"code":"21220","prefecture":"21","name":"下呂市","kana":"ゲロシ","romaji":"Gero-shi"},
-  {"code":"21221","prefecture":"21","name":"海津市","kana":"カイヅシ","romaji":"Kaizu-shi"},
-  {"code":"21302","prefecture":"21","name":"羽島郡岐南町","kana":"ハシマグンギナンチョウ","romaji":"Hashima-gun Ginan-cho"},
-  {"code":"21303","prefecture":"21","name":"羽島郡笠松町","kana":"ハシマグンカサマツチョウ","romaji":"Hashima-gun Kasamatsu-cho"},
-  {"code":"21341","prefecture":"21","name":"養老郡養老町","kana":"ヨウロウグンヨウロウチョウ","romaji":"Yoro-gun Yoro-cho"},
-  {"code":"21361","prefecture":"21","name":"不破郡垂井町","kana":"フワグンタルイチョウ","romaji":"Fuwa-gun Tarui-cho"},
-  {"code":"21362","prefecture":"21","name":"不破郡関ケ原町","kana":"フワグンセキガハラチョウ","romaji":"Fuwa-gun Sekigahara-cho"},
-  {"code":"21381","prefecture":"21","name":"安八郡神戸町","kana":"アンパチグンゴウドチョウ","romaji":"Ampachi-gun Godo-cho"},
-  {"code":"21382","prefecture":"21","name":"安八郡輪之内町","kana":"アンパチグンワノウチチョウ","romaji":"Ampachi-gun Wanochi-cho"},
-  {"code":"21383","prefecture":"21","name":"安八郡安八町","kana":"アンパチグンアンパチチョウ","romaji":"Ampachi-gun Ampachi-cho"},
-  {"code":"21401","prefecture":"21","name":"揖斐郡揖斐川町","kana":"イビグンイビガワチョウ","romaji":"Ibi-gun Ibigawa-cho"},
-  {"code":"21403","prefecture":"21","name":"揖斐郡大野町","kana":"イビグンオオノチョウ","romaji":"Ibi-gun Ono-cho"},
-  {"code":"21404","prefecture":"21","name":"揖斐郡池田町","kana":"イビグンイケダチョウ","romaji":"Ibi-gun Ikeda-cho"},
-  {"code":"21421","prefecture":"21","name":"本巣郡北方町","kana":"モトスグンキタガタチョウ","romaji":"Motosu-gun Kitagata-cho"},
-  {"code":"21501","prefecture":"21","name":"加茂郡坂祝町","kana":"カモグンサカホギチョウ","romaji":"Kamo-gun Sakahogi-cho"},
-  {"code":"21502","prefecture":"21","name":"加茂郡富加町","kana":"カモグントミカチョウ","romaji":"Kamo-gun Tomika-cho"},
-  {"code":"21503","prefecture":"21","name":"加茂郡川辺町","kana":"カモグンカワベチョウ","romaji":"Kamo-gun Kawabe-cho"},
-  {"code":"21504","prefecture":"21","name":"加茂郡七宗町","kana":"カモグンヒチソウチョウ","romaji":"Kamo-gun Hichiso-cho"},
-  {"code":"21505","prefecture":"21","name":"加茂郡八百津町","kana":"カモグンヤオツチョウ","romaji":"Kamo-gun Yaotsu-cho"},
-  {"code":"21506","prefecture":"21","name":"加茂郡白川町","kana":"カモグンシラカワチョウ","romaji":"Kamo-gun Shirakawa-cho"},
-  {"code":"21507","prefecture":"21","name":"加茂郡東白川村","kana":"カモグンヒガシシラカワムラ","romaji":"Kamo-gun Higashishirakawa-mura"},
-  {"code":"21521","prefecture":"21","name":"可児郡御嵩町","kana":"カニグンミタケチョウ","romaji":"Kani-gun Mitake-cho"},
-  {"code":"21604","prefecture":"21","name":"大野郡白川村","kana":"オオノグンシラカワムラ","romaji":"Ono-gun Shirakawa-mura"},
-  {"code":"22101","prefecture":"22","name":"静岡市葵区","kana":"シズオカシアオイク","romaji":"Shizuoka-shi Aoi-ku"},
-  {"code":"22102","prefecture":"22","name":"静岡市駿河区","kana":"シズオカシスルガク","romaji":"Shizuoka-shi Suruga-ku"},
-  {"code":"22103","prefecture":"22","name":"静岡市清水区","kana":"シズオカシシミズク","romaji":"Shizuoka-shi Shimizu-ku"},
-  {"code":"22131","prefecture":"22","name":"浜松市中区","kana":"ハママツシナカク","romaji":"Hamamatsu-shi Naka-ku"},
-  {"code":"22132","prefecture":"22","name":"浜松市東区","kana":"ハママツシヒガシク","romaji":"Hamamatsu-shi Higashi-ku"},
-  {"code":"22133","prefecture":"22","name":"浜松市西区","kana":"ハママツシニシク","romaji":"Hamamatsu-shi Nishi-ku"},
-  {"code":"22134","prefecture":"22","name":"浜松市南区","kana":"ハママツシミナミク","romaji":"Hamamatsu-shi Minami-ku"},
-  {"code":"22135","prefecture":"22","name":"浜松市北区","kana":"ハママツシキタク","romaji":"Hamamatsu-shi Kita-ku"},
-  {"code":"22136","prefecture":"22","name":"浜松市浜北区","kana":"ハママツシハマキタク","romaji":"Hamamatsu-shi Hamakita-ku"},
-  {"code":"22137","prefecture":"22","name":"浜松市天竜区","kana":"ハママツシテンリュウク","romaji":"Hamamatsu-shi Tenryu-ku"},
-  {"code":"22203","prefecture":"22","name":"沼津市","kana":"ヌマヅシ","romaji":"Numazu-shi"},
-  {"code":"22205","prefecture":"22","name":"熱海市","kana":"アタミシ","romaji":"Atami-shi"},
-  {"code":"22206","prefecture":"22","name":"三島市","kana":"ミシマシ","romaji":"Mishima-shi"},
-  {"code":"22207","prefecture":"22","name":"富士宮市","kana":"フジノミヤシ","romaji":"Fujinomiya-shi"},
-  {"code":"22208","prefecture":"22","name":"伊東市","kana":"イトウシ","romaji":"Ito-shi"},
-  {"code":"22209","prefecture":"22","name":"島田市","kana":"シマダシ","romaji":"Shimada-shi"},
-  {"code":"22210","prefecture":"22","name":"富士市","kana":"フジシ","romaji":"Fuji-shi"},
-  {"code":"22211","prefecture":"22","name":"磐田市","kana":"イワタシ","romaji":"Iwata-shi"},
-  {"code":"22212","prefecture":"22","name":"焼津市","kana":"ヤイヅシ","romaji":"Yaizu-shi"},
-  {"code":"22213","prefecture":"22","name":"掛川市","kana":"カケガワシ","romaji":"Kakegawa-shi"},
-  {"code":"22214","prefecture":"22","name":"藤枝市","kana":"フジエダシ","romaji":"Fujieda-shi"},
-  {"code":"22215","prefecture":"22","name":"御殿場市","kana":"ゴテンバシ","romaji":"Gotemba-shi"},
-  {"code":"22216","prefecture":"22","name":"袋井市","kana":"フクロイシ","romaji":"Fukuroi-shi"},
-  {"code":"22219","prefecture":"22","name":"下田市","kana":"シモダシ","romaji":"Shimoda-shi"},
-  {"code":"22220","prefecture":"22","name":"裾野市","kana":"スソノシ","romaji":"Susono-shi"},
-  {"code":"22221","prefecture":"22","name":"湖西市","kana":"コサイシ","romaji":"Kosai-shi"},
-  {"code":"22222","prefecture":"22","name":"伊豆市","kana":"イズシ","romaji":"Izu-shi"},
-  {"code":"22223","prefecture":"22","name":"御前崎市","kana":"オマエザキシ","romaji":"Omaezaki-shi"},
-  {"code":"22224","prefecture":"22","name":"菊川市","kana":"キクガワシ","romaji":"Kikugawa-shi"},
-  {"code":"22225","prefecture":"22","name":"伊豆の国市","kana":"イズノクニシ","romaji":"Izunokuni-shi"},
-  {"code":"22226","prefecture":"22","name":"牧之原市","kana":"マキノハラシ","romaji":"Makinohara-shi"},
-  {"code":"22301","prefecture":"22","name":"賀茂郡東伊豆町","kana":"カモグンヒガシイズチョウ","romaji":"Kamo-gun Higashiizu-cho"},
-  {"code":"22302","prefecture":"22","name":"賀茂郡河津町","kana":"カモグンカワヅチョウ","romaji":"Kamo-gun Kawazu-cho"},
-  {"code":"22304","prefecture":"22","name":"賀茂郡南伊豆町","kana":"カモグンミナミイズチョウ","romaji":"Kamo-gun Minamiizu-cho"},
-  {"code":"22305","prefecture":"22","name":"賀茂郡松崎町","kana":"カモグンマツザキチョウ","romaji":"Kamo-gun Matsuzaki-cho"},
-  {"code":"22306","prefecture":"22","name":"賀茂郡西伊豆町","kana":"カモグンニシイズチョウ","romaji":"Kamo-gun Nishiizu-cho"},
-  {"code":"22325","prefecture":"22","name":"田方郡函南町","kana":"タガタグンカンナミチョウ","romaji":"Tagata-gun Kannami-cho"},
-  {"code":"22341","prefecture":"22","name":"駿東郡清水町","kana":"スントウグンシミズチョウ","romaji":"Sunto-gun Shimizu-cho"},
-  {"code":"22342","prefecture":"22","name":"駿東郡長泉町","kana":"スントウグンナガイズミチョウ","romaji":"Sunto-gun Nagaizumi-cho"},
-  {"code":"22344","prefecture":"22","name":"駿東郡小山町","kana":"スントウグンオヤマチョウ","romaji":"Sunto-gun Oyama-cho"},
-  {"code":"22424","prefecture":"22","name":"榛原郡吉田町","kana":"ハイバラグンヨシダチョウ","romaji":"Haibara-gun Yoshida-cho"},
-  {"code":"22429","prefecture":"22","name":"榛原郡川根本町","kana":"ハイバラグンカワネホンチョウ","romaji":"Haibara-gun Kawanehon-cho"},
-  {"code":"22461","prefecture":"22","name":"周智郡森町","kana":"シュウチグンモリマチ","romaji":"Shuchi-gun Mori-machi"},
-  {"code":"23101","prefecture":"23","name":"名古屋市千種区","kana":"ナゴヤシチクサク","romaji":"Nagoya-shi Chikusa-ku"},
-  {"code":"23102","prefecture":"23","name":"名古屋市東区","kana":"ナゴヤシヒガシク","romaji":"Nagoya-shi Higashi-ku"},
-  {"code":"23103","prefecture":"23","name":"名古屋市北区","kana":"ナゴヤシキタク","romaji":"Nagoya-shi Kita-ku"},
-  {"code":"23104","prefecture":"23","name":"名古屋市西区","kana":"ナゴヤシニシク","romaji":"Nagoya-shi Nishi-ku"},
-  {"code":"23105","prefecture":"23","name":"名古屋市中村区","kana":"ナゴヤシナカムラク","romaji":"Nagoya-shi Nakamura-ku"},
-  {"code":"23106","prefecture":"23","name":"名古屋市中区","kana":"ナゴヤシナカク","romaji":"Nagoya-shi Naka-ku"},
-  {"code":"23107","prefecture":"23","name":"名古屋市昭和区","kana":"ナゴヤシショウワク","romaji":"Nagoya-shi Showa-ku"},
-  {"code":"23108","prefecture":"23","name":"名古屋市瑞穂区","kana":"ナゴヤシミズホク","romaji":"Nagoya-shi Mizuho-ku"},
-  {"code":"23109","prefecture":"23","name":"名古屋市熱田区","kana":"ナゴヤシアツタク","romaji":"Nagoya-shi Atsuta-ku"},
-  {"code":"23110","prefecture":"23","name":"名古屋市中川区","kana":"ナゴヤシナカガワク","romaji":"Nagoya-shi Nakagawa-ku"},
-  {"code":"23111","prefecture":"23","name":"名古屋市港区","kana":"ナゴヤシミナトク","romaji":"Nagoya-shi Minato-ku"},
-  {"code":"23112","prefecture":"23","name":"名古屋市南区","kana":"ナゴヤシミナミク","romaji":"Nagoya-shi Minami-ku"},
-  {"code":"23113","prefecture":"23","name":"名古屋市守山区","kana":"ナゴヤシモリヤマク","romaji":"Nagoya-shi Moriyama-ku"},
-  {"code":"23114","prefecture":"23","name":"名古屋市緑区","kana":"ナゴヤシミドリク","romaji":"Nagoya-shi Midori-ku"},
-  {"code":"23115","prefecture":"23","name":"名古屋市名東区","kana":"ナゴヤシメイトウク","romaji":"Nagoya-shi Meito-ku"},
-  {"code":"23116","prefecture":"23","name":"名古屋市天白区","kana":"ナゴヤシテンパクク","romaji":"Nagoya-shi Tempaku-ku"},
-  {"code":"23201","prefecture":"23","name":"豊橋市","kana":"トヨハシシ","romaji":"Toyohashi-shi"},
-  {"code":"23202","prefecture":"23","name":"岡崎市","kana":"オカザキシ","romaji":"Okazaki-shi"},
-  {"code":"23203","prefecture":"23","name":"一宮市","kana":"イチノミヤシ","romaji":"Ichinomiya-shi"},
-  {"code":"23204","prefecture":"23","name":"瀬戸市","kana":"セトシ","romaji":"Seto-shi"},
-  {"code":"23205","prefecture":"23","name":"半田市","kana":"ハンダシ","romaji":"Handa-shi"},
-  {"code":"23206","prefecture":"23","name":"春日井市","kana":"カスガイシ","romaji":"Kasugai-shi"},
-  {"code":"23207","prefecture":"23","name":"豊川市","kana":"トヨカワシ","romaji":"Toyokawa-shi"},
-  {"code":"23208","prefecture":"23","name":"津島市","kana":"ツシマシ","romaji":"Tsushima-shi"},
-  {"code":"23209","prefecture":"23","name":"碧南市","kana":"ヘキナンシ","romaji":"Hekinan-shi"},
-  {"code":"23210","prefecture":"23","name":"刈谷市","kana":"カリヤシ","romaji":"Kariya-shi"},
-  {"code":"23211","prefecture":"23","name":"豊田市","kana":"トヨタシ","romaji":"Toyota-shi"},
-  {"code":"23212","prefecture":"23","name":"安城市","kana":"アンジョウシ","romaji":"Anjo-shi"},
-  {"code":"23213","prefecture":"23","name":"西尾市","kana":"ニシオシ","romaji":"Nishio-shi"},
-  {"code":"23214","prefecture":"23","name":"蒲郡市","kana":"ガマゴオリシ","romaji":"Gamagori-shi"},
-  {"code":"23215","prefecture":"23","name":"犬山市","kana":"イヌヤマシ","romaji":"Inuyama-shi"},
-  {"code":"23216","prefecture":"23","name":"常滑市","kana":"トコナメシ","romaji":"Tokoname-shi"},
-  {"code":"23217","prefecture":"23","name":"江南市","kana":"コウナンシ","romaji":"Konan-shi"},
-  {"code":"23219","prefecture":"23","name":"小牧市","kana":"コマキシ","romaji":"Komaki-shi"},
-  {"code":"23220","prefecture":"23","name":"稲沢市","kana":"イナザワシ","romaji":"Inazawa-shi"},
-  {"code":"23221","prefecture":"23","name":"新城市","kana":"シンシロシ","romaji":"Shinshiro-shi"},
-  {"code":"23222","prefecture":"23","name":"東海市","kana":"トウカイシ","romaji":"Tokai-shi"},
-  {"code":"23223","prefecture":"23","name":"大府市","kana":"オオブシ","romaji":"Obu-shi"},
-  {"code":"23224","prefecture":"23","name":"知多市","kana":"チタシ","romaji":"Chita-shi"},
-  {"code":"23225","prefecture":"23","name":"知立市","kana":"チリュウシ","romaji":"Chiryu-shi"},
-  {"code":"23226","prefecture":"23","name":"尾張旭市","kana":"オワリアサヒシ","romaji":"Owariasahi-shi"},
-  {"code":"23227","prefecture":"23","name":"高浜市","kana":"タカハマシ","romaji":"Takahama-shi"},
-  {"code":"23228","prefecture":"23","name":"岩倉市","kana":"イワクラシ","romaji":"Iwakura-shi"},
-  {"code":"23229","prefecture":"23","name":"豊明市","kana":"トヨアケシ","romaji":"Toyoake-shi"},
-  {"code":"23230","prefecture":"23","name":"日進市","kana":"ニッシンシ","romaji":"Nisshin-shi"},
-  {"code":"23231","prefecture":"23","name":"田原市","kana":"タハラシ","romaji":"Tahara-shi"},
-  {"code":"23232","prefecture":"23","name":"愛西市","kana":"アイサイシ","romaji":"Aisai-shi"},
-  {"code":"23233","prefecture":"23","name":"清須市","kana":"キヨスシ","romaji":"Kiyosu-shi"},
-  {"code":"23234","prefecture":"23","name":"北名古屋市","kana":"キタナゴヤシ","romaji":"Kitanagoya-shi"},
-  {"code":"23235","prefecture":"23","name":"弥富市","kana":"ヤトミシ","romaji":"Yatomi-shi"},
-  {"code":"23236","prefecture":"23","name":"みよし市","kana":"ミヨシシ","romaji":"Miyoshi-shi"},
-  {"code":"23237","prefecture":"23","name":"あま市","kana":"アマシ","romaji":"Ama-shi"},
-  {"code":"23238","prefecture":"23","name":"長久手市","kana":"ナガクテシ","romaji":"Nagakute-shi"},
-  {"code":"23302","prefecture":"23","name":"愛知郡東郷町","kana":"アイチグントウゴウチョウ","romaji":"Aichi-gun Togo-cho"},
-  {"code":"23342","prefecture":"23","name":"西春日井郡豊山町","kana":"ニシカスガイグントヨヤマチョウ","romaji":"Nishikasugai-gun Toyoyama-cho"},
-  {"code":"23361","prefecture":"23","name":"丹羽郡大口町","kana":"ニワグンオオグチチョウ","romaji":"Niwa-gun Oguchi-cho"},
-  {"code":"23362","prefecture":"23","name":"丹羽郡扶桑町","kana":"ニワグンフソウチョウ","romaji":"Niwa-gun Fuso-cho"},
-  {"code":"23424","prefecture":"23","name":"海部郡大治町","kana":"アマグンオオハルチョウ","romaji":"Ama-gun Oharu-cho"},
-  {"code":"23425","prefecture":"23","name":"海部郡蟹江町","kana":"アマグンカニエチョウ","romaji":"Ama-gun Kanie-cho"},
-  {"code":"23427","prefecture":"23","name":"海部郡飛島村","kana":"アマグントビシマムラ","romaji":"Ama-gun Tobishima-mura"},
-  {"code":"23441","prefecture":"23","name":"知多郡阿久比町","kana":"チタグンアグイチョウ","romaji":"Chita-gun Agui-cho"},
-  {"code":"23442","prefecture":"23","name":"知多郡東浦町","kana":"チタグンヒガシウラチョウ","romaji":"Chita-gun Higashiura-cho"},
-  {"code":"23445","prefecture":"23","name":"知多郡南知多町","kana":"チタグンミナミチタチョウ","romaji":"Chita-gun Minamichita-cho"},
-  {"code":"23446","prefecture":"23","name":"知多郡美浜町","kana":"チタグンミハマチョウ","romaji":"Chita-gun Mihama-cho"},
-  {"code":"23447","prefecture":"23","name":"知多郡武豊町","kana":"チタグンタケトヨチョウ","romaji":"Chita-gun Taketoyo-cho"},
-  {"code":"23501","prefecture":"23","name":"額田郡幸田町","kana":"ヌカタグンコウタチョウ","romaji":"Nukata-gun Kota-cho"},
-  {"code":"23561","prefecture":"23","name":"北設楽郡設楽町","kana":"キタシタラグンシタラチョウ","romaji":"Kitashitara-gun Shitara-cho"},
-  {"code":"23562","prefecture":"23","name":"北設楽郡東栄町","kana":"キタシタラグントウエイチョウ","romaji":"Kitashitara-gun Toei-cho"},
-  {"code":"23563","prefecture":"23","name":"北設楽郡豊根村","kana":"キタシタラグントヨネムラ","romaji":"Kitashitara-gun Toyone-mura"},
-  {"code":"24201","prefecture":"24","name":"津市","kana":"ツシ","romaji":"Tsu-shi"},
-  {"code":"24202","prefecture":"24","name":"四日市市","kana":"ヨッカイチシ","romaji":"Yokkaichi-shi"},
-  {"code":"24203","prefecture":"24","name":"伊勢市","kana":"イセシ","romaji":"Ise-shi"},
-  {"code":"24204","prefecture":"24","name":"松阪市","kana":"マツサカシ","romaji":"Matsusaka-shi"},
-  {"code":"24205","prefecture":"24","name":"桑名市","kana":"クワナシ","romaji":"Kuwana-shi"},
-  {"code":"24207","prefecture":"24","name":"鈴鹿市","kana":"スズカシ","romaji":"Suzuka-shi"},
-  {"code":"24208","prefecture":"24","name":"名張市","kana":"ナバリシ","romaji":"Nabari-shi"},
-  {"code":"24209","prefecture":"24","name":"尾鷲市","kana":"オワセシ","romaji":"Owase-shi"},
-  {"code":"24210","prefecture":"24","name":"亀山市","kana":"カメヤマシ","romaji":"Kameyama-shi"},
-  {"code":"24211","prefecture":"24","name":"鳥羽市","kana":"トバシ","romaji":"Toba-shi"},
-  {"code":"24212","prefecture":"24","name":"熊野市","kana":"クマノシ","romaji":"Kumano-shi"},
-  {"code":"24214","prefecture":"24","name":"いなべ市","kana":"イナベシ","romaji":"Inabe-shi"},
-  {"code":"24215","prefecture":"24","name":"志摩市","kana":"シマシ","romaji":"Shima-shi"},
-  {"code":"24216","prefecture":"24","name":"伊賀市","kana":"イガシ","romaji":"Iga-shi"},
-  {"code":"24303","prefecture":"24","name":"桑名郡木曽岬町","kana":"クワナグンキソサキチョウ","romaji":"Kuwana-gun Kisosaki-cho"},
-  {"code":"24324","prefecture":"24","name":"員弁郡東員町","kana":"イナベグントウインチョウ","romaji":"Inabe-gun Toin-cho"},
-  {"code":"24341","prefecture":"24","name":"三重郡菰野町","kana":"ミエグンコモノチョウ","romaji":"Mie-gun Komono-cho"},
-  {"code":"24343","prefecture":"24","name":"三重郡朝日町","kana":"ミエグンアサヒチョウ","romaji":"Mie-gun Asahi-cho"},
-  {"code":"24344","prefecture":"24","name":"三重郡川越町","kana":"ミエグンカワゴエチョウ","romaji":"Mie-gun Kawagoe-cho"},
-  {"code":"24441","prefecture":"24","name":"多気郡多気町","kana":"タキグンタキチョウ","romaji":"Taki-gun Taki-cho"},
-  {"code":"24442","prefecture":"24","name":"多気郡明和町","kana":"タキグンメイワチョウ","romaji":"Taki-gun Meiwa-cho"},
-  {"code":"24443","prefecture":"24","name":"多気郡大台町","kana":"タキグンオオダイチョウ","romaji":"Taki-gun Odai-cho"},
-  {"code":"24461","prefecture":"24","name":"度会郡玉城町","kana":"ワタライグンタマキチョウ","romaji":"Watarai-gun Tamaki-cho"},
-  {"code":"24470","prefecture":"24","name":"度会郡度会町","kana":"ワタライグンワタライチョウ","romaji":"Watarai-gun Watarai-cho"},
-  {"code":"24471","prefecture":"24","name":"度会郡大紀町","kana":"ワタライグンタイキチョウ","romaji":"Watarai-gun Taiki-cho"},
-  {"code":"24472","prefecture":"24","name":"度会郡南伊勢町","kana":"ワタライグンミナミイセチョウ","romaji":"Watarai-gun Minamiise-cho"},
-  {"code":"24543","prefecture":"24","name":"北牟婁郡紀北町","kana":"キタムログンキホクチョウ","romaji":"Kitamuro-gun Kihoku-cho"},
-  {"code":"24561","prefecture":"24","name":"南牟婁郡御浜町","kana":"ミナミムログンミハマチョウ","romaji":"Minamimuro-gun Mihama-cho"},
-  {"code":"24562","prefecture":"24","name":"南牟婁郡紀宝町","kana":"ミナミムログンキホウチョウ","romaji":"Minamimuro-gun Kiho-cho"},
-  {"code":"25201","prefecture":"25","name":"大津市","kana":"オオツシ","romaji":"Otsu-shi"},
-  {"code":"25202","prefecture":"25","name":"彦根市","kana":"ヒコネシ","romaji":"Hikone-shi"},
-  {"code":"25203","prefecture":"25","name":"長浜市","kana":"ナガハマシ","romaji":"Nagahama-shi"},
-  {"code":"25204","prefecture":"25","name":"近江八幡市","kana":"オウミハチマンシ","romaji":"Omihachiman-shi"},
-  {"code":"25206","prefecture":"25","name":"草津市","kana":"クサツシ","romaji":"Kusatsu-shi"},
-  {"code":"25207","prefecture":"25","name":"守山市","kana":"モリヤマシ","romaji":"Moriyama-shi"},
-  {"code":"25208","prefecture":"25","name":"栗東市","kana":"リットウシ","romaji":"Ritto-shi"},
-  {"code":"25209","prefecture":"25","name":"甲賀市","kana":"コウカシ","romaji":"Koka-shi"},
-  {"code":"25210","prefecture":"25","name":"野洲市","kana":"ヤスシ","romaji":"Yasu-shi"},
-  {"code":"25211","prefecture":"25","name":"湖南市","kana":"コナンシ","romaji":"Konan-shi"},
-  {"code":"25212","prefecture":"25","name":"高島市","kana":"タカシマシ","romaji":"Takashima-shi"},
-  {"code":"25213","prefecture":"25","name":"東近江市","kana":"ヒガシオウミシ","romaji":"Higashiomi-shi"},
-  {"code":"25214","prefecture":"25","name":"米原市","kana":"マイバラシ","romaji":"Maibara-shi"},
-  {"code":"25383","prefecture":"25","name":"蒲生郡日野町","kana":"ガモウグンヒノチョウ","romaji":"Gamo-gun Hino-cho"},
-  {"code":"25384","prefecture":"25","name":"蒲生郡竜王町","kana":"ガモウグンリュウオウチョウ","romaji":"Gamo-gun Ryuo-cho"},
-  {"code":"25425","prefecture":"25","name":"愛知郡愛荘町","kana":"エチグンアイショウチョウ","romaji":"Echi-gun Aisho-cho"},
-  {"code":"25441","prefecture":"25","name":"犬上郡豊郷町","kana":"イヌカミグントヨサトチョウ","romaji":"Inukami-gun Toyosato-cho"},
-  {"code":"25442","prefecture":"25","name":"犬上郡甲良町","kana":"イヌカミグンコウラチョウ","romaji":"Inukami-gun Kora-cho"},
-  {"code":"25443","prefecture":"25","name":"犬上郡多賀町","kana":"イヌカミグンタガチョウ","romaji":"Inukami-gun Taga-cho"},
-  {"code":"26101","prefecture":"26","name":"京都市北区","kana":"キョウトシキタク","romaji":"Kyoto-shi Kita-ku"},
-  {"code":"26102","prefecture":"26","name":"京都市上京区","kana":"キョウトシカミギョウク","romaji":"Kyoto-shi Kamigyo-ku"},
-  {"code":"26103","prefecture":"26","name":"京都市左京区","kana":"キョウトシサキョウク","romaji":"Kyoto-shi Sakyo-ku"},
-  {"code":"26104","prefecture":"26","name":"京都市中京区","kana":"キョウトシナカギョウク","romaji":"Kyoto-shi Nakagyo-ku"},
-  {"code":"26105","prefecture":"26","name":"京都市東山区","kana":"キョウトシヒガシヤマク","romaji":"Kyoto-shi Higashiyama-ku"},
-  {"code":"26106","prefecture":"26","name":"京都市下京区","kana":"キョウトシシモギョウク","romaji":"Kyoto-shi Shimogyo-ku"},
-  {"code":"26107","prefecture":"26","name":"京都市南区","kana":"キョウトシミナミク","romaji":"Kyoto-shi Minami-ku"},
-  {"code":"26108","prefecture":"26","name":"京都市右京区","kana":"キョウトシウキョウク","romaji":"Kyoto-shi Ukyo-ku"},
-  {"code":"26109","prefecture":"26","name":"京都市伏見区","kana":"キョウトシフシミク","romaji":"Kyoto-shi Fushimi-ku"},
-  {"code":"26110","prefecture":"26","name":"京都市山科区","kana":"キョウトシヤマシナク","romaji":"Kyoto-shi Yamashina-ku"},
-  {"code":"26111","prefecture":"26","name":"京都市西京区","kana":"キョウトシニシキョウク","romaji":"Kyoto-shi Nishikyo-ku"},
-  {"code":"26201","prefecture":"26","name":"福知山市","kana":"フクチヤマシ","romaji":"Fukuchiyama-shi"},
-  {"code":"26202","prefecture":"26","name":"舞鶴市","kana":"マイヅルシ","romaji":"Maizuru-shi"},
-  {"code":"26203","prefecture":"26","name":"綾部市","kana":"アヤベシ","romaji":"Ayabe-shi"},
-  {"code":"26204","prefecture":"26","name":"宇治市","kana":"ウジシ","romaji":"Uji-shi"},
-  {"code":"26205","prefecture":"26","name":"宮津市","kana":"ミヤヅシ","romaji":"Miyazu-shi"},
-  {"code":"26206","prefecture":"26","name":"亀岡市","kana":"カメオカシ","romaji":"Kameoka-shi"},
-  {"code":"26207","prefecture":"26","name":"城陽市","kana":"ジョウヨウシ","romaji":"Joyo-shi"},
-  {"code":"26208","prefecture":"26","name":"向日市","kana":"ムコウシ","romaji":"Muko-shi"},
-  {"code":"26209","prefecture":"26","name":"長岡京市","kana":"ナガオカキョウシ","romaji":"Nagaokakyo-shi"},
-  {"code":"26210","prefecture":"26","name":"八幡市","kana":"ヤワタシ","romaji":"Yawata-shi"},
-  {"code":"26211","prefecture":"26","name":"京田辺市","kana":"キョウタナベシ","romaji":"Kyotanabe-shi"},
-  {"code":"26212","prefecture":"26","name":"京丹後市","kana":"キョウタンゴシ","romaji":"Kyotango-shi"},
-  {"code":"26213","prefecture":"26","name":"南丹市","kana":"ナンタンシ","romaji":"Nantan-shi"},
-  {"code":"26214","prefecture":"26","name":"木津川市","kana":"キヅガワシ","romaji":"Kizugawa-shi"},
-  {"code":"26303","prefecture":"26","name":"乙訓郡大山崎町","kana":"オトクニグンオオヤマザキチョウ","romaji":"Otokuni-gun Oyamazaki-cho"},
-  {"code":"26322","prefecture":"26","name":"久世郡久御山町","kana":"クセグンクミヤマチョウ","romaji":"Kuse-gun Kumiyama-cho"},
-  {"code":"26343","prefecture":"26","name":"綴喜郡井手町","kana":"ツヅキグンイデチョウ","romaji":"Tsuzuki-gun Ide-cho"},
-  {"code":"26344","prefecture":"26","name":"綴喜郡宇治田原町","kana":"ツヅキグンウジタワラチョウ","romaji":"Tsuzuki-gun Ujitawara-cho"},
-  {"code":"26364","prefecture":"26","name":"相楽郡笠置町","kana":"ソウラクグンカサギチョウ","romaji":"Soraku-gun Kasagi-cho"},
-  {"code":"26365","prefecture":"26","name":"相楽郡和束町","kana":"ソウラクグンワヅカチョウ","romaji":"Soraku-gun Wazuka-cho"},
-  {"code":"26366","prefecture":"26","name":"相楽郡精華町","kana":"ソウラクグンセイカチョウ","romaji":"Soraku-gun Seika-cho"},
-  {"code":"26367","prefecture":"26","name":"相楽郡南山城村","kana":"ソウラクグンミナミヤマシロムラ","romaji":"Soraku-gun Minamiyamashiro-mura"},
-  {"code":"26407","prefecture":"26","name":"船井郡京丹波町","kana":"フナイグンキョウタンバチョウ","romaji":"Funai-gun Kyotamba-cho"},
-  {"code":"26463","prefecture":"26","name":"与謝郡伊根町","kana":"ヨサグンイネチョウ","romaji":"Yosa-gun Ine-cho"},
-  {"code":"26465","prefecture":"26","name":"与謝郡与謝野町","kana":"ヨサグンヨサノチョウ","romaji":"Yosa-gun Yosano-cho"},
-  {"code":"27102","prefecture":"27","name":"大阪市都島区","kana":"オオサカシミヤコジマク","romaji":"Osaka-shi Miyakojima-ku"},
-  {"code":"27103","prefecture":"27","name":"大阪市福島区","kana":"オオサカシフクシマク","romaji":"Osaka-shi Fukushima-ku"},
-  {"code":"27104","prefecture":"27","name":"大阪市此花区","kana":"オオサカシコノハナク","romaji":"Osaka-shi Konohana-ku"},
-  {"code":"27106","prefecture":"27","name":"大阪市西区","kana":"オオサカシニシク","romaji":"Osaka-shi Nishi-ku"},
-  {"code":"27107","prefecture":"27","name":"大阪市港区","kana":"オオサカシミナトク","romaji":"Osaka-shi Minato-ku"},
-  {"code":"27108","prefecture":"27","name":"大阪市大正区","kana":"オオサカシタイショウク","romaji":"Osaka-shi Taisho-ku"},
-  {"code":"27109","prefecture":"27","name":"大阪市天王寺区","kana":"オオサカシテンノウジク","romaji":"Osaka-shi Tennoji-ku"},
-  {"code":"27111","prefecture":"27","name":"大阪市浪速区","kana":"オオサカシナニワク","romaji":"Osaka-shi Naniwa-ku"},
-  {"code":"27113","prefecture":"27","name":"大阪市西淀川区","kana":"オオサカシニシヨドガワク","romaji":"Osaka-shi Nishiyodogawa-ku"},
-  {"code":"27114","prefecture":"27","name":"大阪市東淀川区","kana":"オオサカシヒガシヨドガワク","romaji":"Osaka-shi Higashiyodogawa-ku"},
-  {"code":"27115","prefecture":"27","name":"大阪市東成区","kana":"オオサカシヒガシナリク","romaji":"Osaka-shi Higashinari-ku"},
-  {"code":"27116","prefecture":"27","name":"大阪市生野区","kana":"オオサカシイクノク","romaji":"Osaka-shi Ikuno-ku"},
-  {"code":"27117","prefecture":"27","name":"大阪市旭区","kana":"オオサカシアサヒク","romaji":"Osaka-shi Asahi-ku"},
-  {"code":"27118","prefecture":"27","name":"大阪市城東区","kana":"オオサカシジョウトウク","romaji":"Osaka-shi Joto-ku"},
-  {"code":"27119","prefecture":"27","name":"大阪市阿倍野区","kana":"オオサカシアベノク","romaji":"Osaka-shi Abeno-ku"},
-  {"code":"27120","prefecture":"27","name":"大阪市住吉区","kana":"オオサカシスミヨシク","romaji":"Osaka-shi Sumiyoshi-ku"},
-  {"code":"27121","prefecture":"27","name":"大阪市東住吉区","kana":"オオサカシヒガシスミヨシク","romaji":"Osaka-shi Higashisumiyoshi-ku"},
-  {"code":"27122","prefecture":"27","name":"大阪市西成区","kana":"オオサカシニシナリク","romaji":"Osaka-shi Nishinari-ku"},
-  {"code":"27123","prefecture":"27","name":"大阪市淀川区","kana":"オオサカシヨドガワク","romaji":"Osaka-shi Yodogawa-ku"},
-  {"code":"27124","prefecture":"27","name":"大阪市鶴見区","kana":"オオサカシツルミク","romaji":"Osaka-shi Tsurumi-ku"},
-  {"code":"27125","prefecture":"27","name":"大阪市住之江区","kana":"オオサカシスミノエク","romaji":"Osaka-shi Suminoe-ku"},
-  {"code":"27126","prefecture":"27","name":"大阪市平野区","kana":"オオサカシヒラノク","romaji":"Osaka-shi Hirano-ku"},
-  {"code":"27127","prefecture":"27","name":"大阪市北区","kana":"オオサカシキタク","romaji":"Osaka-shi Kita-ku"},
-  {"code":"27128","prefecture":"27","name":"大阪市中央区","kana":"オオサカシチュウオウク","romaji":"Osaka-shi Chuo-ku"},
-  {"code":"27141","prefecture":"27","name":"堺市堺区","kana":"サカイシサカイク","romaji":"Sakai-shi Sakai-ku"},
-  {"code":"27142","prefecture":"27","name":"堺市中区","kana":"サカイシナカク","romaji":"Sakai-shi Naka-ku"},
-  {"code":"27143","prefecture":"27","name":"堺市東区","kana":"サカイシヒガシク","romaji":"Sakai-shi Higashi-ku"},
-  {"code":"27144","prefecture":"27","name":"堺市西区","kana":"サカイシニシク","romaji":"Sakai-shi Nishi-ku"},
-  {"code":"27145","prefecture":"27","name":"堺市南区","kana":"サカイシミナミク","romaji":"Sakai-shi Minami-ku"},
-  {"code":"27146","prefecture":"27","name":"堺市北区","kana":"サカイシキタク","romaji":"Sakai-shi Kita-ku"},
-  {"code":"27147","prefecture":"27","name":"堺市美原区","kana":"サカイシミハラク","romaji":"Sakai-shi Mihara-ku"},
-  {"code":"27202","prefecture":"27","name":"岸和田市","kana":"キシワダシ","romaji":"Kishiwada-shi"},
-  {"code":"27203","prefecture":"27","name":"豊中市","kana":"トヨナカシ","romaji":"Toyonaka-shi"},
-  {"code":"27204","prefecture":"27","name":"池田市","kana":"イケダシ","romaji":"Ikeda-shi"},
-  {"code":"27205","prefecture":"27","name":"吹田市","kana":"スイタシ","romaji":"Suita-shi"},
-  {"code":"27206","prefecture":"27","name":"泉大津市","kana":"イズミオオツシ","romaji":"Izumiotsu-shi"},
-  {"code":"27207","prefecture":"27","name":"高槻市","kana":"タカツキシ","romaji":"Takatsuki-shi"},
-  {"code":"27208","prefecture":"27","name":"貝塚市","kana":"カイヅカシ","romaji":"Kaizuka-shi"},
-  {"code":"27209","prefecture":"27","name":"守口市","kana":"モリグチシ","romaji":"Moriguchi-shi"},
-  {"code":"27210","prefecture":"27","name":"枚方市","kana":"ヒラカタシ","romaji":"Hirakata-shi"},
-  {"code":"27211","prefecture":"27","name":"茨木市","kana":"イバラキシ","romaji":"Ibaraki-shi"},
-  {"code":"27212","prefecture":"27","name":"八尾市","kana":"ヤオシ","romaji":"Yao-shi"},
-  {"code":"27213","prefecture":"27","name":"泉佐野市","kana":"イズミサノシ","romaji":"Izumisano-shi"},
-  {"code":"27214","prefecture":"27","name":"富田林市","kana":"トンダバヤシシ","romaji":"Tondabayashi-shi"},
-  {"code":"27215","prefecture":"27","name":"寝屋川市","kana":"ネヤガワシ","romaji":"Neyagawa-shi"},
-  {"code":"27216","prefecture":"27","name":"河内長野市","kana":"カワチナガノシ","romaji":"Kawachinagano-shi"},
-  {"code":"27217","prefecture":"27","name":"松原市","kana":"マツバラシ","romaji":"Matsubara-shi"},
-  {"code":"27218","prefecture":"27","name":"大東市","kana":"ダイトウシ","romaji":"Daito-shi"},
-  {"code":"27219","prefecture":"27","name":"和泉市","kana":"イズミシ","romaji":"Izumi-shi"},
-  {"code":"27220","prefecture":"27","name":"箕面市","kana":"ミノオシ","romaji":"Mino-shi"},
-  {"code":"27221","prefecture":"27","name":"柏原市","kana":"カシワラシ","romaji":"Kashiwara-shi"},
-  {"code":"27222","prefecture":"27","name":"羽曳野市","kana":"ハビキノシ","romaji":"Habikino-shi"},
-  {"code":"27223","prefecture":"27","name":"門真市","kana":"カドマシ","romaji":"Kadoma-shi"},
-  {"code":"27224","prefecture":"27","name":"摂津市","kana":"セッツシ","romaji":"Settsu-shi"},
-  {"code":"27225","prefecture":"27","name":"高石市","kana":"タカイシシ","romaji":"Takaishi-shi"},
-  {"code":"27226","prefecture":"27","name":"藤井寺市","kana":"フジイデラシ","romaji":"Fujiidera-shi"},
-  {"code":"27227","prefecture":"27","name":"東大阪市","kana":"ヒガシオオサカシ","romaji":"Higashiosaka-shi"},
-  {"code":"27228","prefecture":"27","name":"泉南市","kana":"センナンシ","romaji":"Sennan-shi"},
-  {"code":"27229","prefecture":"27","name":"四條畷市","kana":"シジョウナワテシ","romaji":"Shijonawate-shi"},
-  {"code":"27230","prefecture":"27","name":"交野市","kana":"カタノシ","romaji":"Katano-shi"},
-  {"code":"27231","prefecture":"27","name":"大阪狭山市","kana":"オオサカサヤマシ","romaji":"Osakasayama-shi"},
-  {"code":"27232","prefecture":"27","name":"阪南市","kana":"ハンナンシ","romaji":"Hannan-shi"},
-  {"code":"27301","prefecture":"27","name":"三島郡島本町","kana":"ミシマグンシマモトチョウ","romaji":"Mishima-gun Shimamoto-cho"},
-  {"code":"27321","prefecture":"27","name":"豊能郡豊能町","kana":"トヨノグントヨノチョウ","romaji":"Toyono-gun Toyono-cho"},
-  {"code":"27322","prefecture":"27","name":"豊能郡能勢町","kana":"トヨノグンノセチョウ","romaji":"Toyono-gun Nose-cho"},
-  {"code":"27341","prefecture":"27","name":"泉北郡忠岡町","kana":"センボクグンタダオカチョウ","romaji":"Semboku-gun Tadaoka-cho"},
-  {"code":"27361","prefecture":"27","name":"泉南郡熊取町","kana":"センナングンクマトリチョウ","romaji":"Sennan-gun Kumatori-cho"},
-  {"code":"27362","prefecture":"27","name":"泉南郡田尻町","kana":"センナングンタジリチョウ","romaji":"Sennan-gun Tajiri-cho"},
-  {"code":"27366","prefecture":"27","name":"泉南郡岬町","kana":"センナングンミサキチョウ","romaji":"Sennan-gun Misaki-cho"},
-  {"code":"27381","prefecture":"27","name":"南河内郡太子町","kana":"ミナミカワチグンタイシチョウ","romaji":"Minamikawachi-gun Taishi-cho"},
-  {"code":"27382","prefecture":"27","name":"南河内郡河南町","kana":"ミナミカワチグンカナンチョウ","romaji":"Minamikawachi-gun Kanan-cho"},
-  {"code":"27383","prefecture":"27","name":"南河内郡千早赤阪村","kana":"ミナミカワチグンチハヤアカサカムラ","romaji":"Minamikawachi-gun Chihayaakasaka-mura"},
-  {"code":"28101","prefecture":"28","name":"神戸市東灘区","kana":"コウベシヒガシナダク","romaji":"Kobe-shi Higashinada-ku"},
-  {"code":"28102","prefecture":"28","name":"神戸市灘区","kana":"コウベシナダク","romaji":"Kobe-shi Nada-ku"},
-  {"code":"28105","prefecture":"28","name":"神戸市兵庫区","kana":"コウベシヒョウゴク","romaji":"Kobe-shi Hyogo-ku"},
-  {"code":"28106","prefecture":"28","name":"神戸市長田区","kana":"コウベシナガタク","romaji":"Kobe-shi Nagata-ku"},
-  {"code":"28107","prefecture":"28","name":"神戸市須磨区","kana":"コウベシスマク","romaji":"Kobe-shi Suma-ku"},
-  {"code":"28108","prefecture":"28","name":"神戸市垂水区","kana":"コウベシタルミク","romaji":"Kobe-shi Tarumi-ku"},
-  {"code":"28109","prefecture":"28","name":"神戸市北区","kana":"コウベシキタク","romaji":"Kobe-shi Kita-ku"},
-  {"code":"28110","prefecture":"28","name":"神戸市中央区","kana":"コウベシチュウオウク","romaji":"Kobe-shi Chuo-ku"},
-  {"code":"28111","prefecture":"28","name":"神戸市西区","kana":"コウベシニシク","romaji":"Kobe-shi Nishi-ku"},
-  {"code":"28201","prefecture":"28","name":"姫路市","kana":"ヒメジシ","romaji":"Himeji-shi"},
-  {"code":"28202","prefecture":"28","name":"尼崎市","kana":"アマガサキシ","romaji":"Amagasaki-shi"},
-  {"code":"28203","prefecture":"28","name":"明石市","kana":"アカシシ","romaji":"Akashi-shi"},
-  {"code":"28204","prefecture":"28","name":"西宮市","kana":"ニシノミヤシ","romaji":"Nishinomiya-shi"},
-  {"code":"28205","prefecture":"28","name":"洲本市","kana":"スモトシ","romaji":"Sumoto-shi"},
-  {"code":"28206","prefecture":"28","name":"芦屋市","kana":"アシヤシ","romaji":"Ashiya-shi"},
-  {"code":"28207","prefecture":"28","name":"伊丹市","kana":"イタミシ","romaji":"Itami-shi"},
-  {"code":"28208","prefecture":"28","name":"相生市","kana":"アイオイシ","romaji":"Aioi-shi"},
-  {"code":"28209","prefecture":"28","name":"豊岡市","kana":"トヨオカシ","romaji":"Toyoka-shi"},
-  {"code":"28210","prefecture":"28","name":"加古川市","kana":"カコガワシ","romaji":"Kakogawa-shi"},
-  {"code":"28212","prefecture":"28","name":"赤穂市","kana":"アコウシ","romaji":"Ako-shi"},
-  {"code":"28213","prefecture":"28","name":"西脇市","kana":"ニシワキシ","romaji":"Nishiwaki-shi"},
-  {"code":"28214","prefecture":"28","name":"宝塚市","kana":"タカラヅカシ","romaji":"Takarazuka-shi"},
-  {"code":"28215","prefecture":"28","name":"三木市","kana":"ミキシ","romaji":"Miki-shi"},
-  {"code":"28216","prefecture":"28","name":"高砂市","kana":"タカサゴシ","romaji":"Takasago-shi"},
-  {"code":"28217","prefecture":"28","name":"川西市","kana":"カワニシシ","romaji":"Kawanishi-shi"},
-  {"code":"28218","prefecture":"28","name":"小野市","kana":"オノシ","romaji":"Ono-shi"},
-  {"code":"28219","prefecture":"28","name":"三田市","kana":"サンダシ","romaji":"Sanda-shi"},
-  {"code":"28220","prefecture":"28","name":"加西市","kana":"カサイシ","romaji":"Kasai-shi"},
-  {"code":"28221","prefecture":"28","name":"丹波篠山市","kana":"タンバササヤマシ","romaji":"Tambasasayama-shi"},
-  {"code":"28222","prefecture":"28","name":"養父市","kana":"ヤブシ","romaji":"Yabu-shi"},
-  {"code":"28223","prefecture":"28","name":"丹波市","kana":"タンバシ","romaji":"Tamba-shi"},
-  {"code":"28224","prefecture":"28","name":"南あわじ市","kana":"ミナミアワジシ","romaji":"Minamiawaji-shi"},
-  {"code":"28225","prefecture":"28","name":"朝来市","kana":"アサゴシ","romaji":"Asago-shi"},
-  {"code":"28226","prefecture":"28","name":"淡路市","kana":"アワジシ","romaji":"Awaji-shi"},
-  {"code":"28227","prefecture":"28","name":"宍粟市","kana":"シソウシ","romaji":"Shiso-shi"},
-  {"code":"28228","prefecture":"28","name":"加東市","kana":"カトウシ","romaji":"Kato-shi"},
-  {"code":"28229","prefecture":"28","name":"たつの市","kana":"タツノシ","romaji":"Tatsuno-shi"},
-  {"code":"28301","prefecture":"28","name":"川辺郡猪名川町","kana":"カワベグンイナガワチョウ","romaji":"Kawabe-gun Inagawa-cho"},
-  {"code":"28365","prefecture":"28","name":"多可郡多可町","kana":"タカグンタカチョウ","romaji":"Taka-gun Taka-cho"},
-  {"code":"28381","prefecture":"28","name":"加古郡稲美町","kana":"カコグンイナミチョウ","romaji":"Kako-gun Inami-cho"},
-  {"code":"28382","prefecture":"28","name":"加古郡播磨町","kana":"カコグンハリマチョウ","romaji":"Kako-gun Harima-cho"},
-  {"code":"28442","prefecture":"28","name":"神崎郡市川町","kana":"カンザキグンイチカワチョウ","romaji":"Kanzaki-gun Ichikawa-cho"},
-  {"code":"28443","prefecture":"28","name":"神崎郡福崎町","kana":"カンザキグンフクサキチョウ","romaji":"Kanzaki-gun Fukusaki-cho"},
-  {"code":"28446","prefecture":"28","name":"神崎郡神河町","kana":"カンザキグンカミカワチョウ","romaji":"Kanzaki-gun Kamikawa-cho"},
-  {"code":"28464","prefecture":"28","name":"揖保郡太子町","kana":"イボグンタイシチョウ","romaji":"Ibo-gun Taishi-cho"},
-  {"code":"28481","prefecture":"28","name":"赤穂郡上郡町","kana":"アコウグンカミゴオリチョウ","romaji":"Ako-gun Kamigori-cho"},
-  {"code":"28501","prefecture":"28","name":"佐用郡佐用町","kana":"サヨウグンサヨウチョウ","romaji":"Sayo-gun Sayo-cho"},
-  {"code":"28585","prefecture":"28","name":"美方郡香美町","kana":"ミカタグンカミチョウ","romaji":"Mikata-gun Kami-cho"},
-  {"code":"28586","prefecture":"28","name":"美方郡新温泉町","kana":"ミカタグンシンオンセンチョウ","romaji":"Mikata-gun Shinonsen-cho"},
-  {"code":"29201","prefecture":"29","name":"奈良市","kana":"ナラシ","romaji":"Nara-shi"},
-  {"code":"29202","prefecture":"29","name":"大和高田市","kana":"ヤマトタカダシ","romaji":"Yamatotakada-shi"},
-  {"code":"29203","prefecture":"29","name":"大和郡山市","kana":"ヤマトコオリヤマシ","romaji":"Yamatokoriyama-shi"},
-  {"code":"29204","prefecture":"29","name":"天理市","kana":"テンリシ","romaji":"Tenri-shi"},
-  {"code":"29205","prefecture":"29","name":"橿原市","kana":"カシハラシ","romaji":"Kashihara-shi"},
-  {"code":"29206","prefecture":"29","name":"桜井市","kana":"サクライシ","romaji":"Sakurai-shi"},
-  {"code":"29207","prefecture":"29","name":"五條市","kana":"ゴジョウシ","romaji":"Gojo-shi"},
-  {"code":"29208","prefecture":"29","name":"御所市","kana":"ゴセシ","romaji":"Gose-shi"},
-  {"code":"29209","prefecture":"29","name":"生駒市","kana":"イコマシ","romaji":"Ikoma-shi"},
-  {"code":"29210","prefecture":"29","name":"香芝市","kana":"カシバシ","romaji":"Kashiba-shi"},
-  {"code":"29211","prefecture":"29","name":"葛城市","kana":"カツラギシ","romaji":"Katsuragi-shi"},
-  {"code":"29212","prefecture":"29","name":"宇陀市","kana":"ウダシ","romaji":"Uda-shi"},
-  {"code":"29322","prefecture":"29","name":"山辺郡山添村","kana":"ヤマベグンヤマゾエムラ","romaji":"Yamabe-gun Yamazoe-mura"},
-  {"code":"29342","prefecture":"29","name":"生駒郡平群町","kana":"イコマグンヘグリチョウ","romaji":"Ikoma-gun Heguri-cho"},
-  {"code":"29343","prefecture":"29","name":"生駒郡三郷町","kana":"イコマグンサンゴウチョウ","romaji":"Ikoma-gun Sango-cho"},
-  {"code":"29344","prefecture":"29","name":"生駒郡斑鳩町","kana":"イコマグンイカルガチョウ","romaji":"Ikoma-gun Ikaruga-cho"},
-  {"code":"29345","prefecture":"29","name":"生駒郡安堵町","kana":"イコマグンアンドチョウ","romaji":"Ikoma-gun Ando-cho"},
-  {"code":"29361","prefecture":"29","name":"磯城郡川西町","kana":"シキグンカワニシチョウ","romaji":"Shiki-gun Kawanishi-cho"},
-  {"code":"29362","prefecture":"29","name":"磯城郡三宅町","kana":"シキグンミヤケチョウ","romaji":"Shiki-gun Miyake-cho"},
-  {"code":"29363","prefecture":"29","name":"磯城郡田原本町","kana":"シキグンタワラモトチョウ","romaji":"Shiki-gun Tawaramoto-cho"},
-  {"code":"29385","prefecture":"29","name":"宇陀郡曽爾村","kana":"ウダグンソニムラ","romaji":"Uda-gun Soni-mura"},
-  {"code":"29386","prefecture":"29","name":"宇陀郡御杖村","kana":"ウダグンミツエムラ","romaji":"Uda-gun Mitsue-mura"},
-  {"code":"29401","prefecture":"29","name":"高市郡高取町","kana":"タカイチグンタカトリチョウ","romaji":"Takaichi-gun Takatori-cho"},
-  {"code":"29402","prefecture":"29","name":"高市郡明日香村","kana":"タカイチグンアスカムラ","romaji":"Takaichi-gun Asuka-mura"},
-  {"code":"29424","prefecture":"29","name":"北葛城郡上牧町","kana":"キタカツラギグンカンマキチョウ","romaji":"Kitakatsuragi-gun Kammaki-cho"},
-  {"code":"29425","prefecture":"29","name":"北葛城郡王寺町","kana":"キタカツラギグンオウジチョウ","romaji":"Kitakatsuragi-gun Oji-cho"},
-  {"code":"29426","prefecture":"29","name":"北葛城郡広陵町","kana":"キタカツラギグンコウリョウチョウ","romaji":"Kitakatsuragi-gun Koryo-cho"},
-  {"code":"29427","prefecture":"29","name":"北葛城郡河合町","kana":"キタカツラギグンカワイチョウ","romaji":"Kitakatsuragi-gun Kawai-cho"},
-  {"code":"29441","prefecture":"29","name":"吉野郡吉野町","kana":"ヨシノグンヨシノチョウ","romaji":"Yoshino-gun Yoshino-cho"},
-  {"code":"29442","prefecture":"29","name":"吉野郡大淀町","kana":"ヨシノグンオオヨドチョウ","romaji":"Yoshino-gun Oyodo-cho"},
-  {"code":"29443","prefecture":"29","name":"吉野郡下市町","kana":"ヨシノグンシモイチチョウ","romaji":"Yoshino-gun Shimoichi-cho"},
-  {"code":"29444","prefecture":"29","name":"吉野郡黒滝村","kana":"ヨシノグンクロタキムラ","romaji":"Yoshino-gun Kurotaki-mura"},
-  {"code":"29446","prefecture":"29","name":"吉野郡天川村","kana":"ヨシノグンテンカワムラ","romaji":"Yoshino-gun Tenkawa-mura"},
-  {"code":"29447","prefecture":"29","name":"吉野郡野迫川村","kana":"ヨシノグンノセガワムラ","romaji":"Yoshino-gun Nosegawa-mura"},
-  {"code":"29449","prefecture":"29","name":"吉野郡十津川村","kana":"ヨシノグントツカワムラ","romaji":"Yoshino-gun Totsukawa-mura"},
-  {"code":"29450","prefecture":"29","name":"吉野郡下北山村","kana":"ヨシノグンシモキタヤマムラ","romaji":"Yoshino-gun Shimokitayama-mura"},
-  {"code":"29451","prefecture":"29","name":"吉野郡上北山村","kana":"ヨシノグンカミキタヤマムラ","romaji":"Yoshino-gun Kamikitayama-mura"},
-  {"code":"29452","prefecture":"29","name":"吉野郡川上村","kana":"ヨシノグンカワカミムラ","romaji":"Yoshino-gun Kawakami-mura"},
-  {"code":"29453","prefecture":"29","name":"吉野郡東吉野村","kana":"ヨシノグンヒガシヨシノムラ","romaji":"Yoshino-gun Higashiyoshino-mura"},
-  {"code":"30201","prefecture":"30","name":"和歌山市","kana":"ワカヤマシ","romaji":"Wakayama-shi"},
-  {"code":"30202","prefecture":"30","name":"海南市","kana":"カイナンシ","romaji":"Kainan-shi"},
-  {"code":"30203","prefecture":"30","name":"橋本市","kana":"ハシモトシ","romaji":"Hashimoto-shi"},
-  {"code":"30204","prefecture":"30","name":"有田市","kana":"アリダシ","romaji":"Arida-shi"},
-  {"code":"30205","prefecture":"30","name":"御坊市","kana":"ゴボウシ","romaji":"Gobo-shi"},
-  {"code":"30206","prefecture":"30","name":"田辺市","kana":"タナベシ","romaji":"Tanabe-shi"},
-  {"code":"30207","prefecture":"30","name":"新宮市","kana":"シングウシ","romaji":"Shingu-shi"},
-  {"code":"30208","prefecture":"30","name":"紀の川市","kana":"キノカワシ","romaji":"Kinokawa-shi"},
-  {"code":"30209","prefecture":"30","name":"岩出市","kana":"イワデシ","romaji":"Iwade-shi"},
-  {"code":"30304","prefecture":"30","name":"海草郡紀美野町","kana":"カイソウグンキミノチョウ","romaji":"Kaiso-gun Kimino-cho"},
-  {"code":"30341","prefecture":"30","name":"伊都郡かつらぎ町","kana":"イトグンカツラギチョウ","romaji":"Ito-gun Katsuragi-cho"},
-  {"code":"30343","prefecture":"30","name":"伊都郡九度山町","kana":"イトグンクドヤマチョウ","romaji":"Ito-gun Kudoyama-cho"},
-  {"code":"30344","prefecture":"30","name":"伊都郡高野町","kana":"イトグンコウヤチョウ","romaji":"Ito-gun Koya-cho"},
-  {"code":"30361","prefecture":"30","name":"有田郡湯浅町","kana":"アリダグンユアサチョウ","romaji":"Arida-gun Yuasa-cho"},
-  {"code":"30362","prefecture":"30","name":"有田郡広川町","kana":"アリダグンヒロガワチョウ","romaji":"Arida-gun Hirogawa-cho"},
-  {"code":"30366","prefecture":"30","name":"有田郡有田川町","kana":"アリダグンアリダガワチョウ","romaji":"Arida-gun Aridagawa-cho"},
-  {"code":"30381","prefecture":"30","name":"日高郡美浜町","kana":"ヒダカグンミハマチョウ","romaji":"Hidaka-gun Mihama-cho"},
-  {"code":"30382","prefecture":"30","name":"日高郡日高町","kana":"ヒダカグンヒダカチョウ","romaji":"Hidaka-gun Hidaka-cho"},
-  {"code":"30383","prefecture":"30","name":"日高郡由良町","kana":"ヒダカグンユラチョウ","romaji":"Hidaka-gun Yura-cho"},
-  {"code":"30390","prefecture":"30","name":"日高郡印南町","kana":"ヒダカグンイナミチョウ","romaji":"Hidaka-gun Inami-cho"},
-  {"code":"30391","prefecture":"30","name":"日高郡みなべ町","kana":"ヒダカグンミナベチョウ","romaji":"Hidaka-gun Minabe-cho"},
-  {"code":"30392","prefecture":"30","name":"日高郡日高川町","kana":"ヒダカグンヒダカガワチョウ","romaji":"Hidaka-gun Hidakagawa-cho"},
-  {"code":"30401","prefecture":"30","name":"西牟婁郡白浜町","kana":"ニシムログンシラハマチョウ","romaji":"Nishimuro-gun Shirahama-cho"},
-  {"code":"30404","prefecture":"30","name":"西牟婁郡上富田町","kana":"ニシムログンカミトンダチョウ","romaji":"Nishimuro-gun Kamitonda-cho"},
-  {"code":"30406","prefecture":"30","name":"西牟婁郡すさみ町","kana":"ニシムログンスサミチョウ","romaji":"Nishimuro-gun Susami-cho"},
-  {"code":"30421","prefecture":"30","name":"東牟婁郡那智勝浦町","kana":"ヒガシムログンナチカツウラチョウ","romaji":"Higashimuro-gun Nachikatsura-cho"},
-  {"code":"30422","prefecture":"30","name":"東牟婁郡太地町","kana":"ヒガシムログンタイジチョウ","romaji":"Higashimuro-gun Taiji-cho"},
-  {"code":"30424","prefecture":"30","name":"東牟婁郡古座川町","kana":"ヒガシムログンコザガワチョウ","romaji":"Higashimuro-gun Kozagawa-cho"},
-  {"code":"30427","prefecture":"30","name":"東牟婁郡北山村","kana":"ヒガシムログンキタヤマムラ","romaji":"Higashimuro-gun Kitayama-mura"},
-  {"code":"30428","prefecture":"30","name":"東牟婁郡串本町","kana":"ヒガシムログンクシモトチョウ","romaji":"Higashimuro-gun Kushimoto-cho"},
-  {"code":"31201","prefecture":"31","name":"鳥取市","kana":"トットリシ","romaji":"Tottori-shi"},
-  {"code":"31202","prefecture":"31","name":"米子市","kana":"ヨナゴシ","romaji":"Yonago-shi"},
-  {"code":"31203","prefecture":"31","name":"倉吉市","kana":"クラヨシシ","romaji":"Kurayoshi-shi"},
-  {"code":"31204","prefecture":"31","name":"境港市","kana":"サカイミナトシ","romaji":"Sakaiminato-shi"},
-  {"code":"31302","prefecture":"31","name":"岩美郡岩美町","kana":"イワミグンイワミチョウ","romaji":"Iwami-gun Iwami-cho"},
-  {"code":"31325","prefecture":"31","name":"八頭郡若桜町","kana":"ヤズグンワカサチョウ","romaji":"Yazu-gun Wakasa-cho"},
-  {"code":"31328","prefecture":"31","name":"八頭郡智頭町","kana":"ヤズグンチヅチョウ","romaji":"Yazu-gun Chizu-cho"},
-  {"code":"31329","prefecture":"31","name":"八頭郡八頭町","kana":"ヤズグンヤズチョウ","romaji":"Yazu-gun Yazu-cho"},
-  {"code":"31364","prefecture":"31","name":"東伯郡三朝町","kana":"トウハクグンミササチョウ","romaji":"Tohaku-gun Misasa-cho"},
-  {"code":"31370","prefecture":"31","name":"東伯郡湯梨浜町","kana":"トウハクグンユリハマチョウ","romaji":"Tohaku-gun Yurihama-cho"},
-  {"code":"31371","prefecture":"31","name":"東伯郡琴浦町","kana":"トウハクグンコトウラチョウ","romaji":"Tohaku-gun Kotora-cho"},
-  {"code":"31372","prefecture":"31","name":"東伯郡北栄町","kana":"トウハクグンホクエイチョウ","romaji":"Tohaku-gun Hokuei-cho"},
-  {"code":"31384","prefecture":"31","name":"西伯郡日吉津村","kana":"サイハクグンヒエヅソン","romaji":"Saihaku-gun Hiezu-son"},
-  {"code":"31386","prefecture":"31","name":"西伯郡大山町","kana":"サイハクグンダイセンチョウ","romaji":"Saihaku-gun Daisen-cho"},
-  {"code":"31389","prefecture":"31","name":"西伯郡南部町","kana":"サイハクグンナンブチョウ","romaji":"Saihaku-gun Nambu-cho"},
-  {"code":"31390","prefecture":"31","name":"西伯郡伯耆町","kana":"サイハクグンホウキチョウ","romaji":"Saihaku-gun Hoki-cho"},
-  {"code":"31401","prefecture":"31","name":"日野郡日南町","kana":"ヒノグンニチナンチョウ","romaji":"Hino-gun Nichinan-cho"},
-  {"code":"31402","prefecture":"31","name":"日野郡日野町","kana":"ヒノグンヒノチョウ","romaji":"Hino-gun Hino-cho"},
-  {"code":"31403","prefecture":"31","name":"日野郡江府町","kana":"ヒノグンコウフチョウ","romaji":"Hino-gun Kofu-cho"},
-  {"code":"32201","prefecture":"32","name":"松江市","kana":"マツエシ","romaji":"Matsue-shi"},
-  {"code":"32202","prefecture":"32","name":"浜田市","kana":"ハマダシ","romaji":"Hamada-shi"},
-  {"code":"32203","prefecture":"32","name":"出雲市","kana":"イズモシ","romaji":"Izumo-shi"},
-  {"code":"32204","prefecture":"32","name":"益田市","kana":"マスダシ","romaji":"Masuda-shi"},
-  {"code":"32205","prefecture":"32","name":"大田市","kana":"オオダシ","romaji":"Oda-shi"},
-  {"code":"32206","prefecture":"32","name":"安来市","kana":"ヤスギシ","romaji":"Yasugi-shi"},
-  {"code":"32207","prefecture":"32","name":"江津市","kana":"ゴウツシ","romaji":"Gotsu-shi"},
-  {"code":"32209","prefecture":"32","name":"雲南市","kana":"ウンナンシ","romaji":"Unnan-shi"},
-  {"code":"32343","prefecture":"32","name":"仁多郡奥出雲町","kana":"ニタグンオクイズモチョウ","romaji":"Nita-gun Okuizumo-cho"},
-  {"code":"32386","prefecture":"32","name":"飯石郡飯南町","kana":"イイシグンイイナンチョウ","romaji":"Iishi-gun Iinan-cho"},
-  {"code":"32441","prefecture":"32","name":"邑智郡川本町","kana":"オオチグンカワモトマチ","romaji":"Ochi-gun Kawamoto-machi"},
-  {"code":"32448","prefecture":"32","name":"邑智郡美郷町","kana":"オオチグンミサトチョウ","romaji":"Ochi-gun Misato-cho"},
-  {"code":"32449","prefecture":"32","name":"邑智郡邑南町","kana":"オオチグンオオナンチョウ","romaji":"Ochi-gun Onan-cho"},
-  {"code":"32501","prefecture":"32","name":"鹿足郡津和野町","kana":"カノアシグンツワノチョウ","romaji":"Kanoashi-gun Tsuwano-cho"},
-  {"code":"32505","prefecture":"32","name":"鹿足郡吉賀町","kana":"カノアシグンヨシカチョウ","romaji":"Kanoashi-gun Yoshika-cho"},
-  {"code":"32525","prefecture":"32","name":"隠岐郡海士町","kana":"オキグンアマチョウ","romaji":"Oki-gun Ama-cho"},
-  {"code":"32526","prefecture":"32","name":"隠岐郡西ノ島町","kana":"オキグンニシノシマチョウ","romaji":"Oki-gun Nishinoshima-cho"},
-  {"code":"32527","prefecture":"32","name":"隠岐郡知夫村","kana":"オキグンチブムラ","romaji":"Oki-gun Chibu-mura"},
-  {"code":"32528","prefecture":"32","name":"隠岐郡隠岐の島町","kana":"オキグンオキノシマチョウ","romaji":"Oki-gun Okinoshima-cho"},
-  {"code":"33101","prefecture":"33","name":"岡山市北区","kana":"オカヤマシキタク","romaji":"Okayama-shi Kita-ku"},
-  {"code":"33102","prefecture":"33","name":"岡山市中区","kana":"オカヤマシナカク","romaji":"Okayama-shi Naka-ku"},
-  {"code":"33103","prefecture":"33","name":"岡山市東区","kana":"オカヤマシヒガシク","romaji":"Okayama-shi Higashi-ku"},
-  {"code":"33104","prefecture":"33","name":"岡山市南区","kana":"オカヤマシミナミク","romaji":"Okayama-shi Minami-ku"},
-  {"code":"33202","prefecture":"33","name":"倉敷市","kana":"クラシキシ","romaji":"Kurashiki-shi"},
-  {"code":"33203","prefecture":"33","name":"津山市","kana":"ツヤマシ","romaji":"Tsuyama-shi"},
-  {"code":"33204","prefecture":"33","name":"玉野市","kana":"タマノシ","romaji":"Tamano-shi"},
-  {"code":"33205","prefecture":"33","name":"笠岡市","kana":"カサオカシ","romaji":"Kasaoka-shi"},
-  {"code":"33207","prefecture":"33","name":"井原市","kana":"イバラシ","romaji":"Ibara-shi"},
-  {"code":"33208","prefecture":"33","name":"総社市","kana":"ソウジャシ","romaji":"Soja-shi"},
-  {"code":"33209","prefecture":"33","name":"高梁市","kana":"タカハシシ","romaji":"Takahashi-shi"},
-  {"code":"33210","prefecture":"33","name":"新見市","kana":"ニイミシ","romaji":"Niimi-shi"},
-  {"code":"33211","prefecture":"33","name":"備前市","kana":"ビゼンシ","romaji":"Bizen-shi"},
-  {"code":"33212","prefecture":"33","name":"瀬戸内市","kana":"セトウチシ","romaji":"Setochi-shi"},
-  {"code":"33213","prefecture":"33","name":"赤磐市","kana":"アカイワシ","romaji":"Akaiwa-shi"},
-  {"code":"33214","prefecture":"33","name":"真庭市","kana":"マニワシ","romaji":"Maniwa-shi"},
-  {"code":"33215","prefecture":"33","name":"美作市","kana":"ミマサカシ","romaji":"Mimasaka-shi"},
-  {"code":"33216","prefecture":"33","name":"浅口市","kana":"アサクチシ","romaji":"Asakuchi-shi"},
-  {"code":"33346","prefecture":"33","name":"和気郡和気町","kana":"ワケグンワケチョウ","romaji":"Wake-gun Wake-cho"},
-  {"code":"33423","prefecture":"33","name":"都窪郡早島町","kana":"ツクボグンハヤシマチョウ","romaji":"Tsukubo-gun Hayashima-cho"},
-  {"code":"33445","prefecture":"33","name":"浅口郡里庄町","kana":"アサクチグンサトショウチョウ","romaji":"Asakuchi-gun Satosho-cho"},
-  {"code":"33461","prefecture":"33","name":"小田郡矢掛町","kana":"オダグンヤカゲチョウ","romaji":"Oda-gun Yakage-cho"},
-  {"code":"33586","prefecture":"33","name":"真庭郡新庄村","kana":"マニワグンシンジョウソン","romaji":"Maniwa-gun Shinjo-son"},
-  {"code":"33606","prefecture":"33","name":"苫田郡鏡野町","kana":"トマタグンカガミノチョウ","romaji":"Tomata-gun Kagamino-cho"},
-  {"code":"33622","prefecture":"33","name":"勝田郡勝央町","kana":"カツタグンショウオウチョウ","romaji":"Katsuta-gun Shoo-cho"},
-  {"code":"33623","prefecture":"33","name":"勝田郡奈義町","kana":"カツタグンナギチョウ","romaji":"Katsuta-gun Nagi-cho"},
-  {"code":"33643","prefecture":"33","name":"英田郡西粟倉村","kana":"アイダグンニシアワクラソン","romaji":"Aida-gun Nishiawakura-son"},
-  {"code":"33663","prefecture":"33","name":"久米郡久米南町","kana":"クメグンクメナンチョウ","romaji":"Kume-gun Kumenan-cho"},
-  {"code":"33666","prefecture":"33","name":"久米郡美咲町","kana":"クメグンミサキチョウ","romaji":"Kume-gun Misaki-cho"},
-  {"code":"33681","prefecture":"33","name":"加賀郡吉備中央町","kana":"カガグンキビチュウオウチョウ","romaji":"Kaga-gun Kibichuo-cho"},
-  {"code":"34101","prefecture":"34","name":"広島市中区","kana":"ヒロシマシナカク","romaji":"Hiroshima-shi Naka-ku"},
-  {"code":"34102","prefecture":"34","name":"広島市東区","kana":"ヒロシマシヒガシク","romaji":"Hiroshima-shi Higashi-ku"},
-  {"code":"34103","prefecture":"34","name":"広島市南区","kana":"ヒロシマシミナミク","romaji":"Hiroshima-shi Minami-ku"},
-  {"code":"34104","prefecture":"34","name":"広島市西区","kana":"ヒロシマシニシク","romaji":"Hiroshima-shi Nishi-ku"},
-  {"code":"34105","prefecture":"34","name":"広島市安佐南区","kana":"ヒロシマシアサミナミク","romaji":"Hiroshima-shi Asaminami-ku"},
-  {"code":"34106","prefecture":"34","name":"広島市安佐北区","kana":"ヒロシマシアサキタク","romaji":"Hiroshima-shi Asakita-ku"},
-  {"code":"34107","prefecture":"34","name":"広島市安芸区","kana":"ヒロシマシアキク","romaji":"Hiroshima-shi Aki-ku"},
-  {"code":"34108","prefecture":"34","name":"広島市佐伯区","kana":"ヒロシマシサエキク","romaji":"Hiroshima-shi Saeki-ku"},
-  {"code":"34202","prefecture":"34","name":"呉市","kana":"クレシ","romaji":"Kure-shi"},
-  {"code":"34203","prefecture":"34","name":"竹原市","kana":"タケハラシ","romaji":"Takehara-shi"},
-  {"code":"34204","prefecture":"34","name":"三原市","kana":"ミハラシ","romaji":"Mihara-shi"},
-  {"code":"34205","prefecture":"34","name":"尾道市","kana":"オノミチシ","romaji":"Onomichi-shi"},
-  {"code":"34207","prefecture":"34","name":"福山市","kana":"フクヤマシ","romaji":"Fukuyama-shi"},
-  {"code":"34208","prefecture":"34","name":"府中市","kana":"フチュウシ","romaji":"Fuchu-shi"},
-  {"code":"34209","prefecture":"34","name":"三次市","kana":"ミヨシシ","romaji":"Miyoshi-shi"},
-  {"code":"34210","prefecture":"34","name":"庄原市","kana":"ショウバラシ","romaji":"Shobara-shi"},
-  {"code":"34211","prefecture":"34","name":"大竹市","kana":"オオタケシ","romaji":"Otake-shi"},
-  {"code":"34212","prefecture":"34","name":"東広島市","kana":"ヒガシヒロシマシ","romaji":"Higashihiroshima-shi"},
-  {"code":"34213","prefecture":"34","name":"廿日市市","kana":"ハツカイチシ","romaji":"Hatsukaichi-shi"},
-  {"code":"34214","prefecture":"34","name":"安芸高田市","kana":"アキタカタシ","romaji":"Akitakata-shi"},
-  {"code":"34215","prefecture":"34","name":"江田島市","kana":"エタジマシ","romaji":"Etajima-shi"},
-  {"code":"34302","prefecture":"34","name":"安芸郡府中町","kana":"アキグンフチュウチョウ","romaji":"Aki-gun Fuchu-cho"},
-  {"code":"34304","prefecture":"34","name":"安芸郡海田町","kana":"アキグンカイタチョウ","romaji":"Aki-gun Kaita-cho"},
-  {"code":"34307","prefecture":"34","name":"安芸郡熊野町","kana":"アキグンクマノチョウ","romaji":"Aki-gun Kumano-cho"},
-  {"code":"34309","prefecture":"34","name":"安芸郡坂町","kana":"アキグンサカチョウ","romaji":"Aki-gun Saka-cho"},
-  {"code":"34368","prefecture":"34","name":"山県郡安芸太田町","kana":"ヤマガタグンアキオオタチョウ","romaji":"Yamagata-gun Akiota-cho"},
-  {"code":"34369","prefecture":"34","name":"山県郡北広島町","kana":"ヤマガタグンキタヒロシマチョウ","romaji":"Yamagata-gun Kitahiroshima-cho"},
-  {"code":"34431","prefecture":"34","name":"豊田郡大崎上島町","kana":"トヨタグンオオサキカミジマチョウ","romaji":"Toyota-gun Osakikamijima-cho"},
-  {"code":"34462","prefecture":"34","name":"世羅郡世羅町","kana":"セラグンセラチョウ","romaji":"Sera-gun Sera-cho"},
-  {"code":"34545","prefecture":"34","name":"神石郡神石高原町","kana":"ジンセキグンジンセキコウゲンチョウ","romaji":"Jinseki-gun Jinsekikogen-cho"},
-  {"code":"35201","prefecture":"35","name":"下関市","kana":"シモノセキシ","romaji":"Shimonoseki-shi"},
-  {"code":"35202","prefecture":"35","name":"宇部市","kana":"ウベシ","romaji":"Ube-shi"},
-  {"code":"35203","prefecture":"35","name":"山口市","kana":"ヤマグチシ","romaji":"Yamaguchi-shi"},
-  {"code":"35204","prefecture":"35","name":"萩市","kana":"ハギシ","romaji":"Hagi-shi"},
-  {"code":"35206","prefecture":"35","name":"防府市","kana":"ホウフシ","romaji":"Hofu-shi"},
-  {"code":"35207","prefecture":"35","name":"下松市","kana":"クダマツシ","romaji":"Kudamatsu-shi"},
-  {"code":"35208","prefecture":"35","name":"岩国市","kana":"イワクニシ","romaji":"Iwakuni-shi"},
-  {"code":"35210","prefecture":"35","name":"光市","kana":"ヒカリシ","romaji":"Hikari-shi"},
-  {"code":"35211","prefecture":"35","name":"長門市","kana":"ナガトシ","romaji":"Nagato-shi"},
-  {"code":"35212","prefecture":"35","name":"柳井市","kana":"ヤナイシ","romaji":"Yanai-shi"},
-  {"code":"35213","prefecture":"35","name":"美祢市","kana":"ミネシ","romaji":"Mine-shi"},
-  {"code":"35215","prefecture":"35","name":"周南市","kana":"シュウナンシ","romaji":"Shunan-shi"},
-  {"code":"35216","prefecture":"35","name":"山陽小野田市","kana":"サンヨウオノダシ","romaji":"Sanyoonoda-shi"},
-  {"code":"35305","prefecture":"35","name":"大島郡周防大島町","kana":"オオシマグンスオウオオシマチョウ","romaji":"Oshima-gun Suooshima-cho"},
-  {"code":"35321","prefecture":"35","name":"玖珂郡和木町","kana":"クガグンワキチョウ","romaji":"Kuga-gun Waki-cho"},
-  {"code":"35341","prefecture":"35","name":"熊毛郡上関町","kana":"クマゲグンカミノセキチョウ","romaji":"Kumage-gun Kaminoseki-cho"},
-  {"code":"35343","prefecture":"35","name":"熊毛郡田布施町","kana":"クマゲグンタブセチョウ","romaji":"Kumage-gun Tabuse-cho"},
-  {"code":"35344","prefecture":"35","name":"熊毛郡平生町","kana":"クマゲグンヒラオチョウ","romaji":"Kumage-gun Hirao-cho"},
-  {"code":"35502","prefecture":"35","name":"阿武郡阿武町","kana":"アブグンアブチョウ","romaji":"Abu-gun Abu-cho"},
-  {"code":"36201","prefecture":"36","name":"徳島市","kana":"トクシマシ","romaji":"Tokushima-shi"},
-  {"code":"36202","prefecture":"36","name":"鳴門市","kana":"ナルトシ","romaji":"Naruto-shi"},
-  {"code":"36203","prefecture":"36","name":"小松島市","kana":"コマツシマシ","romaji":"Komatsushima-shi"},
-  {"code":"36204","prefecture":"36","name":"阿南市","kana":"アナンシ","romaji":"Anan-shi"},
-  {"code":"36205","prefecture":"36","name":"吉野川市","kana":"ヨシノガワシ","romaji":"Yoshinogawa-shi"},
-  {"code":"36206","prefecture":"36","name":"阿波市","kana":"アワシ","romaji":"Awa-shi"},
-  {"code":"36207","prefecture":"36","name":"美馬市","kana":"ミマシ","romaji":"Mima-shi"},
-  {"code":"36208","prefecture":"36","name":"三好市","kana":"ミヨシシ","romaji":"Miyoshi-shi"},
-  {"code":"36301","prefecture":"36","name":"勝浦郡勝浦町","kana":"カツウラグンカツウラチョウ","romaji":"Katsura-gun Katsura-cho"},
-  {"code":"36302","prefecture":"36","name":"勝浦郡上勝町","kana":"カツウラグンカミカツチョウ","romaji":"Katsura-gun Kamikatsu-cho"},
-  {"code":"36321","prefecture":"36","name":"名東郡佐那河内村","kana":"ミョウドウグンサナゴウチソン","romaji":"Myodo-gun Sanagochi-son"},
-  {"code":"36341","prefecture":"36","name":"名西郡石井町","kana":"ミョウザイグンイシイチョウ","romaji":"Myozai-gun Ishii-cho"},
-  {"code":"36342","prefecture":"36","name":"名西郡神山町","kana":"ミョウザイグンカミヤマチョウ","romaji":"Myozai-gun Kamiyama-cho"},
-  {"code":"36368","prefecture":"36","name":"那賀郡那賀町","kana":"ナカグンナカチョウ","romaji":"Naka-gun Naka-cho"},
-  {"code":"36383","prefecture":"36","name":"海部郡牟岐町","kana":"カイフグンムギチョウ","romaji":"Kaifu-gun Mugi-cho"},
-  {"code":"36387","prefecture":"36","name":"海部郡美波町","kana":"カイフグンミナミチョウ","romaji":"Kaifu-gun Minami-cho"},
-  {"code":"36388","prefecture":"36","name":"海部郡海陽町","kana":"カイフグンカイヨウチョウ","romaji":"Kaifu-gun Kaiyo-cho"},
-  {"code":"36401","prefecture":"36","name":"板野郡松茂町","kana":"イタノグンマツシゲチョウ","romaji":"Itano-gun Matsushige-cho"},
-  {"code":"36402","prefecture":"36","name":"板野郡北島町","kana":"イタノグンキタジマチョウ","romaji":"Itano-gun Kitajima-cho"},
-  {"code":"36403","prefecture":"36","name":"板野郡藍住町","kana":"イタノグンアイズミチョウ","romaji":"Itano-gun Aizumi-cho"},
-  {"code":"36404","prefecture":"36","name":"板野郡板野町","kana":"イタノグンイタノチョウ","romaji":"Itano-gun Itano-cho"},
-  {"code":"36405","prefecture":"36","name":"板野郡上板町","kana":"イタノグンカミイタチョウ","romaji":"Itano-gun Kamiita-cho"},
-  {"code":"36468","prefecture":"36","name":"美馬郡つるぎ町","kana":"ミマグンツルギチョウ","romaji":"Mima-gun Tsurugi-cho"},
-  {"code":"36489","prefecture":"36","name":"三好郡東みよし町","kana":"ミヨシグンヒガシミヨシチョウ","romaji":"Miyoshi-gun Higashimiyoshi-cho"},
-  {"code":"37201","prefecture":"37","name":"高松市","kana":"タカマツシ","romaji":"Takamatsu-shi"},
-  {"code":"37202","prefecture":"37","name":"丸亀市","kana":"マルガメシ","romaji":"Marugame-shi"},
-  {"code":"37203","prefecture":"37","name":"坂出市","kana":"サカイデシ","romaji":"Sakaide-shi"},
-  {"code":"37204","prefecture":"37","name":"善通寺市","kana":"ゼンツウジシ","romaji":"Zentsuji-shi"},
-  {"code":"37205","prefecture":"37","name":"観音寺市","kana":"カンオンジシ","romaji":"Kanonji-shi"},
-  {"code":"37206","prefecture":"37","name":"さぬき市","kana":"サヌキシ","romaji":"Sanuki-shi"},
-  {"code":"37207","prefecture":"37","name":"東かがわ市","kana":"ヒガシカガワシ","romaji":"Higashikagawa-shi"},
-  {"code":"37208","prefecture":"37","name":"三豊市","kana":"ミトヨシ","romaji":"Mitoyo-shi"},
-  {"code":"37322","prefecture":"37","name":"小豆郡土庄町","kana":"ショウズグントノショウチョウ","romaji":"Shozu-gun Tonosho-cho"},
-  {"code":"37324","prefecture":"37","name":"小豆郡小豆島町","kana":"ショウズグンショウドシマチョウ","romaji":"Shozu-gun Shodoshima-cho"},
-  {"code":"37341","prefecture":"37","name":"木田郡三木町","kana":"キタグンミキチョウ","romaji":"Kita-gun Miki-cho"},
-  {"code":"37364","prefecture":"37","name":"香川郡直島町","kana":"カガワグンナオシマチョウ","romaji":"Kagawa-gun Naoshima-cho"},
-  {"code":"37386","prefecture":"37","name":"綾歌郡宇多津町","kana":"アヤウタグンウタヅチョウ","romaji":"Ayauta-gun Utazu-cho"},
-  {"code":"37387","prefecture":"37","name":"綾歌郡綾川町","kana":"アヤウタグンアヤガワチョウ","romaji":"Ayauta-gun Ayagawa-cho"},
-  {"code":"37403","prefecture":"37","name":"仲多度郡琴平町","kana":"ナカタドグンコトヒラチョウ","romaji":"Nakatado-gun Kotohira-cho"},
-  {"code":"37404","prefecture":"37","name":"仲多度郡多度津町","kana":"ナカタドグンタドツチョウ","romaji":"Nakatado-gun Tadotsu-cho"},
-  {"code":"37406","prefecture":"37","name":"仲多度郡まんのう町","kana":"ナカタドグンマンノウチョウ","romaji":"Nakatado-gun Manno-cho"},
-  {"code":"38201","prefecture":"38","name":"松山市","kana":"マツヤマシ","romaji":"Matsuyama-shi"},
-  {"code":"38202","prefecture":"38","name":"今治市","kana":"イマバリシ","romaji":"Imabari-shi"},
-  {"code":"38203","prefecture":"38","name":"宇和島市","kana":"ウワジマシ","romaji":"Uwajima-shi"},
-  {"code":"38204","prefecture":"38","name":"八幡浜市","kana":"ヤワタハマシ","romaji":"Yawatahama-shi"},
-  {"code":"38205","prefecture":"38","name":"新居浜市","kana":"ニイハマシ","romaji":"Niihama-shi"},
-  {"code":"38206","prefecture":"38","name":"西条市","kana":"サイジョウシ","romaji":"Saijo-shi"},
-  {"code":"38207","prefecture":"38","name":"大洲市","kana":"オオズシ","romaji":"Ozu-shi"},
-  {"code":"38210","prefecture":"38","name":"伊予市","kana":"イヨシ","romaji":"Iyo-shi"},
-  {"code":"38213","prefecture":"38","name":"四国中央市","kana":"シコクチュウオウシ","romaji":"Shikokuchuo-shi"},
-  {"code":"38214","prefecture":"38","name":"西予市","kana":"セイヨシ","romaji":"Seiyo-shi"},
-  {"code":"38215","prefecture":"38","name":"東温市","kana":"トウオンシ","romaji":"Toon-shi"},
-  {"code":"38356","prefecture":"38","name":"越智郡上島町","kana":"オチグンカミジマチョウ","romaji":"Ochi-gun Kamijima-cho"},
-  {"code":"38386","prefecture":"38","name":"上浮穴郡久万高原町","kana":"カミウケナグンクマコウゲンチョウ","romaji":"Kamiukena-gun Kumakogen-cho"},
-  {"code":"38401","prefecture":"38","name":"伊予郡松前町","kana":"イヨグンマサキチョウ","romaji":"Iyo-gun Masaki-cho"},
-  {"code":"38402","prefecture":"38","name":"伊予郡砥部町","kana":"イヨグントベチョウ","romaji":"Iyo-gun Tobe-cho"},
-  {"code":"38422","prefecture":"38","name":"喜多郡内子町","kana":"キタグンウチコチョウ","romaji":"Kita-gun Uchiko-cho"},
-  {"code":"38442","prefecture":"38","name":"西宇和郡伊方町","kana":"ニシウワグンイカタチョウ","romaji":"Nishiuwa-gun Ikata-cho"},
-  {"code":"38484","prefecture":"38","name":"北宇和郡松野町","kana":"キタウワグンマツノチョウ","romaji":"Kitauwa-gun Matsuno-cho"},
-  {"code":"38488","prefecture":"38","name":"北宇和郡鬼北町","kana":"キタウワグンキホクチョウ","romaji":"Kitauwa-gun Kihoku-cho"},
-  {"code":"38506","prefecture":"38","name":"南宇和郡愛南町","kana":"ミナミウワグンアイナンチョウ","romaji":"Minamiuwa-gun Ainan-cho"},
-  {"code":"39201","prefecture":"39","name":"高知市","kana":"コウチシ","romaji":"Kochi-shi"},
-  {"code":"39202","prefecture":"39","name":"室戸市","kana":"ムロトシ","romaji":"Muroto-shi"},
-  {"code":"39203","prefecture":"39","name":"安芸市","kana":"アキシ","romaji":"Aki-shi"},
-  {"code":"39204","prefecture":"39","name":"南国市","kana":"ナンコクシ","romaji":"Nankoku-shi"},
-  {"code":"39205","prefecture":"39","name":"土佐市","kana":"トサシ","romaji":"Tosa-shi"},
-  {"code":"39206","prefecture":"39","name":"須崎市","kana":"スサキシ","romaji":"Susaki-shi"},
-  {"code":"39208","prefecture":"39","name":"宿毛市","kana":"スクモシ","romaji":"Sukumo-shi"},
-  {"code":"39209","prefecture":"39","name":"土佐清水市","kana":"トサシミズシ","romaji":"Tosashimizu-shi"},
-  {"code":"39210","prefecture":"39","name":"四万十市","kana":"シマントシ","romaji":"Shimanto-shi"},
-  {"code":"39211","prefecture":"39","name":"香南市","kana":"コウナンシ","romaji":"Konan-shi"},
-  {"code":"39212","prefecture":"39","name":"香美市","kana":"カミシ","romaji":"Kami-shi"},
-  {"code":"39301","prefecture":"39","name":"安芸郡東洋町","kana":"アキグントウヨウチョウ","romaji":"Aki-gun Toyo-cho"},
-  {"code":"39302","prefecture":"39","name":"安芸郡奈半利町","kana":"アキグンナハリチョウ","romaji":"Aki-gun Nahari-cho"},
-  {"code":"39303","prefecture":"39","name":"安芸郡田野町","kana":"アキグンタノチョウ","romaji":"Aki-gun Tano-cho"},
-  {"code":"39304","prefecture":"39","name":"安芸郡安田町","kana":"アキグンヤスダチョウ","romaji":"Aki-gun Yasuda-cho"},
-  {"code":"39305","prefecture":"39","name":"安芸郡北川村","kana":"アキグンキタガワムラ","romaji":"Aki-gun Kitagawa-mura"},
-  {"code":"39306","prefecture":"39","name":"安芸郡馬路村","kana":"アキグンウマジムラ","romaji":"Aki-gun Umaji-mura"},
-  {"code":"39307","prefecture":"39","name":"安芸郡芸西村","kana":"アキグンゲイセイムラ","romaji":"Aki-gun Geisei-mura"},
-  {"code":"39341","prefecture":"39","name":"長岡郡本山町","kana":"ナガオカグンモトヤマチョウ","romaji":"Nagaoka-gun Motoyama-cho"},
-  {"code":"39344","prefecture":"39","name":"長岡郡大豊町","kana":"ナガオカグンオオトヨチョウ","romaji":"Nagaoka-gun Otoyo-cho"},
-  {"code":"39363","prefecture":"39","name":"土佐郡土佐町","kana":"トサグントサチョウ","romaji":"Tosa-gun Tosa-cho"},
-  {"code":"39364","prefecture":"39","name":"土佐郡大川村","kana":"トサグンオオカワムラ","romaji":"Tosa-gun Okawa-mura"},
-  {"code":"39386","prefecture":"39","name":"吾川郡いの町","kana":"アガワグンイノチョウ","romaji":"Agawa-gun Ino-cho"},
-  {"code":"39387","prefecture":"39","name":"吾川郡仁淀川町","kana":"アガワグンニヨドガワチョウ","romaji":"Agawa-gun Niyodogawa-cho"},
-  {"code":"39401","prefecture":"39","name":"高岡郡中土佐町","kana":"タカオカグンナカトサチョウ","romaji":"Takaoka-gun Nakatosa-cho"},
-  {"code":"39402","prefecture":"39","name":"高岡郡佐川町","kana":"タカオカグンサカワチョウ","romaji":"Takaoka-gun Sakawa-cho"},
-  {"code":"39403","prefecture":"39","name":"高岡郡越知町","kana":"タカオカグンオチチョウ","romaji":"Takaoka-gun Ochi-cho"},
-  {"code":"39405","prefecture":"39","name":"高岡郡檮原町","kana":"タカオカグンユスハラチョウ","romaji":"Takaoka-gun Yusuhara-cho"},
-  {"code":"39410","prefecture":"39","name":"高岡郡日高村","kana":"タカオカグンヒダカムラ","romaji":"Takaoka-gun Hidaka-mura"},
-  {"code":"39411","prefecture":"39","name":"高岡郡津野町","kana":"タカオカグンツノチョウ","romaji":"Takaoka-gun Tsuno-cho"},
-  {"code":"39412","prefecture":"39","name":"高岡郡四万十町","kana":"タカオカグンシマントチョウ","romaji":"Takaoka-gun Shimanto-cho"},
-  {"code":"39424","prefecture":"39","name":"幡多郡大月町","kana":"ハタグンオオツキチョウ","romaji":"Hata-gun Otsuki-cho"},
-  {"code":"39427","prefecture":"39","name":"幡多郡三原村","kana":"ハタグンミハラムラ","romaji":"Hata-gun Mihara-mura"},
-  {"code":"39428","prefecture":"39","name":"幡多郡黒潮町","kana":"ハタグンクロシオチョウ","romaji":"Hata-gun Kuroshio-cho"},
-  {"code":"40101","prefecture":"40","name":"北九州市門司区","kana":"キタキュウシュウシモジク","romaji":"Kitakyushu-shi Moji-ku"},
-  {"code":"40103","prefecture":"40","name":"北九州市若松区","kana":"キタキュウシュウシワカマツク","romaji":"Kitakyushu-shi Wakamatsu-ku"},
-  {"code":"40105","prefecture":"40","name":"北九州市戸畑区","kana":"キタキュウシュウシトバタク","romaji":"Kitakyushu-shi Tobata-ku"},
-  {"code":"40106","prefecture":"40","name":"北九州市小倉北区","kana":"キタキュウシュウシコクラキタク","romaji":"Kitakyushu-shi Kokurakita-ku"},
-  {"code":"40107","prefecture":"40","name":"北九州市小倉南区","kana":"キタキュウシュウシコクラミナミク","romaji":"Kitakyushu-shi Kokuraminami-ku"},
-  {"code":"40108","prefecture":"40","name":"北九州市八幡東区","kana":"キタキュウシュウシヤハタヒガシク","romaji":"Kitakyushu-shi Yahatahigashi-ku"},
-  {"code":"40109","prefecture":"40","name":"北九州市八幡西区","kana":"キタキュウシュウシヤハタニシク","romaji":"Kitakyushu-shi Yahatanishi-ku"},
-  {"code":"40131","prefecture":"40","name":"福岡市東区","kana":"フクオカシヒガシク","romaji":"Fukuoka-shi Higashi-ku"},
-  {"code":"40132","prefecture":"40","name":"福岡市博多区","kana":"フクオカシハカタク","romaji":"Fukuoka-shi Hakata-ku"},
-  {"code":"40133","prefecture":"40","name":"福岡市中央区","kana":"フクオカシチュウオウク","romaji":"Fukuoka-shi Chuo-ku"},
-  {"code":"40134","prefecture":"40","name":"福岡市南区","kana":"フクオカシミナミク","romaji":"Fukuoka-shi Minami-ku"},
-  {"code":"40135","prefecture":"40","name":"福岡市西区","kana":"フクオカシニシク","romaji":"Fukuoka-shi Nishi-ku"},
-  {"code":"40136","prefecture":"40","name":"福岡市城南区","kana":"フクオカシジョウナンク","romaji":"Fukuoka-shi Jonan-ku"},
-  {"code":"40137","prefecture":"40","name":"福岡市早良区","kana":"フクオカシサワラク","romaji":"Fukuoka-shi Sawara-ku"},
-  {"code":"40202","prefecture":"40","name":"大牟田市","kana":"オオムタシ","romaji":"Omuta-shi"},
-  {"code":"40203","prefecture":"40","name":"久留米市","kana":"クルメシ","romaji":"Kurume-shi"},
-  {"code":"40204","prefecture":"40","name":"直方市","kana":"ノオガタシ","romaji":"Nogata-shi"},
-  {"code":"40205","prefecture":"40","name":"飯塚市","kana":"イイヅカシ","romaji":"Iizuka-shi"},
-  {"code":"40206","prefecture":"40","name":"田川市","kana":"タガワシ","romaji":"Tagawa-shi"},
-  {"code":"40207","prefecture":"40","name":"柳川市","kana":"ヤナガワシ","romaji":"Yanagawa-shi"},
-  {"code":"40210","prefecture":"40","name":"八女市","kana":"ヤメシ","romaji":"Yame-shi"},
-  {"code":"40211","prefecture":"40","name":"筑後市","kana":"チクゴシ","romaji":"Chikugo-shi"},
-  {"code":"40212","prefecture":"40","name":"大川市","kana":"オオカワシ","romaji":"Okawa-shi"},
-  {"code":"40213","prefecture":"40","name":"行橋市","kana":"ユクハシシ","romaji":"Yukuhashi-shi"},
-  {"code":"40214","prefecture":"40","name":"豊前市","kana":"ブゼンシ","romaji":"Buzen-shi"},
-  {"code":"40215","prefecture":"40","name":"中間市","kana":"ナカマシ","romaji":"Nakama-shi"},
-  {"code":"40216","prefecture":"40","name":"小郡市","kana":"オゴオリシ","romaji":"Ogori-shi"},
-  {"code":"40217","prefecture":"40","name":"筑紫野市","kana":"チクシノシ","romaji":"Chikushino-shi"},
-  {"code":"40218","prefecture":"40","name":"春日市","kana":"カスガシ","romaji":"Kasuga-shi"},
-  {"code":"40219","prefecture":"40","name":"大野城市","kana":"オオノジョウシ","romaji":"Onojo-shi"},
-  {"code":"40220","prefecture":"40","name":"宗像市","kana":"ムナカタシ","romaji":"Munakata-shi"},
-  {"code":"40221","prefecture":"40","name":"太宰府市","kana":"ダザイフシ","romaji":"Dazaifu-shi"},
-  {"code":"40223","prefecture":"40","name":"古賀市","kana":"コガシ","romaji":"Koga-shi"},
-  {"code":"40224","prefecture":"40","name":"福津市","kana":"フクツシ","romaji":"Fukutsu-shi"},
-  {"code":"40225","prefecture":"40","name":"うきは市","kana":"ウキハシ","romaji":"Ukiha-shi"},
-  {"code":"40226","prefecture":"40","name":"宮若市","kana":"ミヤワカシ","romaji":"Miyawaka-shi"},
-  {"code":"40227","prefecture":"40","name":"嘉麻市","kana":"カマシ","romaji":"Kama-shi"},
-  {"code":"40228","prefecture":"40","name":"朝倉市","kana":"アサクラシ","romaji":"Asakura-shi"},
-  {"code":"40229","prefecture":"40","name":"みやま市","kana":"ミヤマシ","romaji":"Miyama-shi"},
-  {"code":"40230","prefecture":"40","name":"糸島市","kana":"イトシマシ","romaji":"Itoshima-shi"},
-  {"code":"40231","prefecture":"40","name":"那珂川市","kana":"ナカガワシ","romaji":"Nakagawa-shi"},
-  {"code":"40341","prefecture":"40","name":"糟屋郡宇美町","kana":"カスヤグンウミマチ","romaji":"Kasuya-gun Umi-machi"},
-  {"code":"40342","prefecture":"40","name":"糟屋郡篠栗町","kana":"カスヤグンササグリマチ","romaji":"Kasuya-gun Sasaguri-machi"},
-  {"code":"40343","prefecture":"40","name":"糟屋郡志免町","kana":"カスヤグンシメマチ","romaji":"Kasuya-gun Shime-machi"},
-  {"code":"40344","prefecture":"40","name":"糟屋郡須恵町","kana":"カスヤグンスエマチ","romaji":"Kasuya-gun Sue-machi"},
-  {"code":"40345","prefecture":"40","name":"糟屋郡新宮町","kana":"カスヤグンシングウマチ","romaji":"Kasuya-gun Shingu-machi"},
-  {"code":"40348","prefecture":"40","name":"糟屋郡久山町","kana":"カスヤグンヒサヤママチ","romaji":"Kasuya-gun Hisayama-machi"},
-  {"code":"40349","prefecture":"40","name":"糟屋郡粕屋町","kana":"カスヤグンカスヤマチ","romaji":"Kasuya-gun Kasuya-machi"},
-  {"code":"40381","prefecture":"40","name":"遠賀郡芦屋町","kana":"オンガグンアシヤマチ","romaji":"Onga-gun Ashiya-machi"},
-  {"code":"40382","prefecture":"40","name":"遠賀郡水巻町","kana":"オンガグンミズマキマチ","romaji":"Onga-gun Mizumaki-machi"},
-  {"code":"40383","prefecture":"40","name":"遠賀郡岡垣町","kana":"オンガグンオカガキマチ","romaji":"Onga-gun Okagaki-machi"},
-  {"code":"40384","prefecture":"40","name":"遠賀郡遠賀町","kana":"オンガグンオンガチョウ","romaji":"Onga-gun Onga-cho"},
-  {"code":"40401","prefecture":"40","name":"鞍手郡小竹町","kana":"クラテグンコタケマチ","romaji":"Kurate-gun Kotake-machi"},
-  {"code":"40402","prefecture":"40","name":"鞍手郡鞍手町","kana":"クラテグンクラテマチ","romaji":"Kurate-gun Kurate-machi"},
-  {"code":"40421","prefecture":"40","name":"嘉穂郡桂川町","kana":"カホグンケイセンマチ","romaji":"Kaho-gun Keisen-machi"},
-  {"code":"40447","prefecture":"40","name":"朝倉郡筑前町","kana":"アサクラグンチクゼンマチ","romaji":"Asakura-gun Chikuzen-machi"},
-  {"code":"40448","prefecture":"40","name":"朝倉郡東峰村","kana":"アサクラグントウホウムラ","romaji":"Asakura-gun Toho-mura"},
-  {"code":"40503","prefecture":"40","name":"三井郡大刀洗町","kana":"ミイグンタチアライマチ","romaji":"Mii-gun Tachiarai-machi"},
-  {"code":"40522","prefecture":"40","name":"三潴郡大木町","kana":"ミズマグンオオキマチ","romaji":"Mizuma-gun Oki-machi"},
-  {"code":"40544","prefecture":"40","name":"八女郡広川町","kana":"ヤメグンヒロカワマチ","romaji":"Yame-gun Hirokawa-machi"},
-  {"code":"40601","prefecture":"40","name":"田川郡香春町","kana":"タガワグンカワラマチ","romaji":"Tagawa-gun Kawara-machi"},
-  {"code":"40602","prefecture":"40","name":"田川郡添田町","kana":"タガワグンソエダマチ","romaji":"Tagawa-gun Soeda-machi"},
-  {"code":"40604","prefecture":"40","name":"田川郡糸田町","kana":"タガワグンイトダマチ","romaji":"Tagawa-gun Itoda-machi"},
-  {"code":"40605","prefecture":"40","name":"田川郡川崎町","kana":"タガワグンカワサキマチ","romaji":"Tagawa-gun Kawasaki-machi"},
-  {"code":"40608","prefecture":"40","name":"田川郡大任町","kana":"タガワグンオオトウマチ","romaji":"Tagawa-gun Oto-machi"},
-  {"code":"40609","prefecture":"40","name":"田川郡赤村","kana":"タガワグンアカムラ","romaji":"Tagawa-gun Aka-mura"},
-  {"code":"40610","prefecture":"40","name":"田川郡福智町","kana":"タガワグンフクチマチ","romaji":"Tagawa-gun Fukuchi-machi"},
-  {"code":"40621","prefecture":"40","name":"京都郡苅田町","kana":"ミヤコグンカンダマチ","romaji":"Miyako-gun Kanda-machi"},
-  {"code":"40625","prefecture":"40","name":"京都郡みやこ町","kana":"ミヤコグンミヤコマチ","romaji":"Miyako-gun Miyako-machi"},
-  {"code":"40642","prefecture":"40","name":"築上郡吉富町","kana":"チクジョウグンヨシトミマチ","romaji":"Chikujo-gun Yoshitomi-machi"},
-  {"code":"40646","prefecture":"40","name":"築上郡上毛町","kana":"チクジョウグンコウゲマチ","romaji":"Chikujo-gun Koge-machi"},
-  {"code":"40647","prefecture":"40","name":"築上郡築上町","kana":"チクジョウグンチクジョウマチ","romaji":"Chikujo-gun Chikujo-machi"},
-  {"code":"41201","prefecture":"41","name":"佐賀市","kana":"サガシ","romaji":"Saga-shi"},
-  {"code":"41202","prefecture":"41","name":"唐津市","kana":"カラツシ","romaji":"Karatsu-shi"},
-  {"code":"41203","prefecture":"41","name":"鳥栖市","kana":"トスシ","romaji":"Tosu-shi"},
-  {"code":"41204","prefecture":"41","name":"多久市","kana":"タクシ","romaji":"Taku-shi"},
-  {"code":"41205","prefecture":"41","name":"伊万里市","kana":"イマリシ","romaji":"Imari-shi"},
-  {"code":"41206","prefecture":"41","name":"武雄市","kana":"タケオシ","romaji":"Takeo-shi"},
-  {"code":"41207","prefecture":"41","name":"鹿島市","kana":"カシマシ","romaji":"Kashima-shi"},
-  {"code":"41208","prefecture":"41","name":"小城市","kana":"オギシ","romaji":"Ogi-shi"},
-  {"code":"41209","prefecture":"41","name":"嬉野市","kana":"ウレシノシ","romaji":"Ureshino-shi"},
-  {"code":"41210","prefecture":"41","name":"神埼市","kana":"カンザキシ","romaji":"Kanzaki-shi"},
-  {"code":"41327","prefecture":"41","name":"神埼郡吉野ヶ里町","kana":"カンザキグンヨシノガリチョウ","romaji":"Kanzaki-gun Yoshinogari-cho"},
-  {"code":"41341","prefecture":"41","name":"三養基郡基山町","kana":"ミヤキグンキヤマチョウ","romaji":"Miyaki-gun Kiyama-cho"},
-  {"code":"41345","prefecture":"41","name":"三養基郡上峰町","kana":"ミヤキグンカミミネチョウ","romaji":"Miyaki-gun Kamimine-cho"},
-  {"code":"41346","prefecture":"41","name":"三養基郡みやき町","kana":"ミヤキグンミヤキチョウ","romaji":"Miyaki-gun Miyaki-cho"},
-  {"code":"41387","prefecture":"41","name":"東松浦郡玄海町","kana":"ヒガシマツウラグンゲンカイチョウ","romaji":"Higashimatsura-gun Genkai-cho"},
-  {"code":"41401","prefecture":"41","name":"西松浦郡有田町","kana":"ニシマツウラグンアリタチョウ","romaji":"Nishimatsura-gun Arita-cho"},
-  {"code":"41423","prefecture":"41","name":"杵島郡大町町","kana":"キシマグンオオマチチョウ","romaji":"Kishima-gun Omachi-cho"},
-  {"code":"41424","prefecture":"41","name":"杵島郡江北町","kana":"キシマグンコウホクマチ","romaji":"Kishima-gun Kohoku-machi"},
-  {"code":"41425","prefecture":"41","name":"杵島郡白石町","kana":"キシマグンシロイシチョウ","romaji":"Kishima-gun Shiroishi-cho"},
-  {"code":"41441","prefecture":"41","name":"藤津郡太良町","kana":"フジツグンタラチョウ","romaji":"Fujitsu-gun Tara-cho"},
-  {"code":"42201","prefecture":"42","name":"長崎市","kana":"ナガサキシ","romaji":"Nagasaki-shi"},
-  {"code":"42202","prefecture":"42","name":"佐世保市","kana":"サセボシ","romaji":"Sasebo-shi"},
-  {"code":"42203","prefecture":"42","name":"島原市","kana":"シマバラシ","romaji":"Shimabara-shi"},
-  {"code":"42204","prefecture":"42","name":"諫早市","kana":"イサハヤシ","romaji":"Isahaya-shi"},
-  {"code":"42205","prefecture":"42","name":"大村市","kana":"オオムラシ","romaji":"Omura-shi"},
-  {"code":"42207","prefecture":"42","name":"平戸市","kana":"ヒラドシ","romaji":"Hirado-shi"},
-  {"code":"42208","prefecture":"42","name":"松浦市","kana":"マツウラシ","romaji":"Matsura-shi"},
-  {"code":"42209","prefecture":"42","name":"対馬市","kana":"ツシマシ","romaji":"Tsushima-shi"},
-  {"code":"42210","prefecture":"42","name":"壱岐市","kana":"イキシ","romaji":"Iki-shi"},
-  {"code":"42211","prefecture":"42","name":"五島市","kana":"ゴトウシ","romaji":"Goto-shi"},
-  {"code":"42212","prefecture":"42","name":"西海市","kana":"サイカイシ","romaji":"Saikai-shi"},
-  {"code":"42213","prefecture":"42","name":"雲仙市","kana":"ウンゼンシ","romaji":"Unzen-shi"},
-  {"code":"42214","prefecture":"42","name":"南島原市","kana":"ミナミシマバラシ","romaji":"Minamishimabara-shi"},
-  {"code":"42307","prefecture":"42","name":"西彼杵郡長与町","kana":"ニシソノギグンナガヨチョウ","romaji":"Nishisonogi-gun Nagayo-cho"},
-  {"code":"42308","prefecture":"42","name":"西彼杵郡時津町","kana":"ニシソノギグントギツチョウ","romaji":"Nishisonogi-gun Togitsu-cho"},
-  {"code":"42321","prefecture":"42","name":"東彼杵郡東彼杵町","kana":"ヒガシソノギグンヒガシソノギチョウ","romaji":"Higashisonogi-gun Higashisonogi-cho"},
-  {"code":"42322","prefecture":"42","name":"東彼杵郡川棚町","kana":"ヒガシソノギグンカワタナチョウ","romaji":"Higashisonogi-gun Kawatana-cho"},
-  {"code":"42323","prefecture":"42","name":"東彼杵郡波佐見町","kana":"ヒガシソノギグンハサミチョウ","romaji":"Higashisonogi-gun Hasami-cho"},
-  {"code":"42383","prefecture":"42","name":"北松浦郡小値賀町","kana":"キタマツウラグンオヂカチョウ","romaji":"Kitamatsura-gun Ojika-cho"},
-  {"code":"42391","prefecture":"42","name":"北松浦郡佐々町","kana":"キタマツウラグンサザチョウ","romaji":"Kitamatsura-gun Saza-cho"},
-  {"code":"42411","prefecture":"42","name":"南松浦郡新上五島町","kana":"ミナミマツウラグンシンカミゴトウチョウ","romaji":"Minamimatsura-gun Shinkamigoto-cho"},
-  {"code":"43101","prefecture":"43","name":"熊本市中央区","kana":"クマモトシチュウオウク","romaji":"Kumamoto-shi Chuo-ku"},
-  {"code":"43102","prefecture":"43","name":"熊本市東区","kana":"クマモトシヒガシク","romaji":"Kumamoto-shi Higashi-ku"},
-  {"code":"43103","prefecture":"43","name":"熊本市西区","kana":"クマモトシニシク","romaji":"Kumamoto-shi Nishi-ku"},
-  {"code":"43104","prefecture":"43","name":"熊本市南区","kana":"クマモトシミナミク","romaji":"Kumamoto-shi Minami-ku"},
-  {"code":"43105","prefecture":"43","name":"熊本市北区","kana":"クマモトシキタク","romaji":"Kumamoto-shi Kita-ku"},
-  {"code":"43202","prefecture":"43","name":"八代市","kana":"ヤツシロシ","romaji":"Yatsushiro-shi"},
-  {"code":"43203","prefecture":"43","name":"人吉市","kana":"ヒトヨシシ","romaji":"Hitoyoshi-shi"},
-  {"code":"43204","prefecture":"43","name":"荒尾市","kana":"アラオシ","romaji":"Arao-shi"},
-  {"code":"43205","prefecture":"43","name":"水俣市","kana":"ミナマタシ","romaji":"Minamata-shi"},
-  {"code":"43206","prefecture":"43","name":"玉名市","kana":"タマナシ","romaji":"Tamana-shi"},
-  {"code":"43208","prefecture":"43","name":"山鹿市","kana":"ヤマガシ","romaji":"Yamaga-shi"},
-  {"code":"43210","prefecture":"43","name":"菊池市","kana":"キクチシ","romaji":"Kikuchi-shi"},
-  {"code":"43211","prefecture":"43","name":"宇土市","kana":"ウトシ","romaji":"Uto-shi"},
-  {"code":"43212","prefecture":"43","name":"上天草市","kana":"カミアマクサシ","romaji":"Kamiamakusa-shi"},
-  {"code":"43213","prefecture":"43","name":"宇城市","kana":"ウキシ","romaji":"Uki-shi"},
-  {"code":"43214","prefecture":"43","name":"阿蘇市","kana":"アソシ","romaji":"Aso-shi"},
-  {"code":"43215","prefecture":"43","name":"天草市","kana":"アマクサシ","romaji":"Amakusa-shi"},
-  {"code":"43216","prefecture":"43","name":"合志市","kana":"コウシシ","romaji":"Koshi-shi"},
-  {"code":"43348","prefecture":"43","name":"下益城郡美里町","kana":"シモマシキグンミサトマチ","romaji":"Shimomashiki-gun Misato-machi"},
-  {"code":"43364","prefecture":"43","name":"玉名郡玉東町","kana":"タマナグンギョクトウマチ","romaji":"Tamana-gun Gyokuto-machi"},
-  {"code":"43367","prefecture":"43","name":"玉名郡南関町","kana":"タマナグンナンカンマチ","romaji":"Tamana-gun Nankan-machi"},
-  {"code":"43368","prefecture":"43","name":"玉名郡長洲町","kana":"タマナグンナガスマチ","romaji":"Tamana-gun Nagasu-machi"},
-  {"code":"43369","prefecture":"43","name":"玉名郡和水町","kana":"タマナグンナゴミマチ","romaji":"Tamana-gun Nagomi-machi"},
-  {"code":"43403","prefecture":"43","name":"菊池郡大津町","kana":"キクチグンオオヅマチ","romaji":"Kikuchi-gun Ozu-machi"},
-  {"code":"43404","prefecture":"43","name":"菊池郡菊陽町","kana":"キクチグンキクヨウマチ","romaji":"Kikuchi-gun Kikuyo-machi"},
-  {"code":"43423","prefecture":"43","name":"阿蘇郡南小国町","kana":"アソグンミナミオグニマチ","romaji":"Aso-gun Minamioguni-machi"},
-  {"code":"43424","prefecture":"43","name":"阿蘇郡小国町","kana":"アソグンオグニマチ","romaji":"Aso-gun Oguni-machi"},
-  {"code":"43425","prefecture":"43","name":"阿蘇郡産山村","kana":"アソグンウブヤマムラ","romaji":"Aso-gun Ubuyama-mura"},
-  {"code":"43428","prefecture":"43","name":"阿蘇郡高森町","kana":"アソグンタカモリマチ","romaji":"Aso-gun Takamori-machi"},
-  {"code":"43432","prefecture":"43","name":"阿蘇郡西原村","kana":"アソグンニシハラムラ","romaji":"Aso-gun Nishihara-mura"},
-  {"code":"43433","prefecture":"43","name":"阿蘇郡南阿蘇村","kana":"アソグンミナミアソムラ","romaji":"Aso-gun Minamiaso-mura"},
-  {"code":"43441","prefecture":"43","name":"上益城郡御船町","kana":"カミマシキグンミフネマチ","romaji":"Kamimashiki-gun Mifune-machi"},
-  {"code":"43442","prefecture":"43","name":"上益城郡嘉島町","kana":"カミマシキグンカシママチ","romaji":"Kamimashiki-gun Kashima-machi"},
-  {"code":"43443","prefecture":"43","name":"上益城郡益城町","kana":"カミマシキグンマシキマチ","romaji":"Kamimashiki-gun Mashiki-machi"},
-  {"code":"43444","prefecture":"43","name":"上益城郡甲佐町","kana":"カミマシキグンコウサマチ","romaji":"Kamimashiki-gun Kosa-machi"},
-  {"code":"43447","prefecture":"43","name":"上益城郡山都町","kana":"カミマシキグンヤマトチョウ","romaji":"Kamimashiki-gun Yamato-cho"},
-  {"code":"43468","prefecture":"43","name":"八代郡氷川町","kana":"ヤツシログンヒカワチョウ","romaji":"Yatsushiro-gun Hikawa-cho"},
-  {"code":"43482","prefecture":"43","name":"葦北郡芦北町","kana":"アシキタグンアシキタマチ","romaji":"Ashikita-gun Ashikita-machi"},
-  {"code":"43484","prefecture":"43","name":"葦北郡津奈木町","kana":"アシキタグンツナギマチ","romaji":"Ashikita-gun Tsunagi-machi"},
-  {"code":"43501","prefecture":"43","name":"球磨郡錦町","kana":"クマグンニシキマチ","romaji":"Kuma-gun Nishiki-machi"},
-  {"code":"43505","prefecture":"43","name":"球磨郡多良木町","kana":"クマグンタラギマチ","romaji":"Kuma-gun Taragi-machi"},
-  {"code":"43507","prefecture":"43","name":"球磨郡水上村","kana":"クマグンミズカミムラ","romaji":"Kuma-gun Mizukami-mura"},
-  {"code":"43510","prefecture":"43","name":"球磨郡相良村","kana":"クマグンサガラムラ","romaji":"Kuma-gun Sagara-mura"},
-  {"code":"43511","prefecture":"43","name":"球磨郡五木村","kana":"クマグンイツキムラ","romaji":"Kuma-gun Itsuki-mura"},
-  {"code":"43512","prefecture":"43","name":"球磨郡山江村","kana":"クマグンヤマエムラ","romaji":"Kuma-gun Yamae-mura"},
-  {"code":"43513","prefecture":"43","name":"球磨郡球磨村","kana":"クマグンクマムラ","romaji":"Kuma-gun Kuma-mura"},
-  {"code":"43514","prefecture":"43","name":"球磨郡あさぎり町","kana":"クマグンアサギリチョウ","romaji":"Kuma-gun Asagiri-cho"},
-  {"code":"43531","prefecture":"43","name":"天草郡苓北町","kana":"アマクサグンレイホクマチ","romaji":"Amakusa-gun Reihoku-machi"},
-  {"code":"44201","prefecture":"44","name":"大分市","kana":"オオイタシ","romaji":"Oita-shi"},
-  {"code":"44202","prefecture":"44","name":"別府市","kana":"ベップシ","romaji":"Beppu-shi"},
-  {"code":"44203","prefecture":"44","name":"中津市","kana":"ナカツシ","romaji":"Nakatsu-shi"},
-  {"code":"44204","prefecture":"44","name":"日田市","kana":"ヒタシ","romaji":"Hita-shi"},
-  {"code":"44205","prefecture":"44","name":"佐伯市","kana":"サイキシ","romaji":"Saiki-shi"},
-  {"code":"44206","prefecture":"44","name":"臼杵市","kana":"ウスキシ","romaji":"Usuki-shi"},
-  {"code":"44207","prefecture":"44","name":"津久見市","kana":"ツクミシ","romaji":"Tsukumi-shi"},
-  {"code":"44208","prefecture":"44","name":"竹田市","kana":"タケタシ","romaji":"Taketa-shi"},
-  {"code":"44209","prefecture":"44","name":"豊後高田市","kana":"ブンゴタカダシ","romaji":"Bungotakada-shi"},
-  {"code":"44210","prefecture":"44","name":"杵築市","kana":"キツキシ","romaji":"Kitsuki-shi"},
-  {"code":"44211","prefecture":"44","name":"宇佐市","kana":"ウサシ","romaji":"Usa-shi"},
-  {"code":"44212","prefecture":"44","name":"豊後大野市","kana":"ブンゴオオノシ","romaji":"Bungoono-shi"},
-  {"code":"44213","prefecture":"44","name":"由布市","kana":"ユフシ","romaji":"Yufu-shi"},
-  {"code":"44214","prefecture":"44","name":"国東市","kana":"クニサキシ","romaji":"Kunisaki-shi"},
-  {"code":"44322","prefecture":"44","name":"東国東郡姫島村","kana":"ヒガシクニサキグンヒメシマムラ","romaji":"Higashikunisaki-gun Himeshima-mura"},
-  {"code":"44341","prefecture":"44","name":"速見郡日出町","kana":"ハヤミグンヒジマチ","romaji":"Hayami-gun Hiji-machi"},
-  {"code":"44461","prefecture":"44","name":"玖珠郡九重町","kana":"クスグンココノエマチ","romaji":"Kusu-gun Kokonoe-machi"},
-  {"code":"44462","prefecture":"44","name":"玖珠郡玖珠町","kana":"クスグンクスマチ","romaji":"Kusu-gun Kusu-machi"},
-  {"code":"45201","prefecture":"45","name":"宮崎市","kana":"ミヤザキシ","romaji":"Miyazaki-shi"},
-  {"code":"45202","prefecture":"45","name":"都城市","kana":"ミヤコノジョウシ","romaji":"Miyakonojo-shi"},
-  {"code":"45203","prefecture":"45","name":"延岡市","kana":"ノベオカシ","romaji":"Nobeoka-shi"},
-  {"code":"45204","prefecture":"45","name":"日南市","kana":"ニチナンシ","romaji":"Nichinan-shi"},
-  {"code":"45205","prefecture":"45","name":"小林市","kana":"コバヤシシ","romaji":"Kobayashi-shi"},
-  {"code":"45206","prefecture":"45","name":"日向市","kana":"ヒュウガシ","romaji":"Hyuga-shi"},
-  {"code":"45207","prefecture":"45","name":"串間市","kana":"クシマシ","romaji":"Kushima-shi"},
-  {"code":"45208","prefecture":"45","name":"西都市","kana":"サイトシ","romaji":"Saito-shi"},
-  {"code":"45209","prefecture":"45","name":"えびの市","kana":"エビノシ","romaji":"Ebino-shi"},
-  {"code":"45341","prefecture":"45","name":"北諸県郡三股町","kana":"キタモロカタグンミマタチョウ","romaji":"Kitamorokata-gun Mimata-cho"},
-  {"code":"45361","prefecture":"45","name":"西諸県郡高原町","kana":"ニシモロカタグンタカハルチョウ","romaji":"Nishimorokata-gun Takaharu-cho"},
-  {"code":"45382","prefecture":"45","name":"東諸県郡国富町","kana":"ヒガシモロカタグンクニトミチョウ","romaji":"Higashimorokata-gun Kunitomi-cho"},
-  {"code":"45383","prefecture":"45","name":"東諸県郡綾町","kana":"ヒガシモロカタグンアヤチョウ","romaji":"Higashimorokata-gun Aya-cho"},
-  {"code":"45401","prefecture":"45","name":"児湯郡高鍋町","kana":"コユグンタカナベチョウ","romaji":"Koyu-gun Takanabe-cho"},
-  {"code":"45402","prefecture":"45","name":"児湯郡新富町","kana":"コユグンシントミチョウ","romaji":"Koyu-gun Shintomi-cho"},
-  {"code":"45403","prefecture":"45","name":"児湯郡西米良村","kana":"コユグンニシメラソン","romaji":"Koyu-gun Nishimera-son"},
-  {"code":"45404","prefecture":"45","name":"児湯郡木城町","kana":"コユグンキジョウチョウ","romaji":"Koyu-gun Kijo-cho"},
-  {"code":"45405","prefecture":"45","name":"児湯郡川南町","kana":"コユグンカワミナミチョウ","romaji":"Koyu-gun Kawaminami-cho"},
-  {"code":"45406","prefecture":"45","name":"児湯郡都農町","kana":"コユグンツノチョウ","romaji":"Koyu-gun Tsuno-cho"},
-  {"code":"45421","prefecture":"45","name":"東臼杵郡門川町","kana":"ヒガシウスキグンカドガワチョウ","romaji":"Higashiusuki-gun Kadogawa-cho"},
-  {"code":"45429","prefecture":"45","name":"東臼杵郡諸塚村","kana":"ヒガシウスキグンモロツカソン","romaji":"Higashiusuki-gun Morotsuka-son"},
-  {"code":"45430","prefecture":"45","name":"東臼杵郡椎葉村","kana":"ヒガシウスキグンシイバソン","romaji":"Higashiusuki-gun Shiiba-son"},
-  {"code":"45431","prefecture":"45","name":"東臼杵郡美郷町","kana":"ヒガシウスキグンミサトチョウ","romaji":"Higashiusuki-gun Misato-cho"},
-  {"code":"45441","prefecture":"45","name":"西臼杵郡高千穂町","kana":"ニシウスキグンタカチホチョウ","romaji":"Nishiusuki-gun Takachiho-cho"},
-  {"code":"45442","prefecture":"45","name":"西臼杵郡日之影町","kana":"ニシウスキグンヒノカゲチョウ","romaji":"Nishiusuki-gun Hinokage-cho"},
-  {"code":"45443","prefecture":"45","name":"西臼杵郡五ヶ瀬町","kana":"ニシウスキグンゴカセチョウ","romaji":"Nishiusuki-gun Gokase-cho"},
-  {"code":"46201","prefecture":"46","name":"鹿児島市","kana":"カゴシマシ","romaji":"Kagoshima-shi"},
-  {"code":"46203","prefecture":"46","name":"鹿屋市","kana":"カノヤシ","romaji":"Kanoya-shi"},
-  {"code":"46204","prefecture":"46","name":"枕崎市","kana":"マクラザキシ","romaji":"Makurazaki-shi"},
-  {"code":"46206","prefecture":"46","name":"阿久根市","kana":"アクネシ","romaji":"Akune-shi"},
-  {"code":"46208","prefecture":"46","name":"出水市","kana":"イズミシ","romaji":"Izumi-shi"},
-  {"code":"46210","prefecture":"46","name":"指宿市","kana":"イブスキシ","romaji":"Ibusuki-shi"},
-  {"code":"46213","prefecture":"46","name":"西之表市","kana":"ニシノオモテシ","romaji":"Nishinomote-shi"},
-  {"code":"46214","prefecture":"46","name":"垂水市","kana":"タルミズシ","romaji":"Tarumizu-shi"},
-  {"code":"46215","prefecture":"46","name":"薩摩川内市","kana":"サツマセンダイシ","romaji":"Satsumasendai-shi"},
-  {"code":"46216","prefecture":"46","name":"日置市","kana":"ヒオキシ","romaji":"Hioki-shi"},
-  {"code":"46217","prefecture":"46","name":"曽於市","kana":"ソオシ","romaji":"So-shi"},
-  {"code":"46218","prefecture":"46","name":"霧島市","kana":"キリシマシ","romaji":"Kirishima-shi"},
-  {"code":"46219","prefecture":"46","name":"いちき串木野市","kana":"イチキクシキノシ","romaji":"Ichikikushikino-shi"},
-  {"code":"46220","prefecture":"46","name":"南さつま市","kana":"ミナミサツマシ","romaji":"Minamisatsuma-shi"},
-  {"code":"46221","prefecture":"46","name":"志布志市","kana":"シブシシ","romaji":"Shibushi-shi"},
-  {"code":"46222","prefecture":"46","name":"奄美市","kana":"アマミシ","romaji":"Amami-shi"},
-  {"code":"46223","prefecture":"46","name":"南九州市","kana":"ミナミキュウシュウシ","romaji":"Minamikyushu-shi"},
-  {"code":"46224","prefecture":"46","name":"伊佐市","kana":"イサシ","romaji":"Isa-shi"},
-  {"code":"46225","prefecture":"46","name":"姶良市","kana":"アイラシ","romaji":"Aira-shi"},
-  {"code":"46303","prefecture":"46","name":"鹿児島郡三島村","kana":"カゴシマグンミシマムラ","romaji":"Kagoshima-gun Mishima-mura"},
-  {"code":"46304","prefecture":"46","name":"鹿児島郡十島村","kana":"カゴシマグントシマムラ","romaji":"Kagoshima-gun Toshima-mura"},
-  {"code":"46392","prefecture":"46","name":"薩摩郡さつま町","kana":"サツマグンサツマチョウ","romaji":"Satsuma-gun Satsuma-cho"},
-  {"code":"46404","prefecture":"46","name":"出水郡長島町","kana":"イズミグンナガシマチョウ","romaji":"Izumi-gun Nagashima-cho"},
-  {"code":"46452","prefecture":"46","name":"姶良郡湧水町","kana":"アイラグンユウスイチョウ","romaji":"Aira-gun Yusui-cho"},
-  {"code":"46468","prefecture":"46","name":"曽於郡大崎町","kana":"ソオグンオオサキチョウ","romaji":"So-gun Osaki-cho"},
-  {"code":"46482","prefecture":"46","name":"肝属郡東串良町","kana":"キモツキグンヒガシクシラチョウ","romaji":"Kimotsuki-gun Higashikushira-cho"},
-  {"code":"46490","prefecture":"46","name":"肝属郡錦江町","kana":"キモツキグンキンコウチョウ","romaji":"Kimotsuki-gun Kinko-cho"},
-  {"code":"46491","prefecture":"46","name":"肝属郡南大隅町","kana":"キモツキグンミナミオオスミチョウ","romaji":"Kimotsuki-gun Minamiosumi-cho"},
-  {"code":"46492","prefecture":"46","name":"肝属郡肝付町","kana":"キモツキグンキモツキチョウ","romaji":"Kimotsuki-gun Kimotsuki-cho"},
-  {"code":"46501","prefecture":"46","name":"熊毛郡中種子町","kana":"クマゲグンナカタネチョウ","romaji":"Kumage-gun Nakatane-cho"},
-  {"code":"46502","prefecture":"46","name":"熊毛郡南種子町","kana":"クマゲグンミナミタネチョウ","romaji":"Kumage-gun Minamitane-cho"},
-  {"code":"46505","prefecture":"46","name":"熊毛郡屋久島町","kana":"クマゲグンヤクシマチョウ","romaji":"Kumage-gun Yakushima-cho"},
-  {"code":"46523","prefecture":"46","name":"大島郡大和村","kana":"オオシマグンヤマトソン","romaji":"Oshima-gun Yamato-son"},
-  {"code":"46524","prefecture":"46","name":"大島郡宇検村","kana":"オオシマグンウケンソン","romaji":"Oshima-gun Uken-son"},
-  {"code":"46525","prefecture":"46","name":"大島郡瀬戸内町","kana":"オオシマグンセトウチチョウ","romaji":"Oshima-gun Setochi-cho"},
-  {"code":"46527","prefecture":"46","name":"大島郡龍郷町","kana":"オオシマグンタツゴウチョウ","romaji":"Oshima-gun Tatsugo-cho"},
-  {"code":"46529","prefecture":"46","name":"大島郡喜界町","kana":"オオシマグンキカイチョウ","romaji":"Oshima-gun Kikai-cho"},
-  {"code":"46530","prefecture":"46","name":"大島郡徳之島町","kana":"オオシマグントクノシマチョウ","romaji":"Oshima-gun Tokunoshima-cho"},
-  {"code":"46531","prefecture":"46","name":"大島郡天城町","kana":"オオシマグンアマギチョウ","romaji":"Oshima-gun Amagi-cho"},
-  {"code":"46532","prefecture":"46","name":"大島郡伊仙町","kana":"オオシマグンイセンチョウ","romaji":"Oshima-gun Isen-cho"},
-  {"code":"46533","prefecture":"46","name":"大島郡和泊町","kana":"オオシマグンワドマリチョウ","romaji":"Oshima-gun Wadomari-cho"},
-  {"code":"46534","prefecture":"46","name":"大島郡知名町","kana":"オオシマグンチナチョウ","romaji":"Oshima-gun China-cho"},
-  {"code":"46535","prefecture":"46","name":"大島郡与論町","kana":"オオシマグンヨロンチョウ","romaji":"Oshima-gun Yoron-cho"},
-  {"code":"47201","prefecture":"47","name":"那覇市","kana":"ナハシ","romaji":"Naha-shi"},
-  {"code":"47205","prefecture":"47","name":"宜野湾市","kana":"ギノワンシ","romaji":"Ginowan-shi"},
-  {"code":"47207","prefecture":"47","name":"石垣市","kana":"イシガキシ","romaji":"Ishigaki-shi"},
-  {"code":"47208","prefecture":"47","name":"浦添市","kana":"ウラソエシ","romaji":"Urasoe-shi"},
-  {"code":"47209","prefecture":"47","name":"名護市","kana":"ナゴシ","romaji":"Nago-shi"},
-  {"code":"47210","prefecture":"47","name":"糸満市","kana":"イトマンシ","romaji":"Itoman-shi"},
-  {"code":"47211","prefecture":"47","name":"沖縄市","kana":"オキナワシ","romaji":"Okinawa-shi"},
-  {"code":"47212","prefecture":"47","name":"豊見城市","kana":"トミグスクシ","romaji":"Tomigusuku-shi"},
-  {"code":"47213","prefecture":"47","name":"うるま市","kana":"ウルマシ","romaji":"Uruma-shi"},
-  {"code":"47214","prefecture":"47","name":"宮古島市","kana":"ミヤコジマシ","romaji":"Miyakojima-shi"},
-  {"code":"47215","prefecture":"47","name":"南城市","kana":"ナンジョウシ","romaji":"Nanjo-shi"},
-  {"code":"47301","prefecture":"47","name":"国頭郡国頭村","kana":"クニガミグンクニガミソン","romaji":"Kunigami-gun Kunigami-son"},
-  {"code":"47302","prefecture":"47","name":"国頭郡大宜味村","kana":"クニガミグンオオギミソン","romaji":"Kunigami-gun Ogimi-son"},
-  {"code":"47303","prefecture":"47","name":"国頭郡東村","kana":"クニガミグンヒガシソン","romaji":"Kunigami-gun Higashi-son"},
-  {"code":"47306","prefecture":"47","name":"国頭郡今帰仁村","kana":"クニガミグンナキジンソン","romaji":"Kunigami-gun Nakijin-son"},
-  {"code":"47308","prefecture":"47","name":"国頭郡本部町","kana":"クニガミグンモトブチョウ","romaji":"Kunigami-gun Motobu-cho"},
-  {"code":"47311","prefecture":"47","name":"国頭郡恩納村","kana":"クニガミグンオンナソン","romaji":"Kunigami-gun Onna-son"},
-  {"code":"47313","prefecture":"47","name":"国頭郡宜野座村","kana":"クニガミグンギノザソン","romaji":"Kunigami-gun Ginoza-son"},
-  {"code":"47314","prefecture":"47","name":"国頭郡金武町","kana":"クニガミグンキンチョウ","romaji":"Kunigami-gun Kin-cho"},
-  {"code":"47315","prefecture":"47","name":"国頭郡伊江村","kana":"クニガミグンイエソン","romaji":"Kunigami-gun Ie-son"},
-  {"code":"47324","prefecture":"47","name":"中頭郡読谷村","kana":"ナカガミグンヨミタンソン","romaji":"Nakagami-gun Yomitan-son"},
-  {"code":"47325","prefecture":"47","name":"中頭郡嘉手納町","kana":"ナカガミグンカデナチョウ","romaji":"Nakagami-gun Kadena-cho"},
-  {"code":"47326","prefecture":"47","name":"中頭郡北谷町","kana":"ナカガミグンチャタンチョウ","romaji":"Nakagami-gun Chatan-cho"},
-  {"code":"47327","prefecture":"47","name":"中頭郡北中城村","kana":"ナカガミグンキタナカグスクソン","romaji":"Nakagami-gun Kitanakagusuku-son"},
-  {"code":"47328","prefecture":"47","name":"中頭郡中城村","kana":"ナカガミグンナカグスクソン","romaji":"Nakagami-gun Nakagusuku-son"},
-  {"code":"47329","prefecture":"47","name":"中頭郡西原町","kana":"ナカガミグンニシハラチョウ","romaji":"Nakagami-gun Nishihara-cho"},
-  {"code":"47348","prefecture":"47","name":"島尻郡与那原町","kana":"シマジリグンヨナバルチョウ","romaji":"Shimajiri-gun Yonabaru-cho"},
-  {"code":"47350","prefecture":"47","name":"島尻郡南風原町","kana":"シマジリグンハエバルチョウ","romaji":"Shimajiri-gun Haebaru-cho"},
-  {"code":"47353","prefecture":"47","name":"島尻郡渡嘉敷村","kana":"シマジリグントカシキソン","romaji":"Shimajiri-gun Tokashiki-son"},
-  {"code":"47354","prefecture":"47","name":"島尻郡座間味村","kana":"シマジリグンザマミソン","romaji":"Shimajiri-gun Zamami-son"},
-  {"code":"47355","prefecture":"47","name":"島尻郡粟国村","kana":"シマジリグンアグニソン","romaji":"Shimajiri-gun Aguni-son"},
-  {"code":"47356","prefecture":"47","name":"島尻郡渡名喜村","kana":"シマジリグントナキソン","romaji":"Shimajiri-gun Tonaki-son"},
-  {"code":"47357","prefecture":"47","name":"島尻郡南大東村","kana":"シマジリグンミナミダイトウソン","romaji":"Shimajiri-gun Minamidaito-son"},
-  {"code":"47358","prefecture":"47","name":"島尻郡北大東村","kana":"シマジリグンキタダイトウソン","romaji":"Shimajiri-gun Kitadaito-son"},
-  {"code":"47359","prefecture":"47","name":"島尻郡伊平屋村","kana":"シマジリグンイヘヤソン","romaji":"Shimajiri-gun Iheya-son"},
-  {"code":"47360","prefecture":"47","name":"島尻郡伊是名村","kana":"シマジリグンイゼナソン","romaji":"Shimajiri-gun Izena-son"},
-  {"code":"47361","prefecture":"47","name":"島尻郡久米島町","kana":"シマジリグンクメジマチョウ","romaji":"Shimajiri-gun Kumejima-cho"},
-  {"code":"47362","prefecture":"47","name":"島尻郡八重瀬町","kana":"シマジリグンヤエセチョウ","romaji":"Shimajiri-gun Yaese-cho"},
-  {"code":"47375","prefecture":"47","name":"宮古郡多良間村","kana":"ミヤコグンタラマソン","romaji":"Miyako-gun Tarama-son"},
-  {"code":"47381","prefecture":"47","name":"八重山郡竹富町","kana":"ヤエヤマグンタケトミチョウ","romaji":"Yaeyama-gun Taketomi-cho"},
-  {"code":"47382","prefecture":"47","name":"八重山郡与那国町","kana":"ヤエヤマグンヨナグニチョウ","romaji":"Yaeyama-gun Yonaguni-cho"}
-];
+const JP_MUNICIPALITIES: readonly JapaneseMunicipality[] = /* @__PURE__ */ unpackMunicipalities(MUNICIPALITIES_PACKED);
 
 export { JP_MUNICIPALITIES };

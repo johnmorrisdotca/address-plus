@@ -1,4 +1,5 @@
-// US Street Types (USPS official abbreviations)
+// US Street Types (USPS official abbreviations). Kept by hand from USPS Publication 28, not generated: it is a *.data.ts
+// file because it is a long table, which the 500-line gate does not count.
 
 /**
  * Every street type USPS Publication 28 lists, and the common spellings of each, in lower case, to its USPS
@@ -520,32 +521,4 @@ const US_STREET_TYPES: Record<string, string> = {
   xrds: "xrds",
 };
 
-/**
- * Each USPS street type abbreviation in lower case, to the word in full.
- *
- * @example
- * ```ts
- * import { STREET_TYPE_EXPANSIONS } from "@johnmorrisdotca/address-plus";
- *
- * console.log(STREET_TYPE_EXPANSIONS["blvd"]);
- * // → "Boulevard"
- * ```
- */
-const STREET_TYPE_EXPANSIONS: Record<string, string> = {
-  ave: "Avenue",
-  blvd: "Boulevard",
-  cir: "Circle",
-  ct: "Court",
-  dr: "Drive",
-  ln: "Lane",
-  pl: "Place",
-  rd: "Road",
-  st: "Street",
-  ter: "Terrace",
-  trl: "Trail",
-  way: "Way",
-  hwy: "Highway",
-  pkwy: "Parkway",
-};
-
-export { STREET_TYPE_EXPANSIONS, US_STREET_TYPES };
+export { US_STREET_TYPES };
