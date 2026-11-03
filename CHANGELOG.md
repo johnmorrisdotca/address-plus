@@ -4,6 +4,8 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+- The data update script for the country tables is split by country, with the same behaviour. `pnpm check` now runs `scripts/check-max-lines.mjs`, which fails a source file over 500 lines.
+
 ## 1.9.0 - 2026-11-03
 
 The demo, the docs and the release tooling follow the family's must-have list. No change to the package's code.
