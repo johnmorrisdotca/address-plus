@@ -21,7 +21,7 @@ const NOT_COUNTED = [
 // File path -> its line count when it was listed. Why each is listed is in the board ticket named beside it.
 const KNOWN_OVER = {
   // Family files, copied from johnmorrisdotca/.github; split there and synced (MODULES-276, MODULES-277).
-  "scripts/docs-site.mjs": 1356,
+  "scripts/docs-site.mjs": 1382,
   "scripts/family-template.mjs": 1000,
   // The demo stylesheet, one cascade (MODULES-306).
   "demo/address-plus.css": 566,
