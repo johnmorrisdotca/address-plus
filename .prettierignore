@@ -11,6 +11,9 @@ scripts/family-template.mjs
 scripts/readme-pictures-lib.mjs
 demo/family.css
 scripts/family-readme.mjs
+scripts/family-thumbnail.mjs
+scripts/family-thumbnail.d.mts
+src/family-thumbnail.test.js
 
 # Shared family download files are byte-identical and checked by their hash test.
 demo/downloads.js

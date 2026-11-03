@@ -14,8 +14,10 @@ import {
   familyHead,
   familyUnreviewed,
 } from "./family-template.mjs";
+import { publishThumbnails, thumbnailHead } from "./family-thumbnail.mjs";
 
 const { id } = MEMBER;
+const ALT = "address-plus: six addresses laid out the way their post offices ask, on labels.";
 
 // The lines of "Using it": each is run against the built package, and the answer it gives is written after it.
 const USES = {
@@ -301,6 +303,7 @@ function page(uses) {
       ogDescription:
         "Parse, validate, format and compare addresses from the US, Canada, Japan, Australia, France, Germany and the UK, including Japanese script, romaji and full-width digits. One small dependency.",
     })}
+    ${thumbnailHead(JSON.parse(readFileSync("package.json", "utf8")), { alt: ALT })}
     <link rel="icon" href="${ICON}" />
     <link rel="stylesheet" href="family.css" />
     <link rel="stylesheet" href="address-plus.css" />
@@ -374,6 +377,8 @@ await build({
   silent: true,
 });
 writeFileSync("site/index.html", page(uses));
+// The family's card, dark card and icon, at <site>/thumbnail.png, thumbnail-dark.png and icon.png.
+publishThumbnails(".", "site");
 // The corpus, for the page's corpus browser: every case with what it is checked on, and nothing else (no sources or
 // descriptions), fetched by the page only when asked for.
 // A case of a country module's folder carries the hint its suite reads it with; the page adds the modules.

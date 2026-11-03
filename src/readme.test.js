@@ -85,6 +85,14 @@ describe("the standard's checks catch what they are for", () => {
     expect(faults).toMatch(/description does not carry the job/);
   });
 
+  it("lets the family's thumbnail come above the title, and holds it to its own rules rather than the screenshots'", () => {
+    const card = `<p align="center"><a href="https://johnmorrisdotca.github.io/sample/"><picture><source media="(prefers-color-scheme: dark)" srcset="${raw}thumbnail-dark.png"><img src="${raw}thumbnail.png" alt="Sample: samples drawn as SVG, on the family's paper." width="1200"></picture></a></p>`;
+    const pictures = [ok("thumbnail.png"), ok("thumbnail-dark.png"), { file: "icon.png", bytes: 300 * 1024 }];
+    const faults = faultsFor(`${card}\n\n# Sample\n`, pictures).join("\n");
+    expect(faults).not.toMatch(/does not start with its title|thumbnail|icon\.png/);
+    expect(faultsFor(`Some words first.\n\n${card}\n\n# Sample\n`, pictures).join("\n")).toMatch(/does not start with its title/);
+  });
+
   it("refuses a package whose files ship the pictures", () => {
     expect(lintReadme({ readme: "# T\n", pkg: { ...pkg, files: ["dist", "docs"] }, pictures: [], minSubjects: 0 }).join("\n")).toMatch(/"files" lists docs/);
   });

@@ -7,6 +7,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { LEADING_THUMBNAIL, THUMBNAIL_FILES } from "./family-thumbnail.mjs";
+
 /** The `##` sections every README has, in order: [what it is called in messages, a pattern for the heading]. */
 export const REQUIRED_SECTIONS = [
   ["In 30 seconds", /^(?:.+ )?in 30 seconds$/i],
@@ -142,12 +144,11 @@ export function lintReadme({ readme, pkg, pictures, minSubjects = MIN_SUBJECTS, 
   const repositoryPath = /github\.com[/:]([^/]+\/[^/#]+?)(?:\.git)?$/.exec(String(repositoryUrl ?? ""))?.[1] ?? `johnmorrisdotca/${repo}`;
   const prefix = `https://raw.githubusercontent.com/${repositoryPath}/main/docs/images/`;
   const all = headings(readme);
-  const lines = readme.split("\n");
 
   if (readme.length > BUDGET_README) fault(`The README is ${readme.length.toLocaleString("en-US")} characters; npm shows only the first 65,536 and cuts the rest off, so the budget is ${BUDGET_README.toLocaleString("en-US")}. Move reference material to a file under docs/ and link it.`);
 
-  // The title: one h1, the first thing in the README.
-  const firstLine = lines.find((line) => line.trim() !== "") ?? "";
+  // The title: one h1, the first thing in the README after the family's thumbnail (family-thumbnail.mjs), which comes above it.
+  const firstLine = readme.replace(LEADING_THUMBNAIL, "").split("\n").find((line) => line.trim() !== "") ?? "";
   if (!/^(# |<h1[ >])/.test(firstLine)) fault("The README does not start with its title (a `#` heading or an `<h1>`).");
   const h1s = parts(readme).filter((part) => part.type === "prose").reduce((sum, part) => sum + part.text.split("\n").filter((line) => /^# /.test(line) || /<h1[ >]/.test(line)).length, 0);
   if (h1s !== 1) fault(`The README has ${h1s} top-level titles; it has one.`);
@@ -251,7 +252,9 @@ export function lintReadme({ readme, pkg, pictures, minSubjects = MIN_SUBJECTS, 
   const byFile = new Map(pictures.map((picture) => [picture.file, picture]));
   const referenced = new Set();
   const alts = new Map();
-  const found = imageUrls(readme).filter((image) => !isBadge(image.src));
+  // The family's thumbnail, its dark twin and its icon are held to their own rules (family-thumbnail.mjs), not these.
+  const isThumbnail = (src) => THUMBNAIL_FILES.some((file) => src?.endsWith(`/docs/images/${file}`));
+  const found = imageUrls(readme).filter((image) => !isBadge(image.src) && !isThumbnail(image.src));
   const hero = readme.indexOf("\n## ");
   for (const image of found) {
     const label = `${image.kind} ${(image.src ?? "(no src)").split("/").pop()}`;
@@ -269,7 +272,8 @@ export function lintReadme({ readme, pkg, pictures, minSubjects = MIN_SUBJECTS, 
     }
   }
   const named = [];
-  for (const picture of pictures) {
+  const screenshots = pictures.filter((picture) => !THUMBNAIL_FILES.includes(picture.file));
+  for (const picture of screenshots) {
     const match = NAME.exec(picture.file);
     if (!match) { fault(`docs/images/${picture.file} is not named <subject>-<desk|phone>-<light|dark>.<webp|png>.`); continue; }
     named.push({ subject: match[1], view: match[2], scheme: match[3], ...picture });
@@ -279,14 +283,14 @@ export function lintReadme({ readme, pkg, pictures, minSubjects = MIN_SUBJECTS, 
     const budget = match[2] === "desk" ? BUDGET_DESK : BUDGET_OTHER;
     if (picture.bytes > budget) fault(`docs/images/${picture.file} is ${Math.round(picture.bytes / 1024)} KB; the budget for it is ${budget / 1024} KB.`);
   }
-  const total = pictures.reduce((sum, picture) => sum + picture.bytes, 0);
+  const total = screenshots.reduce((sum, picture) => sum + picture.bytes, 0);
   if (total > BUDGET_TOTAL) fault(`The pictures come to ${(total / 1048576).toFixed(2)} MB; the budget is ${BUDGET_TOTAL / 1048576} MB.`);
   // Each light image is the img of a picture with its dark twin as a dark source, and a caption follows.
   for (const match of readme.matchAll(/<picture>([\s\S]*?)<\/picture>/g)) {
     const inner = match[1];
     const src = /<img\b[^>]*\ssrc="([^"]*)"/.exec(inner)?.[1] ?? "";
     const dark = /<source\b[^>]*media="\(prefers-color-scheme: dark\)"[^>]*\ssrcset="([^"]*)"/.exec(inner)?.[1] ?? /<source\b[^>]*\ssrcset="([^"]*)"[^>]*media="\(prefers-color-scheme: dark\)"/.exec(inner)?.[1];
-    if (!src.startsWith(prefix)) continue;
+    if (!src.startsWith(prefix) || isThumbnail(src)) continue;
     if (!/-light\./.test(src)) fault(`${src.split("/").pop()} is the img of a <picture> and is not the light file.`);
     else if (dark !== src.replace("-light.", "-dark.")) fault(`${src.split("/").pop()} has no dark source with its twin's address.`);
     const after = readme.slice(match.index + match[0].length, match.index + match[0].length + 700);

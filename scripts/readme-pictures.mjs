@@ -39,4 +39,42 @@ await takePictures({
       },
     },
   ],
+  // The family's thumbnail, dark thumbnail and icon (scripts/family-thumbnail.mjs): six addresses typed into the Format
+  // panel, each laid out as its post office asks (Japan, the US, Canada, France, Germany and the UK), on address
+  // labels; the icon is the French label with its lines drawn as bars, so it carries no text.
+  thumbnail: {
+    url: "/?lang=en&help=off",
+    ready: READY,
+    target: "#thumbnail-stage",
+    icon: { target: "#thumbnail-icon" },
+    label: "address-plus アドレスプラス",
+    async prepare(page) {
+      const formatted = [];
+      for (const example of ["Japan", "US with a unit", "Canada", "France", "Germany", "UK"]) {
+        await page.locator('[data-testid="format-examples"] button', { hasText: new RegExp(`^${example}$`) }).click();
+        formatted.push(await page.locator('[data-testid="format-answer"] .lines').first().innerText());
+      }
+      await page.evaluate((addresses) => {
+        const label = (body) =>
+          `<div style="background:var(--surface);border:1px solid var(--rule);border-left:10px solid var(--felt);border-radius:14px;padding:22px 28px;box-shadow:0 2px 6px rgba(0,0,0,.12)">${body}</div>`;
+        const text = (lines) =>
+          `<div style="font-size:22px;line-height:1.45;font-weight:600;color:var(--ink);white-space:pre">${lines.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</div>`;
+        const bars = (lines) =>
+          `<div style="display:flex;flex-direction:column;gap:22px;padding:10px 0">${lines
+            .split("\n")
+            .map(
+              (line, at) =>
+                `<div style="height:36px;border-radius:18px;width:${Math.max(4, line.length) * 22}px;background:${at === 0 ? "var(--accent)" : "var(--ink)"}"></div>`,
+            )
+            .join("")}</div>`;
+        const font = getComputedStyle(document.querySelector('[data-testid="format-answer"] .lines')).fontFamily;
+        document.body.replaceChildren();
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `<div id="thumbnail-stage" style="display:grid;grid-template-columns:repeat(3,max-content);gap:24px;align-items:start;padding:12px;width:max-content;font-family:${font.replace(/"/g, "'")}">${addresses.map((lines) => label(text(lines))).join("")}</div>` +
+            `<div id="thumbnail-icon" style="padding:12px;width:max-content">${label(bars(addresses[3]))}</div>`,
+        );
+      }, formatted);
+    },
+  },
 });

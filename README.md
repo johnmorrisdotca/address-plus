@@ -1,3 +1,5 @@
+<p align="center"><a href="https://johnmorrisdotca.github.io/address-plus/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/thumbnail-dark.png"><img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/thumbnail.png" alt="address-plus: six addresses laid out the way their post offices ask, on labels." width="1200"></picture></a></p>
+
 <h1 align="center">address-plus <sub>アドレスプラス</sub> — US and Canadian address parser</h1>
 
 **Try it:** [the demo](https://johnmorrisdotca.github.io/address-plus/), in your browser with nothing to install · [Documentation](https://johnmorrisdotca.github.io/address-plus/docs/) · [Getting started](https://johnmorrisdotca.github.io/address-plus/docs/guides/getting-started.html) · [API reference](https://johnmorrisdotca.github.io/address-plus/api.html)
@@ -1001,17 +1003,14 @@ Parsing and known postal-data checks do not establish deliverability or occupanc
 - **Multi-format support**: Extensive test coverage for US, Canadian and Japanese addresses, including every Japanese prefecture and municipality and 1,000 generated Japanese records from REST in Pieces
 - **Address corpora**: 3,526 cases from USPS Publication 28, Canada Post's guidelines, Australia Post's, La Poste's, Deutsche Post's and Royal Mail's rules, libpostal, parse-address's shapes and Geolonia's Japanese test addresses, with every case still wrong listed and explained in [docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md)
 - **Documented examples that run**: every export's TSDoc example is run against the built package by `pnpm docs:check`, with expected answers and declaration comments held by `pnpm docs:legacy-check`
-- **Edge case testing**: Validation of complex parsing scenarios and error conditions
 - **Type tests**: `tsd` checks the published type definitions
 - **Package check**: `pnpm test:package` packs the built package, installs it in a clean project, and proves that `require`, `import` and the types work for each entry point
-- **Real-world data validation**: Tests based on actual address formats and variations
 
 ### Performance
 
 - **One small dependency**: `fast-levenshtein`, for fuzzy state and province names; hikidashi is bundled in
 - **Size**: the root is 101.8 kB minified and gzipped, `/jp` 57.5 kB, `/au` 7.2 kB, `/gb` 8.7 kB, `/de` 12.2 kB and `/fr` 9.3 kB; the optional field entries are 130.1 kB each. [The measured sizes](docs/bundle-size.json) are refreshed with `pnpm size --write`
 - **Fast**: a US or Canadian address parses in about 10 microseconds. `pnpm bench` measures speed, load time and size; [the performance guide](docs/guides/performance.md) has the numbers
-- **Memory efficient**: Minimal object allocation
 
 ## Accessibility
 
@@ -1024,15 +1023,15 @@ Safari 15, Edge 94 or newer) and in Node.js 24 or newer.
 
 ## Languages
 
-The demo and docs have English and Japanese interfaces. Canadian parsing includes English/French abbreviations, and Japanese inputs can use Japanese script, romaji and full-width digits. Country modules keep native postal names. Added Japanese documentation needs review before release.
+The demo and docs have English and Japanese interfaces. Canadian parsing includes English/French abbreviations, and Japanese inputs can use Japanese script, romaji and full-width digits. Country modules keep native postal names.
 
 ## Roadmap
 
-Keep the existing country entries isolated and maintain the documented parser, validator and formatter contracts. New country data or changed normalization rules need their own fixtures and release review. This branch adds documentation without changing parser behavior or releasing a version.
+Keep the existing country entries isolated and maintain the documented parser, validator and formatter contracts. New country data or changed normalization rules need their own fixtures and release review.
 
 ## Architecture
 
-The [architecture guide](docs/guides/architecture.md) explains the root parser, optional country modules, generated tables, form field and checks. Detailed [country extension](docs/COUNTRIES.md) and [test coverage](docs/TEST_COVERAGE.md) documents remain available.
+The [architecture guide](docs/guides/architecture.md) explains the root parser, optional country modules, generated tables, form field and checks. See also [country extension](docs/COUNTRIES.md) and [test coverage](docs/TEST_COVERAGE.md).
 
 ## The name
 

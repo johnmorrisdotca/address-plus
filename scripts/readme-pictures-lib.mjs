@@ -15,6 +15,8 @@ import { fileURLToPath } from "node:url";
 
 import { chromium } from "@playwright/test";
 
+import { captureDrawing, composeThumbnails, THUMBNAIL_FILES } from "./family-thumbnail.mjs";
+
 export const VIEWS = {
   desk: { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, hasTouch: false, isMobile: false },
   phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true },
@@ -54,8 +56,14 @@ async function toWebp(page, png) {
  * @param {string[]} [options.only] subjects to take (the others are left as they are, and nothing is removed)
  * A shot may also have `init`, a function run in the page before it loads (to keep a level, say), and `state`, a plain object it
  * is given beside `view` and `scheme`; `init` is serialised, so it may use nothing from the script's own scope.
+ * @param {{ target: string, url?: string, ready?: string, prepare?: (page: import("@playwright/test").Page, state: { scheme: string, icon: boolean }) => Promise<void>,
+ *   icon?: { target?: string, url?: string, prepare?: (page: import("@playwright/test").Page) => Promise<void> }, label?: string, clear?: boolean,
+ *   init?: Function, state?: object, scale?: number }} [options.thumbnail] the family's thumbnail, dark thumbnail and icon
+ *   (family-thumbnail.mjs): the drawing `target` is taken light and dark with a transparent ground and laid on the family's
+ *   grounds at 1200×630; `icon.target` (the same drawing when not given) at 512×512. `label` is the small name on the cards.
+ *   Made unless `only` leaves out the subject "thumbnail"; never removed as a picture no shot makes.
  */
-export async function takePictures({ shots, root = join(dirname(fileURLToPath(import.meta.url)), ".."), site = "site", only }) {
+export async function takePictures({ shots, root = join(dirname(fileURLToPath(import.meta.url)), ".."), site = "site", only, thumbnail }) {
   const name = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).name.split("/")[1];
   const siteDir = join(root, site);
   const out = join(root, "docs", "images");
@@ -102,11 +110,48 @@ export async function takePictures({ shots, root = join(dirname(fileURLToPath(im
         }
       }
     }
+    if (thumbnail && (!only || only.includes("thumbnail"))) {
+      try {
+        const taken = {};
+        for (const [kind, scheme] of [["light", "light"], ["dark", "dark"], ["icon", "light"]]) {
+          const icon = kind === "icon";
+          const geometry = VIEWS.desk;
+          const context = await browser.newContext({ ...geometry, deviceScaleFactor: thumbnail.scale ?? 2, colorScheme: scheme, reducedMotion: "reduce", locale: "en-US", timezoneId: "UTC" });
+          const page = await context.newPage();
+          await page.route(`${host}/**`, (route) => {
+            const { pathname } = new URL(route.request().url());
+            const asked = join(siteDir, pathname === "/" ? "index.html" : decodeURIComponent(pathname).slice(1));
+            const file = existsSync(asked) && statSync(asked).isDirectory() ? join(asked, "index.html") : asked;
+            if (!existsSync(file)) return route.fulfill({ status: 404, body: "" });
+            return route.fulfill({ body: readFileSync(file), contentType: TYPES[extname(file)] ?? "application/octet-stream" });
+          });
+          try {
+            if (thumbnail.init) await page.addInitScript(thumbnail.init, { scheme, icon, ...thumbnail.state });
+            await page.goto(`${host}${(icon && thumbnail.icon?.url) || thumbnail.url || "/?lang=en&help=off"}`);
+            if (thumbnail.ready) await page.waitForSelector(thumbnail.ready);
+            if (thumbnail.prepare) await thumbnail.prepare(page, { scheme, icon });
+            if (icon && thumbnail.icon?.prepare) await thumbnail.icon.prepare(page);
+            await page.mouse.move(0, 0);
+            taken[kind] = await captureDrawing(page, (icon && thumbnail.icon?.target) || thumbnail.target, { clear: thumbnail.clear });
+            if (kind === "icon") {
+              for (const picture of await composeThumbnails({ page, root, light: taken.light, dark: taken.dark, icon: taken.icon, label: thumbnail.label ?? "" })) {
+                written.push(picture);
+                console.log(`${picture.file.padEnd(36)} ${String(Math.round(picture.bytes / 1024)).padStart(4)} KB`);
+              }
+            }
+          } finally {
+            await context.close();
+          }
+        }
+      } catch (error) {
+        failures.push(`thumbnail: ${error.message.split("\n")[0]}`);
+      }
+    }
   } finally {
     await browser.close();
   }
   if (!only) {
-    const made = new Set(written.map((picture) => picture.file));
+    const made = new Set([...written.map((picture) => picture.file), ...THUMBNAIL_FILES]);
     for (const file of readdirSync(out)) if (!made.has(file) && !file.startsWith(".")) { rmSync(join(out, file)); console.log(`removed ${file}: no shot makes it`); }
   }
   const total = written.reduce((sum, picture) => sum + picture.bytes, 0);
