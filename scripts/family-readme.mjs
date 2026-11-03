@@ -19,7 +19,7 @@ const OWNER = "johnmorrisdotca";
 export const FAMILY_BLOCK_START = "<!-- family:start (made by scripts/family-readme.mjs from scripts/family-template.mjs; change those, not this) -->";
 export const FAMILY_BLOCK_END = "<!-- family:end -->";
 
-const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty", "thirty-one", "thirty-two"];
+const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty", "thirty-one", "thirty-two", "thirty-three"];
 const numberWord = (n) => {
   const word = NUMBER_WORDS[n];
   if (word === undefined) throw new Error(`family-readme.mjs has no word for ${n} packages: add it to NUMBER_WORDS`);

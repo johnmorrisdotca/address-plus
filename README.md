@@ -4,7 +4,7 @@
 
 **Try it:** [the demo](https://johnmorrisdotca.github.io/address-plus/), in your browser with nothing to install · [Documentation](https://johnmorrisdotca.github.io/address-plus/docs/) · [Getting started](https://johnmorrisdotca.github.io/address-plus/docs/guides/getting-started.html) · [API reference](https://johnmorrisdotca.github.io/address-plus/api.html)
 
-The demo parses, validates, formats, compares and cleans an address as you type; takes a pasted list of addresses from all seven countries and saves the results as CSV, JSON or text; takes a Japanese address apart, each part beside its reading and romaji; and runs the whole test corpus, 3,526 cases, in your browser, listing the few still wrong. Every panel copies its call as code or a link that opens the page as you left it. Nothing you type leaves the page.
+The demo parses, validates, formats, compares and cleans an address as you type; takes a pasted list of addresses from all seven countries and saves the results as CSV, JSON or text; takes a Japanese address apart, each part beside its reading and romaji; and runs the whole test corpus, 3,526 cases, in your browser, listing the few still wrong. Nothing you type leaves the page.
 
 <p align="center"><img alt="TypeScript" src="https://img.shields.io/badge/types-TypeScript-2f5d4a"> <a href="https://johnmorrisdotca.github.io/address-plus/docs/api/main/index.html"><img alt="101.8 kB minified and gzipped" src="https://img.shields.io/badge/min%2Bgzip-101.8%20kB-2f5d4a"></a> <a href="https://www.npmjs.com/package/@johnmorrisdotca/address-plus#provenance"><img alt="Published with npm provenance" src="https://img.shields.io/badge/npm-provenance-2f5d4a"></a></p>
 
@@ -13,14 +13,14 @@ The demo parses, validates, formats, compares and cleans an address as you type;
 <td align="center" valign="top">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-desk-dark.webp">
-<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-desk-light.webp" alt="The demo on a desk, in English: the header with its language chooser, the Docs and API reference links, five cloth patches and the Help switch, then panels in two columns. Parse shows 1600 Pennsylvania Ave NW, Washington, DC 20500 split into number 1600, street Pennsylvania, street type Ave, direction NW, city Washington, state DC, ZIP 20500 and country US, with the call parseLocation under it. Validate shows 123 Main St, Seattle, NY 98101 as valid with the warning POSTAL_REGION_MISMATCH: ZIP code 98101 belongs to WA, not NY" width="600">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-desk-light.webp" alt="The demo on a desk, in English: the family header with its language chooser and theme switch, then the Parse panel and the Validate panel side by side." width="600">
 </picture>
 <br><em>The demo on a desk: each panel answers the example in its box, with the call that made it.</em>
 </td>
 <td align="center" valign="top">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-phone-dark.webp">
-<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-phone-light.webp" alt="The parse panel on a phone, in Japanese: 住所の解析 (parseLocation), with the example 〒100-0005 東京都千代田区丸の内1丁目2番3号, its 日本語 example button selected, and the structured native fields and call below it" width="190">
+<img src="https://raw.githubusercontent.com/johnmorrisdotca/address-plus/main/docs/images/hero-phone-light.webp" alt="The Parse panel on a phone, in Japanese: 住所の解析 (parseLocation), an example address and its fields." width="190">
 </picture>
 <br><em>On a phone, in Japanese, in the device's light or dark.</em>
 </td>
@@ -208,6 +208,10 @@ const parsed = addresses.map((addr) => parseLocation(addr));
 console.log(parsed);
 ```
 
+## Every way to use it
+
+Each is a tested file in [`examples/`](./examples) (`pnpm test:usage`), with a guide in English and Japanese: [script tag](./docs/guides/html-and-cdn.md), [Vite and webpack](./docs/guides/bundlers.md), [React, Vue, Svelte, Angular](./docs/guides/frameworks.md), [iframe of the embed page](./docs/guides/embed-in-an-iframe.md), [TypeScript and Node](./docs/guides/typescript-and-node.md).
+
 ## Examples
 
 ### US Addresses
@@ -370,7 +374,7 @@ Parses a street intersection string into structured components.
 
 ### Migrating from parse-address
 
-Replace the package and keep your calls: `parseLocation`, `parseAddress`, `parseIntersection` and `parseInformalAddress` have the same names and return the same fields, and `{ useSnakeCase: true }` gives parse-address's `sec_unit_type` and `sec_unit_num`. [Migrating from parse-address](docs/MIGRATING_FROM_PARSE_ADDRESS.md) maps every call and field, shows side by side each answer that differs on purpose (a unit designator in full, a fraction kept with the number, Canada's unit-civic pairs), and notes the one function that reads less than parse-address's (`parseInformalAddress`; call `parseLocation` instead).
+Replace the package and keep your calls: `parseLocation`, `parseAddress`, `parseIntersection` and `parseInformalAddress` have the same names and return the same fields, and `{ useSnakeCase: true }` gives parse-address's `sec_unit_type` and `sec_unit_num`. [Migrating from parse-address](docs/MIGRATING_FROM_PARSE_ADDRESS.md) maps every call and field, shows each answer that differs on purpose side by side.
 
 ### Address Components
 
@@ -1045,7 +1049,7 @@ address-plus extends the parse-address style with typed results, validation, for
 ### The family
 
 <!-- family:start (made by scripts/family-readme.mjs from scripts/family-template.mjs; change those, not this) -->
-address-plus is one of thirty-two packages, each made for the same site, each at
+address-plus is one of thirty-three packages, each made for the same site, each at
 [github.com/johnmorrisdotca](https://github.com/johnmorrisdotca) or [github.com/spxis](https://github.com/spxis). The code of every one is MIT.
 
 **Games — board**
@@ -1089,6 +1093,7 @@ address-plus is one of thirty-two packages, each made for the same site, each at
 **Geography & data**
 
 - [address-plus](https://github.com/johnmorrisdotca/address-plus) (アドレスプラス): parse and format addresses in the United States, Canada, Japan, Australia, France, Germany and the United Kingdom. [Demo](https://johnmorrisdotca.github.io/address-plus/).
+- [Chikyu Earth](https://github.com/johnmorrisdotca/chikyu-earth) (地球): a line-drawn globe that turns at the Earth's own rate, with an optional realistic Earth from space and markers for any place. [Demo](https://johnmorrisdotca.github.io/chikyu-earth/).
 - [Chizu](https://github.com/johnmorrisdotca/chizu) (地図): maps of the world and of countries' regions, in English and Japanese, with a quiz and callouts. [Demo](https://johnmorrisdotca.github.io/chizu/).
 - [Hata](https://github.com/johnmorrisdotca/hata) (旗): country and regional flags as SVG, at their true proportions and keyed by ISO code. [Demo](https://johnmorrisdotca.github.io/hata/).
 - [Kuni](https://github.com/johnmorrisdotca/kuni) (国): countries and their regions, with ISO codes and names in English and Japanese. [Demo](https://johnmorrisdotca.github.io/kuni/).
@@ -1105,7 +1110,7 @@ address-plus is one of thirty-two packages, each made for the same site, each at
 - [REST in Pieces](https://github.com/spxis/rest-in-pieces) (レスト・イン・ピーシーズ): seeded test data and REST APIs for frontend development, with latency and error drills. [Demo](https://spxis.github.io/rest-in-pieces/).
 
 
-**This package is address-plus.** The demos of all thirty-two share one header and footer, so each links the rest.
+**This package is address-plus.** The demos of all thirty-three share one header and footer, so each links the rest.
 <!-- family:end -->
 
 ## Development

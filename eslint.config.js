@@ -6,6 +6,8 @@ export default tseslint.config(
     ignores: [
       "dist/",
       ".docs-examples/",
+      ".usage/",
+      "examples/",
       "node_modules/",
       "coverage/",
       "test-management/",

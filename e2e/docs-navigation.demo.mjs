@@ -8,9 +8,9 @@ for (const path of ["", "builder.html"]) {
     const docs = page.locator('[data-say="pageDocs"]');
     await expect(docs).toHaveText("ドキュメント");
     await expect(docs).toHaveAttribute("href", "docs/ja/index.html");
-    await page.locator('button[data-lang="en"]').click();
+    await page.locator('kazoku-language-picker [data-v="en"]').click();
     await expect(docs).toHaveAttribute("href", "docs/index.html");
-    await page.locator('button[data-lang="ja"]').click();
+    await page.locator('kazoku-language-picker [data-v="ja"]').click();
     await docs.click();
     await expect(page).toHaveURL("http://address-plus.test/docs/ja/index.html");
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");

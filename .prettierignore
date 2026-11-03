@@ -26,3 +26,8 @@ src/docs-site.test.js
 src/readme.test.js
 e2e/docs-site.demo.mjs
 .docs-examples/
+
+# Kazoku-ui's check, copied unchanged and held to a recorded hash; the examples are the text the guides hold word for word.
+scripts/check-standard.mjs
+examples/
+.usage/

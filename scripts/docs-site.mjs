@@ -68,7 +68,7 @@ const ts = tsModule.default?.createProgram ? tsModule.default : tsModule.createP
 import { FAMILY, FAMILY_PITCH, FAMILY_SCRIPT, FAMILY_WORDS, familyFooter, familyHead, familyHeader, familyUnreviewed } from "./family-template.mjs";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const DOCS_SITE_VERSION = "2026-10-13-workspaces";
+export const DOCS_SITE_VERSION = "2026-11-02-kazoku-header";
 
 const OWNER = "johnmorrisdotca";
 /** The kinds of guide, in the order the contents list them (Diátaxis, with troubleshooting and upgrading of their own). */
@@ -751,6 +751,9 @@ export const DOCS_CSS = `/* The documentation site: made by scripts/docs-site.mj
 .docs-page > * { min-width: 0; max-width: 100%; }
 .docs-page .intro { min-height: 0; }
 .docs-page [data-help-switch] { display: none; }
+.lang { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; }
+.lang a, .lang button { font: inherit; font-size: .9rem; font-weight: 600; color: var(--muted); background: transparent; border: 0; border-radius: 999px; min-width: 44px; min-height: 44px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.lang a[aria-current="true"] { background: var(--ink); color: var(--page); }
 .docs-skip { position: absolute; left: 16px; top: -100px; z-index: 20; background: var(--surface); color: var(--ink); border: 2px solid var(--accent); border-radius: 10px; padding: 10px 14px; font-weight: 600; }
 .docs-skip:focus { top: 8px; }
 .docs-brand { margin: 0; font-size: 1.8rem; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
@@ -933,6 +936,7 @@ function frame(model, page, words, content) {
   const twins = Object.fromEntries(LANGS.map((other) => [other, hrefFrom(pagePath(lang, page.path), pagePath(other, page.path))]));
   let header = site.inFamily ? familyHeader({ id: site.id, links: [{ href: demo, say: "demo" }] }) : `<header><div class="intro"><h1>${escapeHtml(site.name)}${site.kana ? `<span lang="ja">${escapeHtml(site.kana)}</span>` : ""}</h1><p data-say="pitch"></p></div><nav><div class="lang" role="group" aria-label="Language / 言語"><button type="button" data-lang="en" lang="en">English</button><button type="button" data-lang="ja" lang="ja">日本語</button></div><a href="${escapeHtml(site.siteUrl)}" data-say="demo"></a><a href="${site.repoUrl}">GitHub</a><a href="https://www.npmjs.com/package/${site.pkg.name}">npm</a></nav></header>`;
   header = say(header)
+    .replace(/<kazoku-language-picker[^>]*><\/kazoku-language-picker>/, `<div class="lang" role="group" aria-label="Language / 言語"><button type="button" data-lang="en" lang="en">English</button><button type="button" data-lang="ja" lang="ja">日本語</button></div>`)
     .replace(/<h1>([\s\S]*?)<\/h1>/, (whole, inner) => `<p class="docs-brand"><a href="${home}">${inner}</a></p>`)
     .replace("<nav>", `<nav aria-label="${escapeHtml(words.siteLabel)}">`)
     .replace(/<button type="button" data-lang="(\w+)" lang="\w+">([^<]*)<\/button>/g, (whole, code, label) => `<a href="${escapeHtml(twins[code])}" data-lang="${code}" lang="${code}" hreflang="${code}"${code === lang ? ` aria-current="true"` : ""}>${label}</a>`);
@@ -966,7 +970,7 @@ function frame(model, page, words, content) {
       </div>
       ${footer}
     </div>
-    <script>${site.inFamily ? FAMILY_SCRIPT : ""}${docsScript(site.id)}</script>${page.script ? `\n    <script>${page.script}</script>` : ""}
+    <script>${site.inFamily ? FAMILY_SCRIPT : ""}${docsScript(site.id)}</script>${site.inFamily ? `\n    <script type="module" src="${englishRoot}../kazoku-parts.js"></script>` : ""}${page.script ? `\n    <script>${page.script}</script>` : ""}
   </body>
 </html>
 `;

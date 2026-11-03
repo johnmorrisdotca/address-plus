@@ -28,3 +28,17 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Lint, typecheck, size gate, test, build, docs checks, test:types, schema:validate, test:package and test:readme (the README's examples run), in that order.
       - run: pnpm check
+  usage:
+    name: Every way to use it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      # A script tag, Vite, webpack, React, Vue, Svelte, Angular, an iframe, TypeScript and Node, from the package as npm packs it.
+      - run: pnpm test:usage

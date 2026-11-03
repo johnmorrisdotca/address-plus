@@ -1,4 +1,4 @@
-/* sha256 of every line after this one: c1e392564a7fd94d0bb5cfaefb6d4fedfd147fc3e27f3a7afd8d8dac8c94a227 */
+/* sha256 of every line after this one: cbbb1efab9ff5f56b07623c244c194f827e286cdc82def61abc0d13599a340b8 */
 /*
  * family.css: the one look of the johnmorrisdotca packages' demo sites
  * (korokoro, kyuubu, hitotsu, toranpu, tane, narabe, tenka, kumimoji).
@@ -72,10 +72,8 @@ nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 nav a { text-decoration: none; color: inherit; border: 1px solid var(--rule); border-radius: 999px; padding: 0 14px; min-height: 46px; display: inline-flex; align-items: center; font-size: .9rem; font-weight: 600; }
 nav a:hover { border-color: var(--ink); }
 
-/* 4. The language chooser. */
-.lang { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; }
-.lang button { font: inherit; font-size: .9rem; font-weight: 600; color: var(--muted); background: transparent; border: 0; border-radius: 999px; min-width: 44px; min-height: 44px; padding: 0 14px; cursor: pointer; }
-.lang button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+/* 4. The language picker and the theme switch (kazoku-ui parts), in the page's colours. */
+kazoku-language-picker, kazoku-theme-switch { --kazoku-ink: var(--ink); --kazoku-surface: var(--surface); --kazoku-line: var(--rule); --kazoku-accent: var(--felt); }
 .unreviewed { margin: 14px 0 0; font-size: .85rem; color: var(--muted); }
 
 /* 5. The footer: a note, the install line and the licence, and the family. */

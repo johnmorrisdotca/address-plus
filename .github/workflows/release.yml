@@ -1,105 +1,21 @@
 name: Release
-
-# `pnpm release <version>` commits the version and tags it; pushing the tag starts this workflow.
+# Run by hand (Actions > Release > Run workflow) from main, or push a v<version> tag. The steps are kazoku-ui's shared
+# release workflow (docs/release-workflow.md there): it refuses unless the CI workflow has succeeded on this commit,
+# checks the tag against package.json, runs `pnpm check`, tags, and publishes to npm by trusted publishing, with
+# provenance. The GitHub release page (its notes are the CHANGELOG's) is made by the same run.
+# npm trusts this file by name (npmjs.com > the package > Settings > Trusted Publisher: release.yml), so publishing
+# needs no token and no secret.
 on:
   push:
     tags: ["v*"]
-
+  workflow_dispatch:
 permissions:
+  actions: read
   contents: write
   id-token: write
-
-# A release runs to the end once started; a second push of the same tag waits for it.
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  verify:
-    name: Tag matches the version and changelog
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          # This job installs nothing, so there is no pnpm for setup-node to find; v5 fails without this.
-          package-manager-cache: false
-      - name: Compare the tag with package.json and CHANGELOG.md
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          declared="$(node -p 'require("./package.json").version')"
-          if [ "$version" != "$declared" ]; then
-            echo "::error title=Version mismatch::The tag $GITHUB_REF_NAME does not match package.json ($declared). Cut releases with pnpm release <version>."
-            exit 1
-          fi
-          node scripts/release.mjs --notes "$version" > /dev/null
-
-  checks:
-    name: Checks
-    needs: verify
-    permissions:
-      contents: read
-    uses: ./.github/workflows/ci.yml
-
-  # Trusted publishing: there is no npm token anywhere. The package's settings on npmjs.com (Settings >
-  # Trusted Publisher > GitHub Actions) name the one workflow allowed to publish it: organization or user
-  # johnmorrisdotca, repository address-plus, workflow filename release.yml, environment name left empty. npm CLI
-  # 11.5.1 or newer (Node 24 ships 11.x) then swaps this job's OIDC token (id-token: write) for a publish
-  # credential by itself, as long as NODE_AUTH_TOKEN is not set. The first version of a package name is
-  # published from the author's machine, because the package must exist before that setting can be made.
-  npm:
-    name: Package to npm
-    needs: checks
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-          registry-url: https://registry.npmjs.org
-      - run: pnpm install --frozen-lockfile
-      # The package is built here, since dist/ is not committed.
-      - run: pnpm build
-      - name: Publish
-        # npm itself publishes, not pnpm: the OIDC exchange is npm's, and npm's docs describe only npm.
-        # Provenance is automatic for a public repository over OIDC; --provenance is kept so a publish that
-        # could not attach it fails instead of going out without. --access public is for the scoped name.
-        # The package's prepublishOnly script runs pnpm check once more before the upload.
-        run: npm publish --provenance --access public
-
   release:
-    name: GitHub release
-    needs: npm
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          # This job installs nothing, so there is no pnpm for setup-node to find; v5 fails without this.
-          package-manager-cache: false
-      - name: Create the release from CHANGELOG.md
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          notes="$RUNNER_TEMP/notes.md"
-          node scripts/release.mjs --notes "$version" > "$notes"
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            # A rerun after a failed job: refresh the notes rather than failing.
-            gh release edit "$GITHUB_REF_NAME" --title "$version" --notes-file "$notes"
-          else
-            prerelease=()
-            case "$version" in *-*) prerelease=(--prerelease) ;; esac
-            gh release create "$GITHUB_REF_NAME" --verify-tag --title "$version" --notes-file "$notes" "${prerelease[@]}"
-          fi
+    uses: johnmorrisdotca/kazoku-ui/.github/workflows/reusable-release.yml@v0.10.1
+    with:
+      require-ci-workflow: ci.yml
+      github-release: true

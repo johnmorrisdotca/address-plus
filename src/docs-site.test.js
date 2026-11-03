@@ -27,8 +27,8 @@ const pkg = JSON.parse(read("package.json"));
 // The recorded hashes: the generator and its browser test are one text in every package. A change to either is made in
 // every repository at once, with a new DOCS_SITE_VERSION and the new hashes here.
 const RECORDED = {
-  version: "2026-10-13-workspaces",
-  "scripts/docs-site.mjs": "5953399a4b239c6f721b733ba007daba8335689dbdbf746135c8d166aa91dead",
+  version: "2026-11-02-kazoku-header",
+  "scripts/docs-site.mjs": "0135d1ad6d8635ba10d648f36eb788ea9d471c67792e2efd20f456ed791a2af0",
   "e2e/docs-site.demo.mjs": "6119efc290d197bb2d90cdd8eaf9dc2364bc485973c4b6f0e6da64c543594564",
 };
 
@@ -80,9 +80,12 @@ describe("the README's badges", () => {
     const measured = JSON.parse(ran.stdout);
     expect(Object.keys(measured.entries).sort()).toEqual(Object.keys(recorded.entries).sort());
     for (const [key, size] of Object.entries(measured.entries)) {
-      // gzip's bytes move a little with the zlib a Node version carries; anything more is a change to record.
+      // The minified bytes are esbuild's and are the same on every machine, so any change to them is a change to record.
+      expect(size.minified, `${key} is ${size.minified} bytes minified; docs/bundle-size.json says ${recorded.entries[key].minified}. Run \`pnpm size --write\` and update the badge.`).toBe(recorded.entries[key].minified);
+      // gzip's bytes are not: the file is recorded where CI measures it (Linux, x64) and a Mac's zlib gives other bytes for the same input, up to 5 percent of a small file
+      // (8 percent allowed).
       const was = recorded.entries[key].gzip;
-      expect(Math.abs(size.gzip - was), `${key} is ${size.gzip} bytes gzipped; docs/bundle-size.json says ${was}. Run \`pnpm size --write\` and update the badge.`).toBeLessThanOrEqual(Math.max(32, was * 0.01));
+      expect(Math.abs(size.gzip - was), `${key} is ${size.gzip} bytes gzipped; docs/bundle-size.json says ${was}. Run \`pnpm size --write\` and update the badge.`).toBeLessThanOrEqual(Math.max(32, was * 0.08));
     }
     const whole = recorded.entries["."]?.gzip ?? Object.values(recorded.entries)[0].gzip;
     expect(readme).toContain(sizeBadge(site, whole));
@@ -90,7 +93,8 @@ describe("the README's badges", () => {
 
   it("say the package is published with npm provenance, which the Release workflow does", () => {
     expect(readme).toContain(`<a href="https://www.npmjs.com/package/${pkg.name}#provenance"><img alt="Published with npm provenance" src="https://img.shields.io/badge/npm-provenance-2f5d4a"></a>`);
-    expect(read(".github/workflows/release.yml")).toContain("--provenance");
+    // The shared release workflow runs `npm publish --provenance`; the called file is pinned to a released tag.
+    expect(read(".github/workflows/release.yml")).toMatch(/uses: johnmorrisdotca\/kazoku-ui\/\.github\/workflows\/reusable-release\.yml@v\d+\.\d+\.\d+\n/);
   });
 
   it("say how to install the package under a plain English name", () => {

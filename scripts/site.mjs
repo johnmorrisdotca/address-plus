@@ -3,6 +3,7 @@
 // and the API reference made from the source.
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
+import { build as esbuild } from "esbuild";
 import { build } from "tsup";
 
 import { API_CSS, apiOf, apiPage, header, ICON, MEMBER, runExamples } from "./api.mjs";
@@ -289,12 +290,10 @@ const corpusSection = `<section class="fam-panels job wide" id="corpus" aria-lab
         </div>
       </section>`;
 
-/** The page, from the panels and the lines of "Using it" with their answers. */
+/** The page is demo/index.html; each <!-- family:key --> in it is replaced by the text below. `uses` are the lines of "Using it" with their answers. */
 function page(uses) {
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    ${familyHead({
+  const parts = {
+    head: familyHead({
       id,
       title: "address-plus アドレスプラス — US and Canadian address parser",
       description:
@@ -302,43 +301,27 @@ function page(uses) {
       ogTitle: "address-plus アドレスプラス — US and Canadian address parser",
       ogDescription:
         "Parse, validate, format and compare addresses from the US, Canada, Japan, Australia, France, Germany and the UK, including Japanese script, romaji and full-width digits. One small dependency.",
-    })}
-    ${thumbnailHead(JSON.parse(readFileSync("package.json", "utf8")), { alt: ALT })}
-    <link rel="icon" href="${ICON}" />
-    <link rel="stylesheet" href="family.css" />
-    <link rel="stylesheet" href="address-plus.css" />
-  </head>
-  <body>
-    <main>
-      ${header({
-        id,
-        links: [
-          { href: "docs/index.html", say: "pageDocs" },
-          { href: "api.html", say: "pageApi" },
-          { href: "builder.html", say: "pageBuilder" },
-        ],
-      })}
-      <div class="jobs">
-      ${panels.slice(0, 6).join("\n      ")}
-      ${bulkSection}
-      ${panels.slice(6).join("\n      ")}
-      ${corpusSection}
-      </div>
-      ${familyUnreviewed({ id })}
-      <section class="more" aria-labelledby="more-title">
-        <h2 id="more-title" data-say="moreTitle"></h2>
-        <p data-say="moreText"></p>
-        <ul class="uses">
-          ${uses.map((line) => `<li><code>${escape(line)}</code></li>`).join("\n          ")}
-        </ul>
-      </section>
-      ${familyFooter({ id })}
-    </main>
-    <script>${FAMILY_SCRIPT}</script>
-    <script type="module" src="demo.js"></script>
-  </body>
-</html>
-`;
+    }),
+    thumbnail: thumbnailHead(JSON.parse(readFileSync("package.json", "utf8")), { alt: ALT }),
+    icon: ICON,
+    header: header({
+      id,
+      links: [
+        { href: "docs/index.html", say: "pageDocs" },
+        { href: "api.html", say: "pageApi" },
+        { href: "builder.html", say: "pageBuilder" },
+      ],
+    }),
+    firstPanels: panels.slice(0, 6).join("\n      "),
+    bulk: bulkSection,
+    lastPanels: panels.slice(6).join("\n      "),
+    corpus: corpusSection,
+    unreviewed: familyUnreviewed({ id }),
+    uses: uses.map((line) => `<li><code>${escape(line)}</code></li>`).join("\n          "),
+    footer: familyFooter({ id }),
+    script: `<script>${FAMILY_SCRIPT}</script>\n    <script type="module" src="kazoku-parts.js"></script>`,
+  };
+  return readFileSync("demo/index.html", "utf8").replace(/<!-- family:([A-Za-z]+) -->/g, (_match, key) => parts[key]);
 }
 
 const api = apiOf();
@@ -377,6 +360,19 @@ await build({
   silent: true,
 });
 writeFileSync("site/index.html", page(uses));
+// The family header's language picker and theme switch, as one small module for every page of the site (the demo, the builder, the API reference and the docs).
+await esbuild({
+  stdin: {
+    contents:
+      'import "@johnmorrisdotca/kazoku-ui/language-picker/define";\nimport "@johnmorrisdotca/kazoku-ui/theme-switch/define";\n',
+    resolveDir: process.cwd(),
+  },
+  outfile: "site/kazoku-parts.js",
+  bundle: true,
+  format: "esm",
+  minify: true,
+  logLevel: "silent",
+});
 // The family's card, dark card and icon, at <site>/thumbnail.png, thumbnail-dark.png and icon.png.
 publishThumbnails(".", "site");
 // The corpus, for the page's corpus browser: every case with what it is checked on, and nothing else (no sources or
@@ -435,7 +431,7 @@ const builderParts = {
   }),
   unreviewed: familyUnreviewed({ id }),
   footer: familyFooter({ id }),
-  script: `<script>${FAMILY_SCRIPT}</script>`,
+  script: `<script>${FAMILY_SCRIPT}</script>\n    <script type="module" src="kazoku-parts.js"></script>`,
 };
 writeFileSync(
   "site/builder.html",

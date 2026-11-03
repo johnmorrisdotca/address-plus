@@ -46,7 +46,7 @@ test("Help is off at first, and on it shows a line under each option row, in eit
   );
   expect(untitled).toEqual([]);
   const english = await lines.first().textContent();
-  await page.locator('[data-lang="ja"]').click();
+  await page.locator('kazoku-language-picker [data-v="ja"]').click();
   await expect(lines.first()).not.toHaveText(english);
   // The choice is kept, and turning it off hides every line again.
   await page.reload();

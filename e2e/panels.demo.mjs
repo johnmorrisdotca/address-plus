@@ -174,7 +174,7 @@ test("in Japanese the labels, the examples and the answers are Japanese, and swi
   const errors = await open(page);
   const parseTitle = page.locator("#parse-title");
   await expect(parseTitle).toContainText("Parse");
-  await page.locator('[data-lang="ja"]').click();
+  await page.locator('kazoku-language-picker [data-v="ja"]').click();
   await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   await expect(parseTitle).toContainText("住所の解析");
   await expect(page.locator("#validate-title")).toContainText("住所の検証");
@@ -183,7 +183,7 @@ test("in Japanese the labels, the examples and the answers are Japanese, and swi
   await expect(answer(page, "compare")).toContainText("完全一致");
   await expect(chip(page, "parse", "ローマ字")).toBeVisible();
   await expect(page.locator("#unreviewed")).toBeVisible();
-  await page.locator('[data-lang="en"]').click();
+  await page.locator('kazoku-language-picker [data-v="en"]').click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(parseTitle).toContainText("Parse");
   await expect(answer(page, "parse")).toContainText("Street");
@@ -195,7 +195,7 @@ test("in Japanese the labels, the examples and the answers are Japanese, and swi
 
 test("a Japanese example parses in Japanese, and the choice of language is kept", async ({ page }, testInfo) => {
   const errors = await open(page);
-  await page.locator('[data-lang="ja"]').click();
+  await page.locator('kazoku-language-picker [data-v="ja"]').click();
   await tap(page, chip(page, "parse", "日本語"), testInfo);
   await expect(answer(page, "parse")).toContainText("都道府県");
   await expect(answer(page, "parse")).toContainText("東京都");

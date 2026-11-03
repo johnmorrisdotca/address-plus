@@ -371,6 +371,7 @@ export function apiPage({ api, examples }) {
       ${familyFooter({ id })}
     </main>
     <script>${FAMILY_SCRIPT}</script>
+    <script type="module" src="kazoku-parts.js"></script>
     <script>familyLanguage({ id: ${JSON.stringify(id)}, words: ${JSON.stringify(API_WORDS)} });</script>
   </body>
 </html>

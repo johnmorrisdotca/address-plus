@@ -19,3 +19,4 @@ site/
 test-results/
 playwright-report/
 .docs-examples/
+.usage/

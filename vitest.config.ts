@@ -17,6 +17,7 @@ export default defineConfig({
       "src/docs-site.test.js",
       "src/readme.test.js",
       "src/family-thumbnail.test.js",
+      "src/standard.test.js",
       "scripts/**/*.test.mjs",
     ],
     watch: false,

@@ -4,7 +4,19 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+The demo, the docs and the release tooling follow the family's must-have list. No change to the package's code.
+
+### Added
+
+- **Every way to use it, tested.** `examples/` holds a script tag from jsDelivr and from unpkg, Vite, webpack, React (with a server render), Vue, Svelte, Angular, an iframe of the embed page, TypeScript and Node. `pnpm test:usage` builds, type-checks or runs each against the package as npm packs it, opens the ones with a page in a browser, and checks that the guides hold the same text word for word. CI runs it.
+- **Five guides, English and Japanese:** plain HTML and CDNs, Vite and webpack, React, Vue, Svelte and Angular, an iframe, and TypeScript and Node. The README links them ("Every way to use it").
+- **`scripts/check-standard.mjs`**, the family's must-have list as a check (kazoku-ui's, copied unchanged), run by `pnpm test`.
+
+### Changed
+
 - The README opens with the package's thumbnail, and the demo carries it as its link preview (og:image) and publishes the card, a dark card and an icon on Pages at `thumbnail.png`, `thumbnail-dark.png` and `icon.png`.
+- **The demo's header** has the family's language picker and theme switch (kazoku-ui), and the page is `demo/index.html`.
+- **The Release workflow** is run by hand from `main` and calls kazoku-ui's shared release workflow; it refuses a commit CI has not passed and tags the version itself.
 
 ## 1.8.0 - 2026-11-03
 
