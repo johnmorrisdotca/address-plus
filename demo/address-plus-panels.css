@@ -1,0 +1,195 @@
+/* Address Plus's own look, after family.css: a panel for each job, its answer as a field table, the call that made it, and the JSON. */
+:root {
+  --intro-room: 14rem;
+  --intro-room-wide: 7rem;
+}
+.jobs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.job .fam-panel {
+  gap: 12px;
+}
+.job h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.job h2 code {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.job .blurb {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 70ch;
+}
+.job .fam-row {
+  align-items: center;
+}
+.job .fam-label {
+  min-width: 4.2rem;
+}
+.job .fam-field {
+  flex: 1 1 14rem;
+  width: 0;
+  min-width: 11rem;
+  font-size: 1rem;
+}
+.job .fam-seg button {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.answer {
+  min-height: 9rem;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--surface) 60%, var(--page));
+  overflow-wrap: anywhere;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.answer .note {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: baseline;
+  font-size: 0.95rem;
+}
+.facts dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  display: grid;
+}
+.facts dt code {
+  font-size: 0.7rem;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.findings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.findings li {
+  display: grid;
+  gap: 2px;
+}
+.findings code {
+  font-size: 0.8rem;
+}
+.findings span {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.lines {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.prefixes {
+  display: grid;
+  gap: 2px;
+}
+.prefixes .fam-muted {
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+.prefixes .fam-notation {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.call {
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+  min-height: 4.4rem;
+}
+.json {
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 24rem;
+  overflow: auto;
+}
+.pair {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.pair .fam-field {
+  flex: 1 1 auto;
+}
+.uses {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.uses code {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.more .uses {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 520px) {
+  .job .fam-label {
+    min-width: 100%;
+  }
+  .pair {
+    flex-wrap: wrap;
+  }
+  .job .fam-field {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .facts dd {
+    margin-bottom: 8px;
+  }
+}
+/* A panel as wide as the page: the Japanese parts, the pasted list and the corpus. */
+.job.wide {
+  grid-column: 1 / -1;
+}

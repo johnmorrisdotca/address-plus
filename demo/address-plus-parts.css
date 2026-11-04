@@ -1,0 +1,44 @@
+/* The parts table as a card a part on a phone, and the header link. */
+.parts tbody th code {
+  text-transform: none;
+  letter-spacing: 0;
+}
+/* On a phone the parts table is a card a part: the part's name, the Japanese large, then each other value with its
+   column's name before it. */
+@media (max-width: 640px) {
+  .parts thead {
+    display: none;
+  }
+  .parts,
+  .parts tbody,
+  .parts tr,
+  .parts th,
+  .parts td {
+    display: block;
+  }
+  .parts tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .parts th,
+  .parts td {
+    border: 0;
+    padding: 1px 0;
+  }
+  .parts td[data-empty="true"] {
+    display: none;
+  }
+  .parts td:not(.written)::before {
+    content: attr(data-label) " ";
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-family: var(--font);
+    margin-right: 6px;
+  }
+}
+
+header nav a[data-say="pageDocs"] {
+  inline-size: 8rem;
+  justify-content: center;
+  flex: none;
+}

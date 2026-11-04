@@ -1,0 +1,41 @@
+/* Copy the call, copy a link, and the words that say it was done. */
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.tools .copied {
+  font-size: 0.85rem;
+}
+.fam-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* Clean: typed, cleaned, then the post office's way, as three steps. */
+.chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.chain li {
+  display: grid;
+  gap: 1px;
+  padding-left: 12px;
+  border-left: 3px solid var(--rule);
+}
+.chain li:last-child {
+  border-left-color: var(--good);
+}
+.chain .step {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.chain .value {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

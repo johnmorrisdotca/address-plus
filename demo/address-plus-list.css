@@ -1,0 +1,136 @@
+/* The pasted list. */
+.bulk-input {
+  min-height: 9rem;
+  resize: vertical;
+  font-family: var(--mono);
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.job .bulk-input {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.bulk-summary {
+  display: grid;
+  gap: 8px;
+}
+.bulk-summary .headline,
+.corpus-summary .headline {
+  margin: 0;
+  font-weight: 700;
+}
+.share-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+}
+.share-bar span {
+  flex-basis: 0;
+  min-width: 4px;
+}
+[data-kind="US"] {
+  --kind: #2f5d8a;
+}
+[data-kind="CA"] {
+  --kind: #b5452c;
+}
+[data-kind="JP"] {
+  --kind: #2f7a4f;
+}
+[data-kind="AU"] {
+  --kind: #7a4f8f;
+}
+[data-kind="DE"] {
+  --kind: #8a7a2f;
+}
+[data-kind="FR"] {
+  --kind: #a64a78;
+}
+[data-kind="GB"] {
+  --kind: #3d7f86;
+}
+[data-kind="other"] {
+  --kind: #b08a2e;
+}
+[data-kind="none"] {
+  --kind: var(--muted);
+}
+.share-bar span {
+  background: var(--kind);
+}
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.85rem;
+}
+.legend li::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  background: var(--kind);
+}
+.bulk-wrap {
+  overflow: auto;
+  max-width: 100%;
+  max-height: 28rem;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+}
+.bulk-wrap:empty,
+.bulk-wrap:has(table:empty) {
+  display: none;
+}
+.bulk-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 100%;
+}
+.bulk-table th,
+.bulk-table td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.bulk-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.bulk-table td.input,
+.bulk-table td.formatted {
+  white-space: normal;
+  min-width: 16rem;
+}
+.bulk-table td.n {
+  color: var(--muted);
+}
+.bulk-table tr[data-state="none"] td {
+  color: var(--muted);
+}
+.bulk-table td.check[data-tone="good"] {
+  color: var(--good);
+  font-weight: 700;
+}
+.bulk-table td.check[data-tone="bad"] {
+  color: var(--bad);
+  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
