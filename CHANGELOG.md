@@ -6,7 +6,11 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ### Changed
 
-- **The builder's code is in the family's embed panel** (kazoku-ui 0.38, family template 2026-11-11). The nine tabs, Copy, "Copy a link to this field" and "Start again" are all kept, and the panel adds a link that opens the embed page with the choices, the form-field guide in the page's language, and the credit for the postcode data (GeoNames and CBS, CC BY 4.0) and the region names (kuni). The tab chosen stays in the address.
+- **The builder's code is in the family's embed panel** (kazoku-ui 0.38, family template 2026-11-11). The nine tabs, Copy, "Copy a link to this field" and "Start again" are all kept, and the panel adds a link that opens the embed page with the choices, the form-field guide in the page's language, and the credit for the data of each country the field reads (the ABS, Ordnance Survey and Royal Mail, La Poste and INSEE, GeoNames) and the region names (kuni), with the address of `NOTICE.md`. The tab chosen stays in the address.
+
+### Fixed
+
+- **`NOTICE.md` credits every source the package ships.** It now has the attribution each licence asks for, for Australia's cross-border postcodes (the Australian Bureau of Statistics, CC BY 4.0), Great Britain's postcode districts (Ordnance Survey and Royal Mail, Open Government Licence v3.0) and France's postcodes and departments (La Poste and INSEE, Licence Ouverte 2.0), each with the licence read on 2026-11-11; it named only GeoNames and CBS before.
 
 ## 1.10.0 - 2026-11-11
 

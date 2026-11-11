@@ -39,7 +39,9 @@ test("the code section is the embed panel, with every item it had and the guide,
   );
   await expect(panel(page).locator("[part=open]")).toHaveAttribute("href", /embed\//);
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/guides/form-field-and-embeds.html");
-  await expect(panel(page).locator("[part=credits]")).toContainText("GeoNames");
+  await expect(panel(page).locator("[part=credits]")).toContainText("Australian Bureau of Statistics");
+  for (const source of ["Ordnance Survey and Royal Mail", "La Poste and INSEE", "GeoNames", "NOTICE.md"])
+    await expect(panel(page).locator("[part=credits]")).toContainText(source);
   // the preview and the size are the builder's own
   await expect(panel(page).locator("[part=preview]")).toBeHidden();
   await expect(panel(page).locator("[part=size]")).toBeHidden();
@@ -54,7 +56,7 @@ test("the code section is the embed panel, with every item it had and the guide,
   await expect(panel(page).getByTestId("bld-link")).toHaveText("この入力欄へのリンクをコピー");
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/ja/guides/form-field-and-embeds.html");
   await expect(panel(page).locator("[part=credits]")).toContainText(
-    "郵便番号のデータはGeoNamesとCBS（オランダ統計局）のもの（どちらもCC BY 4.0）、地域名はkuni（Unicode CLDRとWikidata）のものです。全文はNOTICE.mdにあります。",
+    "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md",
   );
   expect(errors).toEqual([]);
 });
@@ -83,6 +85,6 @@ test("a page opened in Japanese gives the panel its Japanese tabs, note, buttons
   await expect(panel(page).getByTestId("bld-link")).toHaveText("この入力欄へのリンクをコピー");
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/ja/guides/form-field-and-embeds.html");
   await expect(panel(page).locator("[part=credits]")).toContainText(
-    "郵便番号のデータはGeoNamesとCBS（オランダ統計局）のもの（どちらもCC BY 4.0）、地域名はkuni（Unicode CLDRとWikidata）のものです。全文はNOTICE.mdにあります。",
+    "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md",
   );
 });
