@@ -32,6 +32,13 @@ const RECORDED = {
   "e2e/docs-site.demo.mjs": "915d74e4017cf117f8322b712ab2f1fa55058d654ff0fca0e476af85bce5fbf6",
 };
 
+// The checks that do real work: reading every source with TypeScript for the docs' problems, measuring every entry point
+// with esbuild (in a child process for the README's badge), and building small repositories to measure. Each takes 0.25
+// to 0.75 s on an idle Mac (measured 2026-11-11) and ran past vitest's 5 s default on a machine running several browsers
+// at a load near 20. They have their own limit, set from those times; the measurement's child process has the same, so
+// its own limit is the one that stops it, with its own message.
+const SLOW_STEP = 30_000;
+
 describe("the documentation site's shared files", () => {
   it("are the family's one text, byte for byte", () => {
     expect(DOCS_SITE_VERSION).toBe(RECORDED.version);
@@ -53,7 +60,7 @@ describe("the documentation site's shared files", () => {
 describe("the docs", () => {
   it("have no problem: every export has a TSDoc summary, @param, @returns (saying what null means) and an @example that imports the package; every guide has its front matter and its links lead somewhere", () => {
     expect(docsProblems(".")).toEqual([]);
-  });
+  }, SLOW_STEP + 5_000);
 
   it("have docs/site.json with the job, the plain English words for what the package does", () => {
     const site = packageOf(".");
@@ -76,7 +83,7 @@ describe("the README's badges", () => {
     // Use the CLI's actual Node/module context instead of the test runner's transformed modules.
     const script = pathToFileURL(resolve("scripts/docs-site.mjs")).href;
     const code = `import { measureBundles } from ${JSON.stringify(script)}; console.log(JSON.stringify(await measureBundles(process.cwd())));`;
-    const ran = await promisify(execFile)(process.execPath, ["--input-type=module", "-e", code], { cwd: process.cwd(), encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 30_000 });
+    const ran = await promisify(execFile)(process.execPath, ["--input-type=module", "-e", code], { cwd: process.cwd(), encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: SLOW_STEP });
     const measured = JSON.parse(ran.stdout);
     expect(Object.keys(measured.entries).sort()).toEqual(Object.keys(recorded.entries).sort());
     for (const [key, size] of Object.entries(measured.entries)) {
@@ -89,7 +96,7 @@ describe("the README's badges", () => {
     }
     const whole = recorded.entries["."]?.gzip ?? Object.values(recorded.entries)[0].gzip;
     expect(readme).toContain(sizeBadge(site, whole));
-  });
+  }, SLOW_STEP + 5_000);
 
   it("say the package is published with npm provenance, which the Release workflow does", () => {
     expect(readme).toContain(`<a href="https://www.npmjs.com/package/${pkg.name}#provenance"><img alt="Published with npm provenance" src="https://img.shields.io/badge/npm-provenance-2f5d4a"></a>`);
@@ -167,7 +174,7 @@ describe("workspace packages and generated declaration entries", () => {
       expect(docsProblems(root, model)).toEqual([]);
       expect(readInputs(root)).toMatchObject({ readme: "Repository README\n", job: "Fake REST API data for testing" });
     });
-  });
+  }, SLOW_STEP + 5_000);
 
   it("documents type-only declarations without counting them as runtime bundles", async () => {
     await fixture(async ({ root }) => {
@@ -177,7 +184,7 @@ describe("workspace packages and generated declaration entries", () => {
       expect(Object.keys(sizes)).toEqual([".", "./server"]);
       expect(sizes["./server"].minified).toBeGreaterThan(0);
     });
-  });
+  }, SLOW_STEP + 5_000);
 
   it("rejects explicit declaration paths outside the repository", async () => {
     await fixture(({ root, config, put }) => {
