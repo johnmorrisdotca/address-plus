@@ -492,4 +492,4 @@ writeFileSync(
 );
 cpSync("demo/embed", "site/embed", { recursive: true });
 await frameEmbed("site/embed/index.html");
-for (const file of ["builder.js", "builder.css"]) cpSync(`demo/${file}`, `site/${file}`);
+for (const file of ["builder.js", "builder.css", "credit-sources.js"]) cpSync(`demo/${file}`, `site/${file}`);

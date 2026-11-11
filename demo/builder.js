@@ -1,5 +1,6 @@
 import { FAMILY_EMBED_BUILDER_WORDS, familyEmbedBuilder } from "./family-embed-builder.js";
 // kazoku-ui's embed panel, the code section the builder fills: defined before the builder mounts.
+import { BUILDER_CREDITS } from "./credit-sources.js";
 import { PACKAGE_VERSION } from "./field-version.js";
 import "./kazoku-embed-panel.js";
 import "./lib/element-define.js";
@@ -173,11 +174,9 @@ const builder = familyEmbedBuilder({
   options,
   leftOut,
   groups: { field: { en: "The address field", ja: "住所の入力欄" } },
-  // the sources of the data for the countries the field reads (US, CA and JP have none to credit); NOTICE.md has each in full
-  credits: ({ lang }) =>
-    lang === "ja"
-      ? "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md"
-      : "Postcode data: Australia, the Australian Bureau of Statistics (CC BY 4.0); Great Britain, Ordnance Survey and Royal Mail (Open Government Licence v3.0); France, La Poste and INSEE (Licence Ouverte 2.0); Germany, GeoNames (CC BY 4.0). Region names from kuni (Unicode CLDR and Wikidata). Full credit: https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md",
+  // the sources of the data for the countries the field reads (US, CA and JP have none to credit), each source and licence
+  // a link; NOTICE.md has each in full
+  credits: ({ lang }) => (lang === "ja" ? BUILDER_CREDITS.ja : BUILDER_CREDITS.en),
   makers: {
     field: {
       names: "field",

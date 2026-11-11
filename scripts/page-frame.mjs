@@ -8,8 +8,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { pageCreditsHtml, pageHeaderHtml } from "@johnmorrisdotca/kazoku-ui/page-frame";
 import { build } from "esbuild";
 
-/** Where every credit is written in full. */
-export const NOTICE = "https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md";
+import { EMBED_CREDITS, NOTICE } from "../demo/credit-sources.js";
+
+export { EMBED_CREDITS, NOTICE };
 
 export const INDEX_DESCRIPTION =
   "Try address-plus in your browser: a TypeScript address parser for the US, Canada and Japan, with Australia, France, Germany and the UK as modules of their own. Parse an address into its fields, validate it (a ZIP code, postal code or postcode from another state, province or prefecture is caught), write it out the USPS, Canada Post, Japanese, Australia Post, La Poste, Deutsche Post or Royal Mail way, compare two addresses, find the region of a postal code, and clean up a messy one. Free and open source, in English and Japanese.";
@@ -65,12 +66,6 @@ export const CREDIT_LINES = (() => {
 export const FRAME_CREDITS = {
   en: `Postcode data: ${CREDIT_LINES.join(" ")} Region names from kuni.`,
   ja: `郵便番号のデータの出典（原文のまま）：${CREDIT_LINES.join(" ")} 地域名はkuniのものです。`,
-};
-
-/** The small credit line in the corner of the embed page: each source by name with its licence, and the link to the rest. */
-export const EMBED_CREDITS = {
-  en: "Postcode data: GeoNames, CBS and the Australian Bureau of Statistics (CC BY 4.0); Ordnance Survey and Royal Mail (Open Government Licence v3.0); La Poste and INSEE (Licence Ouverte 2.0)",
-  ja: "郵便番号のデータ：GeoNames、CBS、オーストラリア統計局（CC BY 4.0）、Ordnance SurveyとRoyal Mail（Open Government Licence v3.0）、La PosteとINSEE（Licence Ouverte 2.0）",
 };
 
 /** A page's <!--frame:header--> and <!--frame:credits--> filled with its frame: what it is, a way home, and the credits. */

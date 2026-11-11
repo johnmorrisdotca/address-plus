@@ -4,6 +4,10 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Changed
+
+- **The credit lines' sources and licences are links** (kazoku-ui 0.39's credit pieces). The embed page's small credit line and the builder's embed panel name the same sources and licences as before, and each one is now a link, in a tab of its own: GeoNames, CBS, the Australian Bureau of Statistics, Ordnance Survey, La Poste and INSEE to their data, and CC BY 4.0, the Open Government Licence v3.0 and the Licence Ouverte 2.0 to their texts; the builder's "Full credit" is a link to NOTICE.md instead of its address written out. The addresses are NOTICE.md's, in one module, `demo/credit-sources.js`. kazoku-ui is ^0.39.0. Demo only.
+
 ## 1.10.2 - 2026-11-11
 
 ### Changed

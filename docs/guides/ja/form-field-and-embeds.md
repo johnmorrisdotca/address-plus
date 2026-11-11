@@ -36,4 +36,4 @@ console.log(field.checkValidity());
 
 端末の中の`value`、`address`、`validation`、`options.onChange`で、信頼する表示側が値を読めます。公開のload・change・errorイベントは国、状態、件数、決まった説明を伝え、住所の項目は含めません。作成画面のコードと設定URLに入力した値は入りません。iframeは親のフォームに送信できないため、送信にはフォームの中の要素を使います。iframeのイベントは送信元の正確なoriginとフレームを確かめます。元の[埋め込みの説明](../../embeds.md)と作成画面で、属性とReact・Vue・Svelte・Angular・HTMLの例を読めます。
 
-[埋め込みビルダー](https://johnmorrisdotca.github.io/address-plus/builder.html)は、共通の埋め込みパネルにコードを書き出します。入力欄をページに入れる方法ごとのタブ（カスタム要素、iframe、ESモジュール、React 19、Vue、Svelte、Angular、HTML、iframe URL）、「コードをコピー」、選んだ設定で埋め込みページを開くリンク、このガイド、郵便番号のデータのクレジットがあります。コードに入るのは、初期値と異なる選択だけです。「この入力欄へのリンクをコピー」と「最初からやり直す」は「コードをコピー」の隣にあり、選んだタブはアドレスに残ります。
+[埋め込みビルダー](https://johnmorrisdotca.github.io/address-plus/builder.html)は、共通の埋め込みパネルにコードを書き出します。入力欄をページに入れる方法ごとのタブ（カスタム要素、iframe、ESモジュール、React 19、Vue、Svelte、Angular、HTML、iframe URL）、「コードをコピー」、選んだ設定で埋め込みページを開くリンク、このガイド、郵便番号のデータのクレジットがあります。クレジットでは、出どころとライセンスがそれぞれリンクになっていて、NOTICE.mdにもリンクします。埋め込みページの小さなクレジットの行も同じで、どのリンクも新しいタブで開きます。コードに入るのは、初期値と異なる選択だけです。「この入力欄へのリンクをコピー」と「最初からやり直す」は「コードをコピー」の隣にあり、選んだタブはアドレスに残ります。

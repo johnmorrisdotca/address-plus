@@ -42,6 +42,18 @@ test("the code section is the embed panel, with every item it had and the guide,
   await expect(panel(page).locator("[part=credits]")).toContainText("Australian Bureau of Statistics");
   for (const source of ["Ordnance Survey and Royal Mail", "La Poste and INSEE", "GeoNames", "NOTICE.md"])
     await expect(panel(page).locator("[part=credits]")).toContainText(source);
+  // each source and licence is a link, and so is NOTICE.md, each in a tab of its own
+  const links = panel(page).locator("[part=credits] [part=credit-link]");
+  await expect(links).toHaveCount(10);
+  await expect(links.filter({ hasText: "Open Government Licence v3.0" })).toHaveAttribute(
+    "href",
+    "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  );
+  await expect(links.filter({ hasText: "NOTICE.md" })).toHaveAttribute(
+    "href",
+    "https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md",
+  );
+  await expect(links.first()).toHaveAttribute("target", "_blank");
   // the preview and the size are the builder's own
   await expect(panel(page).locator("[part=preview]")).toBeHidden();
   await expect(panel(page).locator("[part=size]")).toBeHidden();
@@ -56,7 +68,7 @@ test("the code section is the embed panel, with every item it had and the guide,
   await expect(panel(page).getByTestId("bld-link")).toHaveText("この入力欄へのリンクをコピー");
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/ja/guides/form-field-and-embeds.html");
   await expect(panel(page).locator("[part=credits]")).toContainText(
-    "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md",
+    "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：NOTICE.md",
   );
   expect(errors).toEqual([]);
 });
@@ -85,6 +97,6 @@ test("a page opened in Japanese gives the panel its Japanese tabs, note, buttons
   await expect(panel(page).getByTestId("bld-link")).toHaveText("この入力欄へのリンクをコピー");
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/ja/guides/form-field-and-embeds.html");
   await expect(panel(page).locator("[part=credits]")).toContainText(
-    "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md",
+    "郵便番号のデータは、オーストラリアがオーストラリア統計局（ABS、CC BY 4.0）、イギリスがOrdnance SurveyとRoyal Mail（Open Government Licence v3.0）、フランスがLa PosteとINSEE（Licence Ouverte 2.0）、ドイツがGeoNames（CC BY 4.0）のものです。地域名はkuni（Unicode CLDRとWikidata）のものです。全文：NOTICE.md",
   );
 });

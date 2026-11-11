@@ -59,7 +59,9 @@ for (const lang of ["en", "ja"]) {
 }
 
 for (const path of EMBEDS) {
-  test(`${path} has the small credit line in its corner, linking the credits in a new tab`, async ({ page }) => {
+  test(`${path} has the small credit line in its corner, each source and licence a link, and the credits in a new tab`, async ({
+    page,
+  }) => {
     await serve(page);
     await page.goto(`http://address-plus.test/${path}?country=US`);
     const credits = page.locator("kazoku-page-credits");
@@ -76,7 +78,22 @@ for (const path of EMBEDS) {
       "Licence Ouverte 2.0",
     ])
       await expect(credits).toContainText(source);
-    await expect(credits.getByRole("link")).toHaveAttribute("href", NOTICE);
-    await expect(credits.getByRole("link")).toHaveAttribute("target", "_blank");
+    // each licence links to its text and each source to its data, in a tab of its own, never taking the frame away
+    for (const [name, href] of [
+      ["CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/"],
+      ["Open Government Licence v3.0", "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"],
+      ["Licence Ouverte 2.0", "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"],
+      ["GeoNames", "https://www.geonames.org/"],
+      ["Ordnance Survey", "https://www.ordnancesurvey.co.uk/products/code-point-open"],
+    ])
+      await expect(credits.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
+    const pieces = credits.locator("[part=credit-link]");
+    await expect(pieces).toHaveCount(9);
+    for (const link of await pieces.all()) {
+      await expect(link).toHaveAttribute("target", "_blank");
+      await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    }
+    await expect(credits.locator("[part=link]")).toHaveAttribute("href", NOTICE);
+    await expect(credits.locator("[part=link]")).toHaveAttribute("target", "_blank");
   });
 }
