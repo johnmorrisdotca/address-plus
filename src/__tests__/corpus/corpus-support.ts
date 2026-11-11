@@ -8,18 +8,35 @@ import { join } from "path";
 import { describe, expect, it } from "vitest";
 
 import { australia } from "../../au";
+import { brazil } from "../../br";
 import { germany } from "../../de";
 import { spain } from "../../es";
 import { france } from "../../fr";
 import { unitedKingdom } from "../../gb";
+import { india } from "../../in";
 import { italy } from "../../it";
+import { southKorea } from "../../kr";
 import { netherlands } from "../../nl";
 import { newZealand } from "../../nz";
 import { parseLocation } from "../../parser";
 import type { CountryModule, ParsedAddress, ParseOptions } from "../../types";
-
-// Every field a corpus case can name.
-type CorpusField = keyof ParsedAddress;
+import {
+  AUSTRALIA_CORE_FIELDS,
+  BRAZIL_CORE_FIELDS,
+  CORE_FIELDS,
+  CORE_FIELDS_BY_COUNTRY,
+  FRANCE_CORE_FIELDS,
+  GERMANY_CORE_FIELDS,
+  INDIA_CORE_FIELDS,
+  ITALY_CORE_FIELDS,
+  JAPAN_CORE_FIELDS,
+  KOREA_CORE_FIELDS,
+  NETHERLANDS_CORE_FIELDS,
+  NEW_ZEALAND_CORE_FIELDS,
+  SPAIN_CORE_FIELDS,
+  UK_CORE_FIELDS,
+  type CorpusField,
+} from "./corpus-fields";
 
 // One case as it is written in a corpus file.
 interface CorpusCase {
@@ -55,231 +72,32 @@ interface FieldMismatch {
   actual: unknown;
 }
 
-// The fields every complete case accounts for. A field here that the case does not name must be absent
-// from the result, so a parser that invents a prefix or a unit fails as surely as one that loses it.
-const CORE_FIELDS: CorpusField[] = [
-  "number",
-  "prefix",
-  "street",
-  "type",
-  "suffix",
-  "secUnitType",
-  "secUnitNum",
-  "city",
-  "state",
-  "zip",
-  "plus4",
-  "country",
-];
-
-// Japan's own fields play the part of the core fields in the Japanese corpus. The shared fields a Japanese
-// address also fills (state, city, street, number, zip) repeat these, so they are not judged again.
-const JAPAN_CORE_FIELDS: CorpusField[] = [
-  "postalCode",
-  "prefecture",
-  "municipality",
-  "streetDirections",
-  "town",
-  "chome",
-  "ban",
-  "go",
-  "building",
-  "floor",
-  "room",
-  "country",
-];
-
-// Australia's core fields: the shared ones its addresses fill, with the level, the lot and a building's name.
-const AUSTRALIA_CORE_FIELDS: CorpusField[] = [
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "lot",
-  "number",
-  "street",
-  "type",
-  "suffix",
-  "city",
-  "state",
-  "zip",
-  "country",
-];
-
-// The United Kingdom's core fields: the parts of Royal Mail's Postcode Address File, and the nation the postcode
-// delivers to.
-const UK_CORE_FIELDS: CorpusField[] = [
-  "subBuilding",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "building",
-  "number",
-  "dependentThoroughfare",
-  "street",
-  "type",
-  "doubleDependentLocality",
-  "locality",
-  "city",
-  "county",
-  "bfpo",
-  "zip",
-  "nation",
-  "country",
-];
-
-// France's core fields: the lines of La Poste's norm, from who it is care of to the commune, and the department.
-const FRANCE_CORE_FIELDS: CorpusField[] = [
-  "careOf",
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "staircase",
-  "entrance",
-  "number",
-  "numberExtension",
-  "type",
-  "street",
-  "lieuDit",
-  "postalBoxType",
-  "postalBoxNum",
-  "city",
-  "arrondissement",
-  "cedex",
-  "state",
-  "zip",
-  "country",
-];
-
-// Germany's core fields: the lines above the street, the street and its number, the place and the Land.
-const GERMANY_CORE_FIELDS: CorpusField[] = [
-  "careOf",
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "street",
-  "number",
-  "locality",
-  "city",
-  "state",
-  "zip",
-  "country",
-];
-
-// The Netherlands' core fields: the street and its house number with the addition, a Postbus, the place and the postcode.
-const NETHERLANDS_CORE_FIELDS: CorpusField[] = [
-  "careOf",
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "street",
-  "number",
-  "numberExtension",
-  "city",
-  "zip",
-  "country",
-];
-
-// Spain's core fields: the street and its number, the staircase, the floor and the door, the place, the province in
-// brackets, the province's code and the postcode.
-const SPAIN_CORE_FIELDS: CorpusField[] = [
-  "careOf",
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "staircase",
-  "entrance",
-  "street",
-  "number",
-  "locality",
-  "city",
-  "county",
-  "state",
-  "zip",
-  "country",
-];
-
-// Italy's core fields: the street and its civic number with its letter, the staircase, the floor and the flat, the
-// frazione, the place, the province's sigla and the postcode.
-const ITALY_CORE_FIELDS: CorpusField[] = [
-  "careOf",
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "staircase",
-  "street",
-  "number",
-  "numberExtension",
-  "locality",
-  "city",
-  "state",
-  "zip",
-  "country",
-];
-
-// New Zealand's core fields: the unit and the level, the street's number and name, the suburb, the city, the region and
-// the postcode.
-const NEW_ZEALAND_CORE_FIELDS: CorpusField[] = [
-  "careOf",
-  "building",
-  "secUnitType",
-  "secUnitNum",
-  "floorType",
-  "floor",
-  "number",
-  "street",
-  "locality",
-  "city",
-  "state",
-  "zip",
-  "country",
-];
-
-// The core fields each corpus folder is judged by.
-const CORE_FIELDS_BY_COUNTRY: Readonly<Record<string, CorpusField[]>> = {
-  au: AUSTRALIA_CORE_FIELDS,
-  canada: CORE_FIELDS,
-  de: GERMANY_CORE_FIELDS,
-  es: SPAIN_CORE_FIELDS,
-  fr: FRANCE_CORE_FIELDS,
-  gb: UK_CORE_FIELDS,
-  it: ITALY_CORE_FIELDS,
-  japan: JAPAN_CORE_FIELDS,
-  nl: NETHERLANDS_CORE_FIELDS,
-  nz: NEW_ZEALAND_CORE_FIELDS,
-  us: CORE_FIELDS,
-};
-
 // The country modules every case of a module's folder is read with, and the hint each folder gives: a case in au/ is
 // read as parseLocation(input, { country: "AU", countries }), the reliable path. Whether the same addresses are told
 // apart with no hint is the detection suite's question (src/__tests__/countries/detection.test.ts).
 const COUNTRY_MODULES: readonly CountryModule[] = [
   australia,
+  brazil,
   france,
   germany,
+  india,
   italy,
   netherlands,
   newZealand,
+  southKorea,
   spain,
   unitedKingdom,
 ];
 const MODULE_HINTS: Readonly<Record<string, ParseOptions["country"]>> = {
   au: "AU",
+  br: "BR",
   de: "DE",
   es: "ES",
   fr: "FR",
   gb: "GB",
+  in: "IN",
   it: "IT",
+  kr: "KR",
   nl: "NL",
   nz: "NZ",
 };
@@ -431,15 +249,18 @@ function registerCorpusSuite(country: string, title: string): void {
 export {
   allCases,
   AUSTRALIA_CORE_FIELDS,
+  BRAZIL_CORE_FIELDS,
   CORE_FIELDS,
   coreFieldsOf,
   COUNTRY_MODULES,
   describeMismatches,
   FRANCE_CORE_FIELDS,
   GERMANY_CORE_FIELDS,
+  INDIA_CORE_FIELDS,
   ITALY_CORE_FIELDS,
   JAPAN_CORE_FIELDS,
   judgeCase,
+  KOREA_CORE_FIELDS,
   loadCorpus,
   NETHERLANDS_CORE_FIELDS,
   NEW_ZEALAND_CORE_FIELDS,

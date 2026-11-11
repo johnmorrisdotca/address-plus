@@ -29,6 +29,10 @@ interface PostcodeCountrySpec {
   readStreet(part: string, result: ParsedAddress): boolean;
   // The place after the postcode (or before it, with `placeFirst`): the city, and what else is on the line.
   readPlace?(text: string, result: ParsedAddress): void;
+  // With `placeFirst`: the region's code when a text is the name of one (a state written on its own part before the postcode).
+  regionFromName?(text: string, previous?: string): string | undefined;
+  // A part of the address that is several (Brazil's `1578 - Apto 45 - Bela Vista`): the parts it holds.
+  splitPart?(part: string): string[];
   // Whether an address with no country written is surely this country's, given its text and the address as read.
   detectShape(text: string): boolean;
   // A street's form for comparing: the type written in full or short, in one spelling.
@@ -56,6 +60,7 @@ const FIELD_ORDER: readonly (keyof ParsedAddress)[] = [
   "number",
   "numberExtension",
   "street",
+  "place",
   "locality",
   "city",
   "county",
@@ -152,19 +157,41 @@ function parsePostcodeCountry(
       // The place is the words before the postcode in its part, or the part before when the postcode stands alone.
       const before = work.slice(0, postcode.index);
       const cut = before.lastIndexOf(",");
-      placeText = before.slice(cut + 1).trim();
+      placeText = before
+        .slice(cut + 1)
+        .replace(/[\s\-–:]+$/, "")
+        .trim();
       work = tidyAddressText(before.slice(0, cut < 0 ? 0 : cut));
+      // With nothing between the last comma and the postcode, the part before is the place.
       if (placeText === "") {
         const parts = partsOf(work);
-        placeText = parts.pop() ?? "";
-        work = tidyAddressText(parts.join(", "));
+        const probe: ParsedAddress = {};
+        const before = parts[parts.length - 1];
+        if (before !== undefined && spec.takeDelivery(before, probe) === before && !spec.readStreet(before, probe)) {
+          placeText = parts.pop() ?? "";
+          work = tidyAddressText(parts.join(", "));
+        }
+      }
+      // A region written on its own before the postcode: the place is the part before it, unless that is a street.
+      const regionName = placeText === "" ? undefined : spec.regionFromName?.(placeText, partsOf(work).pop());
+      if (regionName) {
+        result.state = regionName;
+        const parts = partsOf(work);
+        const probe: ParsedAddress = {};
+        const before = parts[parts.length - 1];
+        const isStreet =
+          before !== undefined && (spec.takeDelivery(before, probe) !== before || spec.readStreet(before, probe));
+        if (parts.length > 0 && !isStreet) {
+          placeText = parts.pop() ?? "";
+          work = tidyAddressText(parts.join(", "));
+        }
       }
     } else {
       placeText = work.slice(postcode.end).replace(/^[\s,]+/, "");
       work = tidyAddressText(work.slice(0, postcode.index));
     }
   }
-  const parts = partsOf(work);
+  const parts = partsOf(work).flatMap((part) => spec.splitPart?.(part) ?? [part]);
   if (placeText !== "") (spec.readPlace ?? readPlaceDefault)(placeText, result);
   else if (!postcode && parts.length >= 2 && namesCountry) {
     // With no postcode, the last part is the place unless it reads as a street.

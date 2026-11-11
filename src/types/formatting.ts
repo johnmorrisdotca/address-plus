@@ -101,7 +101,10 @@ interface FormattedAddress {
     | "postnl"
     | "correos"
     | "poste-italiane"
-    | "nz-post"; // Formatting standard used
+    | "nz-post"
+    | "india-post"
+    | "korea-post"
+    | "correios"; // Formatting standard used
 }
 
 /**

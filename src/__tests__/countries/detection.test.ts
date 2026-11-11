@@ -6,11 +6,14 @@
 import { describe, expect, it } from "vitest";
 
 import { australia, looksAustralian } from "../../au";
+import { looksBrazilian } from "../../br";
 import { looksGerman } from "../../de";
 import { looksSpanish } from "../../es";
 import { france, looksFrench } from "../../fr";
 import { looksBritish, unitedKingdom } from "../../gb";
+import { looksIndian } from "../../in";
 import { looksItalian } from "../../it";
+import { looksKorean } from "../../kr";
 import { looksDutch } from "../../nl";
 import { looksNewZealand } from "../../nz";
 import { parseLocation } from "../../parser";
@@ -244,6 +247,9 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
     es: looksSpanish,
     it: looksItalian,
     nz: looksNewZealand,
+    in: looksIndian,
+    kr: looksKorean,
+    br: looksBrazilian,
     au: looksAustralian,
     gb: looksBritish,
     fr: looksFrench,
@@ -253,7 +259,7 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
     allCases(country)
       .filter((testCase) => testCase.expected !== null)
       .map((testCase) => testCase.input);
-  const nuts = { nl: "NL", es: "ES", it: "IT", nz: "NZ" } as const;
+  const nuts = { nl: "NL", es: "ES", it: "IT", nz: "NZ", in: "IN", kr: "KR", br: "BR" } as const;
 
   it.each(Object.entries(nuts))("reads every %s case that its module claims as %s", (folder, code) => {
     const misread = inputsOf(folder)
@@ -276,7 +282,22 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
     const claimed: string[] = [];
     for (const [claimer, detect] of Object.entries(detectors)) {
       if (!(claimer in nuts)) continue;
-      for (const folder of ["us", "canada", "japan", "au", "gb", "fr", "de", "nl", "es", "it", "nz"]) {
+      for (const folder of [
+        "us",
+        "canada",
+        "japan",
+        "au",
+        "gb",
+        "fr",
+        "de",
+        "nl",
+        "es",
+        "it",
+        "nz",
+        "in",
+        "kr",
+        "br",
+      ]) {
         if (folder === claimer) continue;
         for (const input of inputsOf(folder)) if (detect(input)) claimed.push(`${claimer} claims ${folder}: ${input}`);
       }
@@ -286,7 +307,7 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
   });
 
   it("is not claimed by Australia or Britain for a case of the four", () => {
-    const claimed = ["nl", "es", "it", "nz"]
+    const claimed = ["nl", "es", "it", "nz", "in", "kr", "br"]
       .flatMap(inputsOf)
       .filter((input) => looksAustralian(input) || looksBritish(input));
 
@@ -303,6 +324,12 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
     ["Piazza del Duomo 1, 20122 Milano MI", "IT"],
     ["1 Queen Street, Auckland 1010, New Zealand", "NZ"],
     ["Private Bag 92014, Auckland 1142", "NZ"],
+    ["12 MG Road, Bengaluru, Karnataka 560038", "IN"],
+    ["Tiananmen Square, Beijing 100006", "US"],
+    ["서울특별시 중구 세종대로 110", "KR"],
+    ["Rua Augusta, 100, São Paulo - SP, 01305-000", "BR"],
+    ["123 Main St, Seattle, WA 98101-1234", "US"],
+    ["110 Sejong-daero, Jung-gu, Seoul 04524", "KR"],
     ["Calle Ocho, Miami, FL 33135", "US"],
     ["Via Appia Way, Brooklyn, NY 11201", "US"],
     ["4059 Mt Lee Dr Hollywood CA 90068", "US"],

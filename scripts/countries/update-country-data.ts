@@ -24,10 +24,10 @@ import { refreshTableExamples, tableExampleLines } from "../table-docs.ts";
 //     GeoNames' postal code files for Spain, Italy and New Zealand (Creative Commons Attribution 4.0), with the regions
 //     from kuni: every postcode listed, and the province or region each is in.
 //
-// Run: node scripts/countries/update-country-data.ts [--only au,gb,fr,de,nl,es,it,nz] [--abs <POA_2021_AUST.xlsx>]
+// Run: node scripts/countries/update-country-data.ts [--only au,gb,fr,de,nl,es,it,nz,in,kr,br] [--abs <POA_2021_AUST.xlsx>]
 //   [--codepoint <codepo_gb folder>] [--laposte <hexasmal.csv>] [--insee <folder of v_departement_2026.csv,
 //   v_region_2026.csv and v_comer_2026.csv>] [--geonames <DE.txt>] [--cbs <a file of postcodes, one a line>]
-//   [--geonames-es <ES.txt>] [--geonames-it <IT.txt>] [--geonames-nz <NZ.txt>]
+//   [--geonames-es <ES.txt>] [--geonames-it <IT.txt>] [--geonames-nz <NZ.txt>] [--geonames-in <IN.txt>] [--geonames-kr <KR.txt>] [--geonames-br <BR.txt>]
 // Without arguments it downloads everything it needs (about 37 MB) into a temporary folder; `--only fr` makes France's
 // tables alone (about 1.6 MB), `--only de` Germany's (0.4 MB). It needs `unzip` for Australia, Great Britain and Germany. Node 24 runs it as is.
 
@@ -45,7 +45,10 @@ import {
   PDOK_URL,
   readCbsPostcodes,
   readGeoNamesRows,
+  writeBrazil,
+  writeIndia,
   writeItaly,
+  writeKorea,
   writeNetherlands,
   writeNewZealand,
   writeSpain,
@@ -64,7 +67,7 @@ const download = async (url: string, path: string): Promise<void> => {
   writeFileSync(path, Buffer.from(await res.arrayBuffer()));
 };
 
-const COUNTRIES = ["au", "gb", "fr", "de", "nl", "es", "it", "nz"];
+const COUNTRIES = ["au", "gb", "fr", "de", "nl", "es", "it", "nz", "in", "kr", "br"];
 const only = new Set((flag("only") ?? COUNTRIES.join(",")).split(","));
 const wants = (country: string): boolean => only.has(country);
 
@@ -140,7 +143,7 @@ const fetchInputs = async (): Promise<Inputs> => {
       await downloadCbs(inputs.cbs);
     }
   }
-  for (const country of ["es", "it", "nz"]) {
+  for (const country of ["es", "it", "nz", "in", "kr", "br"]) {
     if (!wants(country)) continue;
     const upper = country.toUpperCase();
     let path = flag(`geonames-${country}`);
@@ -237,6 +240,12 @@ const main = async (): Promise<void> => {
   if (italy) writeItaly(italy);
   const newZealand = more("nz", /^\d{4}$/);
   if (newZealand) writeNewZealand(newZealand);
+  const india = more("in", /^[1-9]\d{5}$/);
+  if (india) writeIndia(india);
+  const korea = more("kr", /^\d{5}$/);
+  if (korea) writeKorea(korea);
+  const brazil = more("br", /^\d{5}-\d{3}$/);
+  if (brazil) writeBrazil(brazil, (await import("../../src/constants/br/ranges.ts")).BR_RANGES);
 };
 
 if (process.argv.includes("--docs-only")) {
@@ -249,6 +258,9 @@ if (process.argv.includes("--docs-only")) {
     "src/constants/es/regions.data.ts",
     "src/constants/it/regions.data.ts",
     "src/constants/nz/regions.data.ts",
+    "src/constants/in/regions.data.ts",
+    "src/constants/kr/regions.data.ts",
+    "src/constants/br/regions.data.ts",
     "src/constants/fr/departments.data.ts",
   ]);
 } else await main();

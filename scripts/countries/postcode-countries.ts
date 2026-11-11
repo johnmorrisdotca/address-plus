@@ -1,5 +1,8 @@
+import brRegions from "@johnmorrisdotca/kuni/subdivisions/br";
 import esSubdivisions from "@johnmorrisdotca/kuni/subdivisions/es";
+import inRegions from "@johnmorrisdotca/kuni/subdivisions/in";
 import itSubdivisions from "@johnmorrisdotca/kuni/subdivisions/it";
+import krRegions from "@johnmorrisdotca/kuni/subdivisions/kr";
 import nzRegions from "@johnmorrisdotca/kuni/subdivisions/nz";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -268,4 +271,108 @@ export const writeNewZealand = (rows: Row[]): void => {
   console.log(
     `New Zealand: ${regions.length} regions, ${postcodes.length} postcodes, ${runs.runs} region runs, ${none} with no region.`,
   );
+};
+
+// ---- India ----------------------------------------------------------------------------------------------------
+
+// GeoNames' names for the states that kuni writes differently.
+const INDIA_ALIASES: Readonly<Record<string, string>> = { pondicherry: "puducherry" };
+
+export const writeIndia = (rows: Row[]): void => {
+  const regions = inRegions as unknown as Subdivision[];
+  const byName = new Map(regions.map((one) => [plainName(one.name.en.replace(/&/g, "and")), one.shortCode]));
+  const byPostcode = majority(rows, (row) => {
+    if (row.admin1 === "") return "";
+    const plain = plainName(row.admin1.replace(/&/g, "and"));
+    const code = byName.get(INDIA_ALIASES[plain] ?? plain);
+    if (!code) throw new Error(`GeoNames names an Indian state kuni does not have: ${row.admin1}`);
+    return code;
+  });
+  const postcodes = distinct(rows.map((row) => row.postcode));
+  const none = postcodes.filter((postcode) => !byPostcode.has(postcode)).length;
+  const runs = packRuns(postcodes, (postcode) => byPostcode.get(postcode) ?? "-");
+  const dir = dirOf("in");
+  writeRegions(dir, "IN_STATES", "The states and union territories of India.", regions, regions);
+  writePostcodes(dir, "IN", "India", GEONAMES_NOTE, postcodes, {
+    ...runs,
+    note: `A postcode is in the state of the last run that begins at or before it; GeoNames' states are those of its last update, so Ladakh's postcodes are in Jammu and Kashmir's runs; a run with the code - is ${none} postcodes GeoNames gives no state.`,
+  });
+  console.log(
+    `India: ${regions.length} states, ${postcodes.length} postcodes, ${runs.runs} state runs, ${none} with no state.`,
+  );
+};
+
+// ---- South Korea ----------------------------------------------------------------------------------------------
+
+// The official names of the metropolitan cities and provinces, by their ISO 3166-2 code: a fact, written out here because
+// GeoNames names them in Korean and kuni does not.
+const KOREA_NAMES: Readonly<Record<string, string>> = {
+  서울특별시: "11",
+  부산광역시: "26",
+  대구광역시: "27",
+  인천광역시: "28",
+  광주광역시: "29",
+  대전광역시: "30",
+  울산광역시: "31",
+  세종특별자치시: "50",
+  경기도: "41",
+  강원도: "42",
+  충청북도: "43",
+  충청남도: "44",
+  전라북도: "45",
+  전라남도: "46",
+  경상북도: "47",
+  경상남도: "48",
+  제주특별자치도: "49",
+};
+
+export const writeKorea = (rows: Row[]): void => {
+  const regions = krRegions as unknown as Subdivision[];
+  const known = new Set(regions.map((one) => one.shortCode));
+  const byPostcode = majority(rows, (row) => {
+    const code = KOREA_NAMES[row.admin1];
+    if (!code || !known.has(code))
+      throw new Error(`GeoNames names a Korean province this script does not know: ${row.admin1}`);
+    return code;
+  });
+  const postcodes = distinct(rows.map((row) => row.postcode));
+  // The runs write a region's code in capitals, and a province's code is a number: its letter is its place in the table, A for
+  // the first.
+  const letters = new Map(regions.map((one, at) => [one.shortCode, String.fromCharCode(65 + at)]));
+  const runs = packRuns(postcodes, (postcode) => letters.get(byPostcode.get(postcode) ?? "") ?? "");
+  if (postcodes.some((one) => !byPostcode.has(one))) throw new Error("A Korean postcode has no province");
+  const dir = dirOf("kr");
+  writeRegions(dir, "KR_PROVINCES", "The metropolitan cities and provinces of South Korea.", regions, regions);
+  writePostcodes(dir, "KR", "South Korea", GEONAMES_NOTE, postcodes, {
+    ...runs,
+    note: "A postcode is in the province of the last run that begins at or before it; the province is a letter, A for the first of the table (sorted by code), B for the second and so on.",
+  });
+  console.log(`South Korea: ${regions.length} provinces, ${postcodes.length} postcodes, ${runs.runs} province runs.`);
+};
+
+// ---- Brazil ---------------------------------------------------------------------------------------------------
+
+// Brazil has no list of postcodes here (GeoNames has only the major ones): the states are kuni's, and a state is told from the
+// CEP by the range of its first five digits, which src/constants/br/index.ts holds. The GeoNames file is only read to check
+// those ranges: every CEP it lists must fall in the range of its state.
+export const writeBrazil = (
+  rows: Row[],
+  ranges: Readonly<Record<string, readonly (readonly [number, number])[]>>,
+): void => {
+  const regions = brRegions as unknown as Subdivision[];
+  const byName = new Map(
+    regions.map((one) => [plainName(one.name.en.replace("Federal District", "Distrito Federal")), one.shortCode]),
+  );
+  let checked = 0;
+  for (const row of rows) {
+    const code = byName.get(plainName(row.admin1));
+    if (!code) throw new Error(`GeoNames names a Brazilian state kuni does not have: ${row.admin1}`);
+    const first = Number(row.postcode.slice(0, 5));
+    if (!(ranges[code] ?? []).some(([from, to]) => first >= from && first <= to)) {
+      throw new Error(`CEP ${row.postcode} (${row.admin1}) is outside the ranges of ${code}`);
+    }
+    checked += 1;
+  }
+  writeRegions(dirOf("br"), "BR_STATES", "The states of Brazil and the Federal District.", regions, regions);
+  console.log(`Brazil: ${regions.length} states; ${checked} of GeoNames' CEPs are inside the range of their state.`);
 };

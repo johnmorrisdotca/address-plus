@@ -1,0 +1,318 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "Indian Street Addresses",
+  "description": "The house number and street, a flat, a building, a floor, a landmark, the area, the city, the state and the six-digit PIN code with the word PIN, a hyphen or a space, the country at the end, a care-of line and a Post Box. Original cases written for this corpus from India Post's addressing guidance, described in our own words; the PIN codes and their states are GeoNames' (CC BY 4.0).",
+  "tests": {
+    "streetAndNumber": [
+      {
+        "name": "plain",
+        "description": "The number, the street, the area, the city, the state and the PIN",
+        "input": "12 MG Road, Indiranagar, Bengaluru, Karnataka 560038",
+        "expected": {
+          "number": "12",
+          "street": "MG Road",
+          "locality": "Indiranagar",
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560038",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "no state",
+        "description": "The state left out; it is taken from the PIN",
+        "input": "12 MG Road, Bengaluru 560001",
+        "expected": {
+          "number": "12",
+          "street": "MG Road",
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560001",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "number on its own",
+        "description": "The number in a part of its own",
+        "input": "12, MG Road, Bengaluru 560001",
+        "expected": {
+          "number": "12",
+          "street": "MG Road",
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560001",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "house number with a slash",
+        "description": "A house number with a sub-number",
+        "input": "H.No. 45/3, Sector 15, Chandigarh 160015",
+        "expected": {
+          "number": "45/3",
+          "locality": "Sector 15",
+          "city": "Chandigarh",
+          "state": "CH",
+          "zip": "160015",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "a road with a number",
+        "description": "A road named with a number",
+        "input": "Plot 7, Banjara Hills Road No. 12, Hyderabad, Telangana - 500034",
+        "expected": {
+          "secUnitType": "Plot",
+          "secUnitNum": "7",
+          "street": "Banjara Hills Road No. 12",
+          "city": "Hyderabad",
+          "state": "TS",
+          "zip": "500034",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "Marg",
+        "description": "A street whose name ends Marg",
+        "input": "Kasturba Gandhi Marg, New Delhi 110001",
+        "expected": {
+          "street": "Kasturba Gandhi Marg",
+          "city": "New Delhi",
+          "state": "DL",
+          "zip": "110001",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      }
+    ],
+    "flatsAndBuildings": [
+      {
+        "name": "flat and building",
+        "description": "A flat, then the building's name, then the street",
+        "input": "Flat 4B, Sunshine Apartments, 12 MG Road, Indiranagar, Bengaluru, Karnataka 560038",
+        "expected": {
+          "secUnitType": "Flat",
+          "secUnitNum": "4B",
+          "building": "Sunshine Apartments",
+          "number": "12",
+          "street": "MG Road",
+          "locality": "Indiranagar",
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560038",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "floor",
+        "description": "A floor written as an ordinal",
+        "input": "3rd Floor, Park Street, Kolkata, West Bengal 700016",
+        "expected": {
+          "floorType": "Floor",
+          "floor": "3",
+          "street": "Park Street",
+          "city": "Kolkata",
+          "state": "WB",
+          "zip": "700016",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "landmark",
+        "description": "A landmark before the street",
+        "input": "Near City Mall, Park Street, Kolkata 700016",
+        "expected": {
+          "place": "Near City Mall",
+          "street": "Park Street",
+          "city": "Kolkata",
+          "state": "WB",
+          "zip": "700016",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "shop",
+        "description": "A shop",
+        "input": "Shop 12, Linking Road, Bandra West, Mumbai, Maharashtra 400050",
+        "expected": {
+          "secUnitType": "Shop",
+          "secUnitNum": "12",
+          "street": "Linking Road",
+          "locality": "Bandra West",
+          "city": "Mumbai",
+          "state": "MH",
+          "zip": "400050",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      }
+    ],
+    "pinLine": [
+      {
+        "name": "state and city",
+        "description": "The state after the city, on its own part",
+        "input": "Connaught Place, New Delhi, Delhi 110001",
+        "expected": {
+          "locality": "Connaught Place",
+          "city": "New Delhi",
+          "state": "DL",
+          "zip": "110001",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "hyphen before the PIN",
+        "description": "A hyphen between the state and the PIN",
+        "input": "Plot 7, Banjara Hills Road No. 12, Hyderabad, Telangana - 500034, India",
+        "expected": {
+          "secUnitType": "Plot",
+          "secUnitNum": "7",
+          "street": "Banjara Hills Road No. 12",
+          "city": "Hyderabad",
+          "state": "TS",
+          "zip": "500034",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "PIN written out",
+        "description": "The word PIN before the code",
+        "input": "Near City Mall, 3rd Floor, Park Street, Kolkata, West Bengal, PIN: 700016",
+        "expected": {
+          "place": "Near City Mall",
+          "floorType": "Floor",
+          "floor": "3",
+          "street": "Park Street",
+          "city": "Kolkata",
+          "state": "WB",
+          "zip": "700016",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "a space in the PIN",
+        "description": "A PIN written 560 038",
+        "input": "12 MG Road, Bengaluru 560 038",
+        "expected": {
+          "number": "12",
+          "street": "MG Road",
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560038",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "state and city together",
+        "description": "The state written close to the city with no comma",
+        "input": "Bengaluru Karnataka 560038",
+        "expected": {
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560038",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "a city that is a state",
+        "description": "The city and the state are one name",
+        "input": "Delhi 110001",
+        "expected": {
+          "city": "Delhi",
+          "state": "DL",
+          "zip": "110001",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "India",
+        "description": "The country at the end",
+        "input": "12 MG Road, Bengaluru, Karnataka 560038, India",
+        "expected": {
+          "number": "12",
+          "street": "MG Road",
+          "city": "Bengaluru",
+          "state": "KA",
+          "zip": "560038",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "a state that is not the PIN's",
+        "description": "The state written is Kerala, the PIN is Bengaluru's; the parser keeps what is written",
+        "input": "12 MG Road, Bengaluru, Kerala 560038",
+        "expected": {
+          "number": "12",
+          "street": "MG Road",
+          "city": "Bengaluru",
+          "state": "KL",
+          "zip": "560038",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      }
+    ],
+    "deliveryLines": [
+      {
+        "name": "care of",
+        "description": "Who the address is for, on a line above",
+        "input": "C/o Sharma, H.No. 45/3, Sector 15, Chandigarh 160015",
+        "expected": {
+          "careOf": "Sharma",
+          "number": "45/3",
+          "locality": "Sector 15",
+          "city": "Chandigarh",
+          "state": "CH",
+          "zip": "160015",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "Post Box",
+        "description": "A box",
+        "input": "Post Box No. 123, Mumbai 400001",
+        "expected": {
+          "secUnitType": "Post Box",
+          "secUnitNum": "123",
+          "city": "Mumbai",
+          "state": "MH",
+          "zip": "400001",
+          "country": "IN"
+        },
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "namaste",
+        "expected": null,
+        "source": "Original case written for this corpus; India Post's addressing guidance (the house or flat, the building and the street, the area, the city and the six-digit PIN code, the state), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

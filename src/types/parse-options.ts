@@ -29,13 +29,16 @@ interface ParseOptions {
     | "ES"
     | "IT"
     | "NZ"
+    | "IN"
+    | "KR"
+    | "BR"
     | "GP"
     | "MQ"
     | "GF"
     | "RE"
     | "YT"
     | "auto"; // Country to optimize parsing for; JP skips the detection and parses as Japanese; AU, GB, FR, DE and the rest need their module in countries
-  countries?: readonly CountryModule[]; // Country modules to read beside the US, Canada and Japan: australia from "/au", unitedKingdom from "/gb", france from "/fr", germany from "/de", netherlands from "/nl", spain from "/es", italy from "/it", newZealand from "/nz"
+  countries?: readonly CountryModule[]; // Country modules to read beside the US, Canada and Japan: australia from "/au", unitedKingdom from "/gb", france from "/fr", germany from "/de", netherlands from "/nl", spain from "/es", italy from "/it", newZealand from "/nz", india from "/in", southKorea from "/kr", brazil from "/br"
   normalize?: boolean; // Whether to normalize street types and directions
   validatePostalCode?: boolean; // Whether to validate postal/ZIP codes
   language?: "auto" | "en" | "fr"; // Language preference for bilingual parsing (Canada)

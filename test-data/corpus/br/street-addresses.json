@@ -1,0 +1,326 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "Brazilian Street Addresses",
+  "description": "The street's type and name, the number after a comma or not, s/n, the bairro after a hyphen, apartments, blocks, rooms and floors, the city and the state with a hyphen, a slash or a comma, the CEP with and without its hyphen, the country at the end, a Caixa Postal and a care-of line. Original cases written for this corpus from the Correios' addressing guidance, described in our own words; the states are told from the range of the CEP, with no list of CEPs.",
+  "tests": {
+    "streetAndNumber": [
+      {
+        "name": "plain",
+        "description": "The street, its number, the city, the state and the CEP",
+        "input": "Avenida Paulista, 1578, São Paulo - SP, 01310-200",
+        "expected": {
+          "street": "Avenida Paulista",
+          "number": "1578",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01310-200",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "bairro after a hyphen",
+        "description": "The bairro after the number, with a hyphen",
+        "input": "Avenida Paulista, 1578 - Bela Vista, São Paulo - SP, 01310-200",
+        "expected": {
+          "street": "Avenida Paulista",
+          "number": "1578",
+          "locality": "Bela Vista",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01310-200",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "no comma before the number",
+        "description": "The number straight after the name",
+        "input": "Rua Augusta 1234, Consolação, São Paulo/SP, 01304-001",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "1234",
+          "locality": "Consolação",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01304-001",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "abbreviated type",
+        "description": "The type written Av.",
+        "input": "Av. Paulista, 1578, São Paulo - SP, 01310-200",
+        "expected": {
+          "street": "Av. Paulista",
+          "number": "1578",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01310-200",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "s/n",
+        "description": "A street with no number, sem número",
+        "input": "Rua das Flores, s/n, Centro, Curitiba - PR, 80010-000",
+        "expected": {
+          "street": "Rua das Flores",
+          "number": "S/N",
+          "locality": "Centro",
+          "city": "Curitiba",
+          "state": "PR",
+          "zip": "80010-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "Praça",
+        "description": "A square with a long name",
+        "input": "Praça dos Três Poderes, Brasília - DF, 70150-900",
+        "expected": {
+          "street": "Praça dos Três Poderes",
+          "city": "Brasília",
+          "state": "DF",
+          "zip": "70150-900",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "rodovia",
+        "description": "A highway with a kilometre",
+        "input": "Rodovia dos Bandeirantes, 100, Jundiaí - SP, 13200-000",
+        "expected": {
+          "street": "Rodovia dos Bandeirantes",
+          "number": "100",
+          "city": "Jundiaí",
+          "state": "SP",
+          "zip": "13200-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      }
+    ],
+    "complements": [
+      {
+        "name": "apartment",
+        "description": "An apartment after the number, with hyphens",
+        "input": "Av. Paulista, 1578 - Apto 45 - Bela Vista, São Paulo - SP, 01310-200",
+        "expected": {
+          "street": "Av. Paulista",
+          "number": "1578",
+          "secUnitType": "Apto",
+          "secUnitNum": "45",
+          "locality": "Bela Vista",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01310-200",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "block and room",
+        "description": "A bloco and a sala, after commas",
+        "input": "Rua das Flores, 20, Bloco B, Sala 12, Centro, Curitiba, PR, 80010-000",
+        "expected": {
+          "street": "Rua das Flores",
+          "number": "20",
+          "building": "Bloco B",
+          "secUnitType": "Sala",
+          "secUnitNum": "12",
+          "locality": "Centro",
+          "city": "Curitiba",
+          "state": "PR",
+          "zip": "80010-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "floor",
+        "description": "A floor, andar",
+        "input": "Rua da Quitanda, 50, 5º andar, Centro, Rio de Janeiro - RJ, 20011-030",
+        "expected": {
+          "street": "Rua da Quitanda",
+          "number": "50",
+          "floorType": "Andar",
+          "floor": "5",
+          "locality": "Centro",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "zip": "20011-030",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "house",
+        "description": "A casa",
+        "input": "Rua Augusta, 100, Casa 2, São Paulo - SP, 01305-000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "secUnitType": "Casa",
+          "secUnitNum": "2",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      }
+    ],
+    "cepLine": [
+      {
+        "name": "state after a comma",
+        "description": "The state on its own part",
+        "input": "Rua Augusta, 100, São Paulo, SP, 01305-000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "no hyphen in the CEP",
+        "description": "The CEP written close; it is written with its hyphen in the result",
+        "input": "Rua Augusta, 100, São Paulo - SP, 01305000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "CEP written out",
+        "description": "The word CEP before the code",
+        "input": "Rua Augusta, 100, São Paulo - SP, CEP: 01305-000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "Brasil",
+        "description": "The country at the end",
+        "input": "Rua Augusta, 100, São Paulo - SP, 01305-000, Brasil",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "state from the CEP",
+        "description": "No state written; the CEP's range names it",
+        "input": "Rua Augusta, 100, São Paulo, 01305-000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "a state that is not the CEP's",
+        "description": "Rio's code, São Paulo's CEP; the parser keeps what is written",
+        "input": "Rua Augusta, 100, São Paulo - RJ, 01305-000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "RJ",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "a CEP outside every range",
+        "description": "The shape is right; no state holds the range",
+        "input": "Rua Augusta, 100, São Paulo - SP, 00999-000",
+        "expected": {
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "00999-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      }
+    ],
+    "deliveryLines": [
+      {
+        "name": "Caixa Postal",
+        "description": "A box",
+        "input": "Caixa Postal 123, Salvador - BA, 40010-970",
+        "expected": {
+          "secUnitType": "Caixa Postal",
+          "secUnitNum": "123",
+          "city": "Salvador",
+          "state": "BA",
+          "zip": "40010-970",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "care of",
+        "description": "Who the address is for, on a line above",
+        "input": "A/C Maria Silva, Rua Augusta, 100, São Paulo - SP, 01305-000",
+        "expected": {
+          "careOf": "Maria Silva",
+          "street": "Rua Augusta",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "zip": "01305-000",
+          "country": "BR"
+        },
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "oi",
+        "expected": null,
+        "source": "Original case written for this corpus; the Correios' addressing guidance (the street's type and name, the number, the complement, the bairro, the city and the state, the CEP of eight digits), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

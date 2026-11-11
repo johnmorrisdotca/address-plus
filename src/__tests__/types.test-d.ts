@@ -37,6 +37,9 @@ expectType<
   | "ES"
   | "IT"
   | "NZ"
+  | "IN"
+  | "KR"
+  | "BR"
   | undefined
 >(address.country);
 
@@ -74,6 +77,9 @@ expectType<
   | "ES"
   | "IT"
   | "NZ"
+  | "IN"
+  | "KR"
+  | "BR"
   | "auto"
   | undefined
 >(options.country);

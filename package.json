@@ -57,6 +57,21 @@
       "import": "./dist/nz/index.js",
       "require": "./dist/nz/index.cjs"
     },
+    "./in": {
+      "types": "./dist/in/index.d.ts",
+      "import": "./dist/in/index.js",
+      "require": "./dist/in/index.cjs"
+    },
+    "./kr": {
+      "types": "./dist/kr/index.d.ts",
+      "import": "./dist/kr/index.js",
+      "require": "./dist/kr/index.cjs"
+    },
+    "./br": {
+      "types": "./dist/br/index.d.ts",
+      "import": "./dist/br/index.js",
+      "require": "./dist/br/index.cjs"
+    },
     "./element": {
       "types": "./dist/element.d.ts",
       "import": "./dist/element.js",

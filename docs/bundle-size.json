@@ -18,36 +18,48 @@
       "gzip": 8724
     },
     "./de": {
-      "minified": 27098,
-      "gzip": 12244
+      "minified": 27123,
+      "gzip": 12261
     },
     "./fr": {
-      "minified": 28268,
-      "gzip": 9343
+      "minified": 28293,
+      "gzip": 9357
     },
     "./nl": {
-      "minified": 12700,
-      "gzip": 5255
+      "minified": 13092,
+      "gzip": 5404
     },
     "./es": {
-      "minified": 27438,
-      "gzip": 9987
+      "minified": 27830,
+      "gzip": 10128
     },
     "./it": {
-      "minified": 26185,
-      "gzip": 8645
+      "minified": 26577,
+      "gzip": 8791
     },
     "./nz": {
-      "minified": 14244,
-      "gzip": 6174
+      "minified": 14636,
+      "gzip": 6320
+    },
+    "./in": {
+      "minified": 39644,
+      "gzip": 14622
+    },
+    "./kr": {
+      "minified": 50585,
+      "gzip": 7861
+    },
+    "./br": {
+      "minified": 13005,
+      "gzip": 5338
     },
     "./element": {
-      "minified": 503770,
-      "gzip": 130080
+      "minified": 503795,
+      "gzip": 130092
     },
     "./element/define": {
-      "minified": 503775,
-      "gzip": 130093
+      "minified": 503800,
+      "gzip": 130105
     }
   }
 }

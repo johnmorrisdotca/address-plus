@@ -34,6 +34,9 @@ const TABLE_WORDS = {
   spain: "Pontevedra",
   italy: "Campobasso",
   newZealand: "Manawatu-Wanganui",
+  india: "Chhattīsgarh",
+  korea: "Gyeongsangbuk-do",
+  brazil: "Pernambuco",
 };
 const COUNTRY_WORDS = {
   au: TABLE_WORDS.australia,
@@ -44,6 +47,9 @@ const COUNTRY_WORDS = {
   es: TABLE_WORDS.spain,
   it: TABLE_WORDS.italy,
   nz: TABLE_WORDS.newZealand,
+  in: TABLE_WORDS.india,
+  kr: TABLE_WORDS.korea,
+  br: TABLE_WORDS.brazil,
 };
 // Every country entry carries none of the US, Canadian or Japanese tables, nor any other country's.
 const FORBIDDEN = Object.fromEntries(
@@ -136,6 +142,9 @@ function checkTypes(project) {
       `import { parseSpanishAddress, spain } from "${PACKAGE_NAME}/es";`,
       `import { italy, parseItalianAddress } from "${PACKAGE_NAME}/it";`,
       `import { newZealand, parseNewZealandAddress } from "${PACKAGE_NAME}/nz";`,
+      `import { india, parseIndianAddress } from "${PACKAGE_NAME}/in";`,
+      `import { parseKoreanAddress, southKorea } from "${PACKAGE_NAME}/kr";`,
+      `import { brazil, parseBrazilianAddress } from "${PACKAGE_NAME}/br";`,
       `import { AddressField, defineField, type AddressFieldOptions } from "${PACKAGE_NAME}/element";`,
       "const fieldOptions: AddressFieldOptions = { parse: { strict: true } };",
       "console.log(typeof AddressField, typeof defineField, fieldOptions.parse?.strict);",
@@ -150,8 +159,11 @@ function checkTypes(project) {
       "const es: ParsedAddress | null = parseSpanishAddress('Calle de Alcalá 42, 28014 Madrid');",
       "const it: ParsedAddress | null = parseItalianAddress('Via del Corso 1, 00186 Roma');",
       "const nz: ParsedAddress | null = parseNewZealandAddress('1 Queen Street, Auckland 1010');",
-      "const either = parseLocation('10 Downing Street, London SW1A 2AA', { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] });",
-      "console.log(us, jp, au, gb, fr, de, nl, es, it, nz, either?.country);",
+      "const inn: ParsedAddress | null = parseIndianAddress('12 MG Road, Bengaluru 560038');",
+      "const kr: ParsedAddress | null = parseKoreanAddress('110 Sejong-daero, Jung-gu, Seoul 04524');",
+      "const br: ParsedAddress | null = parseBrazilianAddress('Avenida Paulista, 1578, São Paulo - SP, 01310-200');",
+      "const either = parseLocation('10 Downing Street, London SW1A 2AA', { countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom] });",
+      "console.log(us, jp, au, gb, fr, de, nl, es, it, nz, inn, kr, br, either?.country);",
       "",
     ].join("\n"),
   );
@@ -231,7 +243,7 @@ function main() {
     "dist/de/index.js",
     "dist/de/index.cjs",
     "dist/de/index.d.ts",
-    ...["nl", "es", "it", "nz"].flatMap((entry) => [
+    ...["nl", "es", "it", "nz", "in", "kr", "br"].flatMap((entry) => [
       `dist/${entry}/index.js`,
       `dist/${entry}/index.cjs`,
       `dist/${entry}/index.d.ts`,
@@ -268,6 +280,9 @@ function main() {
     checkEntry(project, "./es", "parseSpanishAddress");
     checkEntry(project, "./it", "parseItalianAddress");
     checkEntry(project, "./nz", "parseNewZealandAddress");
+    checkEntry(project, "./in", "parseIndianAddress");
+    checkEntry(project, "./kr", "parseKoreanAddress");
+    checkEntry(project, "./br", "parseBrazilianAddress");
     checkEntry(project, "./element", "defineField");
     checkEntry(project, "./element/define", "defineField");
     checkTypes(project);

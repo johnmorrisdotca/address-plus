@@ -91,16 +91,16 @@ function valueOf(address: ParsedAddress, field: keyof ParsedAddress): string | u
 const BASE36 = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 // Postcodes written as one short string: the first postcode's number, then the step to each next, in base 36 (a step of
-// 36 or more is a tilde and three digits). scripts/countries/update-country-data.ts writes them; this reads them.
+// 36 or more is a tilde and three digits, 46,656 or more a caret and four). scripts/countries/update-country-data.ts writes them; this reads them.
 function unpackPostcodes(packed: string, length: number): Set<string> {
   const found = new Set<string>();
   let number = 0;
   for (let at = 0; at < packed.length;) {
-    const long = packed[at] === "~";
-    const digits = long ? packed.slice(at + 1, at + 4) : packed[at];
+    const escape = packed[at] === "~" ? 3 : packed[at] === "^" ? 4 : 0;
+    const digits = escape > 0 ? packed.slice(at + 1, at + 1 + escape) : packed[at];
     number += [...digits].reduce((sum, digit) => sum * 36 + BASE36.indexOf(digit), 0);
     found.add(String(number).padStart(length, "0"));
-    at += long ? 4 : 1;
+    at += escape > 0 ? escape + 1 : 1;
   }
 
   return found;

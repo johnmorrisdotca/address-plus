@@ -1,0 +1,358 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "Korean Street Addresses",
+  "description": "Road-name addresses in Hangul from the province down, with the dong in brackets, floors, blocks and units, the older lot-number form, the postcode first in brackets or last, and addresses in Latin letters from the number up. Original cases written for this corpus from Korea Post's road-name address guidance, described in our own words; the postcodes and their provinces are GeoNames' (CC BY 4.0).",
+  "tests": {
+    "hangulRoadAddresses": [
+      {
+        "name": "plain",
+        "description": "Province, district, road and number",
+        "input": "서울특별시 중구 세종대로 110",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "street": "세종대로",
+          "number": "110",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "short province",
+        "description": "The province written short",
+        "input": "서울 강남구 테헤란로 152",
+        "expected": {
+          "state": "11",
+          "city": "강남구",
+          "street": "테헤란로",
+          "number": "152",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "dong in brackets",
+        "description": "The dong after the road, in brackets",
+        "input": "경기도 수원시 영통구 월드컵로 206 (원천동)",
+        "expected": {
+          "state": "41",
+          "city": "수원시 영통구",
+          "street": "월드컵로",
+          "number": "206",
+          "locality": "원천동",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "number with a hyphen",
+        "description": "A building number with a sub-number",
+        "input": "부산광역시 해운대구 해운대해변로 264-1",
+        "expected": {
+          "state": "26",
+          "city": "해운대구",
+          "street": "해운대해변로",
+          "number": "264-1",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "a road with a numbered lane",
+        "description": "A road named for a lane with a number",
+        "input": "대구광역시 중구 중앙대로412길 5",
+        "expected": {
+          "state": "27",
+          "city": "중구",
+          "street": "중앙대로412길",
+          "number": "5",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "county",
+        "description": "A county, not a city",
+        "input": "강원특별자치도 평창군 대관령면 올림픽로 1",
+        "expected": {
+          "state": "42",
+          "city": "평창군",
+          "locality": "대관령면",
+          "street": "올림픽로",
+          "number": "1",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "Sejong",
+        "description": "A city that is a province",
+        "input": "세종특별자치시 도움6로 11",
+        "expected": {
+          "state": "50",
+          "street": "도움6로",
+          "number": "11",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      }
+    ],
+    "floorsAndUnits": [
+      {
+        "name": "floor and brackets",
+        "description": "A floor after a comma, the dong in brackets",
+        "input": "서울특별시 중구 세종대로 110, 3층 (태평로1가)",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "street": "세종대로",
+          "number": "110",
+          "floorType": "층",
+          "floor": "3",
+          "locality": "태평로1가",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "building and floor",
+        "description": "A building's name and its floor",
+        "input": "서울 강남구 테헤란로 152, 강남파이낸스센터 12층 (역삼동)",
+        "expected": {
+          "state": "11",
+          "city": "강남구",
+          "street": "테헤란로",
+          "number": "152",
+          "building": "강남파이낸스센터",
+          "floorType": "층",
+          "floor": "12",
+          "locality": "역삼동",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "block and unit",
+        "description": "An apartment block and unit",
+        "input": "서울특별시 송파구 올림픽로 300 101동 1203호",
+        "expected": {
+          "state": "11",
+          "city": "송파구",
+          "street": "올림픽로",
+          "number": "300",
+          "building": "101동",
+          "secUnitType": "호",
+          "secUnitNum": "1203",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "basement",
+        "description": "A floor below ground",
+        "input": "서울특별시 중구 세종대로 110 지하1층",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "street": "세종대로",
+          "number": "110",
+          "floorType": "층",
+          "floor": "B1",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      }
+    ],
+    "lotNumberAddresses": [
+      {
+        "name": "lot number",
+        "description": "The older address: the dong and its lot number",
+        "input": "서울특별시 중구 태평로1가 31",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "locality": "태평로1가",
+          "number": "31",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      }
+    ],
+    "postcodes": [
+      {
+        "name": "in brackets first",
+        "description": "The postcode first, in brackets",
+        "input": "(04524) 서울특별시 중구 세종대로 110",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "street": "세종대로",
+          "number": "110",
+          "zip": "04524",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "last",
+        "description": "The postcode at the end",
+        "input": "서울특별시 중구 세종대로 110 04524",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "street": "세종대로",
+          "number": "110",
+          "zip": "04524",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "country at the end",
+        "description": "대한민국 after the postcode",
+        "input": "부산광역시 해운대구 해운대해변로 264 48058 대한민국",
+        "expected": {
+          "state": "26",
+          "city": "해운대구",
+          "street": "해운대해변로",
+          "number": "264",
+          "zip": "48058",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "province from the postcode",
+        "description": "No province written; the postcode names it",
+        "input": "중구 세종대로 110 04524",
+        "expected": {
+          "state": "11",
+          "city": "중구",
+          "street": "세종대로",
+          "number": "110",
+          "zip": "04524",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "a province that is not the postcode's",
+        "description": "Busan written, Seoul's postcode; the parser keeps what is written",
+        "input": "부산광역시 중구 중앙대로 100 04524",
+        "expected": {
+          "state": "26",
+          "city": "중구",
+          "street": "중앙대로",
+          "number": "100",
+          "zip": "04524",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      }
+    ],
+    "latinAddresses": [
+      {
+        "name": "plain",
+        "description": "Number and road, district, province and postcode",
+        "input": "110 Sejong-daero, Jung-gu, Seoul 04524",
+        "expected": {
+          "state": "11",
+          "city": "Jung-gu",
+          "street": "Sejong-daero",
+          "number": "110",
+          "zip": "04524",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "road first",
+        "description": "The road before its number",
+        "input": "Sejong-daero 110, Jung-gu, Seoul 04524",
+        "expected": {
+          "state": "11",
+          "city": "Jung-gu",
+          "street": "Sejong-daero",
+          "number": "110",
+          "zip": "04524",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "floor",
+        "description": "A floor on its own part",
+        "input": "3F, 152 Teheran-ro, Gangnam-gu, Seoul 06236",
+        "expected": {
+          "state": "11",
+          "city": "Gangnam-gu",
+          "street": "Teheran-ro",
+          "number": "152",
+          "floorType": "Floor",
+          "floor": "3",
+          "zip": "06236",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "city and district",
+        "description": "A district of a city, small to large",
+        "input": "206 Worldcup-ro, Yeongtong-gu, Suwon-si, Gyeonggi-do 16490",
+        "expected": {
+          "state": "41",
+          "city": "Suwon-si Yeongtong-gu",
+          "street": "Worldcup-ro",
+          "number": "206",
+          "zip": "16490",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "country",
+        "description": "The country at the end",
+        "input": "110 Sejong-daero, Jung-gu, Seoul, South Korea",
+        "expected": {
+          "state": "11",
+          "city": "Jung-gu",
+          "street": "Sejong-daero",
+          "number": "110",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "unit",
+        "description": "A unit",
+        "input": "Unit 1203, 300 Olympic-ro, Songpa-gu, Seoul",
+        "expected": {
+          "state": "11",
+          "city": "Songpa-gu",
+          "street": "Olympic-ro",
+          "number": "300",
+          "secUnitType": "Unit",
+          "secUnitNum": "1203",
+          "country": "KR"
+        },
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "annyeong",
+        "expected": null,
+        "source": "Original case written for this corpus; Korea Post's road-name address guidance (the province, the district, the road and its building number, the dong in brackets, the floor and the unit, the five-digit postcode), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

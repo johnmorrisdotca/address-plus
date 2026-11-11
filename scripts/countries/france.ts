@@ -79,7 +79,12 @@ export const packPostcodes = (postcodes: string[]): string => {
       const step = Number(postcode) - previous;
       previous = Number(postcode);
       if (step < 1) throw new Error("postcodes must be sorted and distinct");
-      return step < 36 ? base36(step) : `~${base36(step).padStart(3, "0")}`;
+      // A step of 46,656 or more (the first of a six-digit list) is a caret and four digits.
+      return step < 36
+        ? base36(step)
+        : step < 36 ** 3
+          ? `~${base36(step).padStart(3, "0")}`
+          : `^${base36(step).padStart(4, "0")}`;
     })
     .join("");
 };
