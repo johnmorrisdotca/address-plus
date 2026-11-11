@@ -4,6 +4,8 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+## 1.10.2 - 2026-11-11
+
 ### Changed
 
 - **Every demo page says what it is and credits its data** (kazoku-ui's page frame, check-standard 2026-11-11). The demo and the form-field builder each have a header line ("address-plus アドレスプラス: form field builder", with a way home) and a credit line above the footer that gives each postcode source's credit word for word as `NOTICE.md` does, with its licence's address, what was changed and, for La Poste and INSEE, the day of the data, and links `NOTICE.md`, in English and Japanese, with a title of their own made from the same words; the embed page names each source with its licence in its corner. `NOTICE.md` gains "The credit lines": one line for each source, the form to copy when you take the data from this package.
