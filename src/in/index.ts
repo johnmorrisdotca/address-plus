@@ -118,7 +118,7 @@ function parseIndianAddress(text: string, options: ParseOptions = {}): ParsedAdd
 }
 
 /**
- * Whether an address is surely Indian, with no hint: it ends with India or `IN`, or it ends with a PIN code after the word
+ * Whether an address is surely Indian, with no hint: it ends with India (`IN` alone is Indiana's, so it is not read), or it ends with a PIN code after the word
  * `PIN` or `Pin code`, or after the name of a state or union territory of India with a PIN code that GeoNames' list has. Six
  * digits are also how China, Russia and others write a postcode, so they alone claim nothing.
  *
@@ -254,8 +254,8 @@ function parseIndianPostcode(postcode: string): PostcodeLookup {
 }
 
 /**
- * India's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address that ends with India or
- * `IN`, or with the word `PIN` and a PIN code, or with a state's name and a PIN code the list has, is read as Indian;
+ * India's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address that ends with India,
+ * or with the word `PIN` and a PIN code, or with a state's name and a PIN code the list has, is read as Indian;
  * `country: "IN"` reads any address as one.
  *
  * @example

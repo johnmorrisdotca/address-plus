@@ -102,9 +102,9 @@ table of postcodes: 27 states' ranges of the first five digits, written by hand,
 | Spain | ends with Spain or España (or `ES`); or its last line is a five-digit postcode and a place while a part begins with a Spanish street's type (`Calle`, `C/`, `Avenida`, `Paseo`, `Plaza`, `Carrer`, `Rúa`) or is an Apartado de Correos, with no state's code before the postcode | a postcode alone; `Calle Ocho, Miami, FL 33135` |
 | Italy | ends with Italy or Italia (or `IT`); or its last line is a five-digit postcode and a place while a part begins with an Italian street's type (`Via`, `Viale`, `Corso`, `Piazza`, `Largo`) or is a Casella Postale, with no state's code before the postcode | a postcode alone |
 | New Zealand | ends with New Zealand or Aotearoa (or `NZ`); or ends with a place and a postcode the list has beside `Private Bag`, a rural delivery (`RD 2`) or Aotearoa | a place and four digits alone, which is how Australia and others write a postcode |
-| India | ends with India (or `IN`); or ends with a PIN code after the word `PIN`; or after the name of a state or union territory with a PIN code the list has | six digits alone, which China, Russia and others write too |
+| India | ends with India (`IN` is Indiana's, so it is not read); or ends with a PIN code after the word `PIN`; or after the name of a state or union territory with a PIN code the list has | six digits alone, which China, Russia and others write too |
 | South Korea | ends with South Korea, Korea or 대한민국; or is in Hangul with a province's name, or a road and its number; or is in Latin letters with a road (`-ro`, `-daero`, `-gil`), a province's name and a listed postcode before the end | a five-digit postcode alone |
-| Brazil | ends with Brazil or Brasil (or `BR`); or ends with a CEP written with its hyphen (`01310-200`) in a state's range | eight digits with no hyphen; a ZIP+4 (four digits after the hyphen) |
+| Brazil | ends with Brazil or Brasil (or `BR`); or ends with a CEP written with its hyphen (`01310-200`) in a state's range, after the word `CEP` or a Brazilian state's code | eight digits with no hyphen; a ZIP+4 (four digits after the hyphen); a bare `Berlin 10115-123` |
 | Japan (core) | is in Japanese script, ends with Japan, or names a prefecture beside a Japanese postal code or a romaji designator | an address that only mentions a Japanese place |
 | US and Canada (core) | everything else, by the state or province and the ZIP or postal code | |
 
@@ -330,7 +330,7 @@ and the few rules of its own (`src/<code>/rules.ts`), and writes its own formatt
 
 The validator reports the same codes for each, as Germany's does (`INVALID_POSTAL_FORMAT`, `UNRECOGNIZED_POSTAL_CODE`,
 `MISSING_POSTAL_CODE`, `MISSING_CITY`, `MISSING_STREET_NUMBER`), and `POSTAL_REGION_MISMATCH` where a region is written beside the
-postcode (Italy's sigla). A postcode the list does not have is a warning, and an error with `strictPostalValidation`. A Dutch Postbus
+postcode (Italy's sigla). A postcode the list does not have is a warning, and an error with `strictPostalValidation`; a region written that disagrees with the postcode's is a warning even then for Spain, Italy, New Zealand, India and South Korea, whose lists give the region most of a postcode's places are in, so a postcode can cross a border (Brazil's ranges are facts, so there it is an error). A Dutch Postbus
 is not looked up, since its postcode is none of an area's. India also fills `place`, a landmark (`Near City Mall`), and Brazil's "known" means a
 state's range holds the CEP, since there is no list.
 

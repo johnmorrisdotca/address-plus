@@ -26,32 +26,32 @@
       "gzip": 9357
     },
     "./nl": {
-      "minified": 13092,
-      "gzip": 5404
+      "minified": 13152,
+      "gzip": 5422
     },
     "./es": {
-      "minified": 27830,
-      "gzip": 10128
+      "minified": 27911,
+      "gzip": 10152
     },
     "./it": {
-      "minified": 26577,
-      "gzip": 8791
+      "minified": 26658,
+      "gzip": 8815
     },
     "./nz": {
-      "minified": 14636,
-      "gzip": 6320
+      "minified": 14717,
+      "gzip": 6342
     },
     "./in": {
-      "minified": 39644,
-      "gzip": 14622
+      "minified": 39721,
+      "gzip": 14642
     },
     "./kr": {
-      "minified": 50585,
-      "gzip": 7861
+      "minified": 50666,
+      "gzip": 7884
     },
     "./br": {
-      "minified": 13005,
-      "gzip": 5338
+      "minified": 13272,
+      "gzip": 5433
     },
     "./element": {
       "minified": 503795,

@@ -106,8 +106,18 @@ function readPlace(text: string, result: ParsedAddress): void {
   result.city = cleaned;
 }
 
-// A CEP written with its hyphen, five digits and three, ending the address, whose range a state holds: no other country writes one.
+// A CEP written with its hyphen, five digits and three, ending the address, whose range a state holds, and a sign of Brazil with
+// it: the word CEP before it, or one of the twenty-seven states' codes (SP, RJ) before it.
 const CEP_LINE = /(?<!\d)\d{5}-\d{3}\s*$/;
+const CEP_WORD = /\bCEP\b\s*[:.-]?\s*\d{5}-\d{3}\s*$/i;
+const STATE_BEFORE_CEP = /(?:^|[\s,/-])([A-Z]{2})[\s,]*(?:CEP\s*[:.-]?\s*)?\d{5}-\d{3}\s*$/;
+
+function detectShape(text: string): boolean {
+  if (!CEP_LINE.test(text) || !isKnownBrazilianPostcode(text.trim().slice(-9))) return false;
+  const state = STATE_BEFORE_CEP.exec(text);
+
+  return CEP_WORD.test(text) || (state !== null && findBrazilianState(state[1]) !== undefined);
+}
 
 const TYPE_FORMS: readonly (readonly [RegExp, string])[] = [
   [/^(?:RUA|R)(?=\s|$)/, "RUA"],
@@ -146,7 +156,7 @@ const brazilianSpec: PostcodeCountrySpec = {
   readStreet,
   readPlace,
   splitPart: (part) => part.split(/\s+[-–]\s+/).filter((piece) => piece !== ""),
-  detectShape: (text) => CEP_LINE.test(text) && isKnownBrazilianPostcode(text.trim().slice(-9)),
+  detectShape,
   streetForm,
 };
 

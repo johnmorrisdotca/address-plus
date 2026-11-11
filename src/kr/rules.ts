@@ -226,6 +226,7 @@ const koreanSpec: PostcodeCountrySpec = {
   names: ["SOUTH KOREA", "REPUBLIC OF KOREA", "KOREA"],
   codes: ["KR"],
   postcode: /(?<!\d)(\d{5})(?!\d)/g,
+  approximateRegion: true,
   list: "GeoNames' list for South Korea",
   shape: "five digits",
   isValid: koreanPostcodes.isValid,

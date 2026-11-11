@@ -159,6 +159,7 @@ const spanishSpec: PostcodeCountrySpec = {
   names: ["SPAIN", "ESPANA", "REINO DE ESPANA", "KINGDOM OF SPAIN"],
   codes: ["ES"],
   postcode: POSTCODE,
+  approximateRegion: true,
   list: "GeoNames' list for Spain",
   shape: "five digits, the first two a province's number (01 to 52)",
   isValid: spanishPostcodes.isValid,

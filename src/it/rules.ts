@@ -160,6 +160,7 @@ const italianSpec: PostcodeCountrySpec = {
   names: ["ITALY", "ITALIA", "REPUBBLICA ITALIANA"],
   codes: ["IT"],
   postcode: POSTCODE,
+  approximateRegion: true,
   list: "GeoNames' list for Italy",
   shape: "five digits",
   isValid: italianPostcodes.isValid,

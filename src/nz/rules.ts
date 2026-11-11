@@ -121,6 +121,7 @@ const newZealandSpec: PostcodeCountrySpec = {
   codes: ["NZ"],
   postcode: POSTCODE,
   placeFirst: true,
+  approximateRegion: true,
   list: "GeoNames' list for New Zealand",
   shape: "four digits",
   isValid: newZealandPostcodes.isValid,

@@ -41,6 +41,9 @@ interface PostcodeCountrySpec {
   requiresNumber?: boolean;
   // Whether the list is no judge of an address's postcode: a box's postcode may be none of an area's (Postbus).
   skipsList?(address: ParsedAddress): boolean;
+  // The region of a postcode is the one most places of a list are in, so a postcode can cross a border: a region that disagrees is
+  // a warning even when postal findings are errors.
+  approximateRegion?: boolean;
 }
 
 // Letters with no accents, in capitals: the form a name is looked up in.
@@ -87,6 +90,8 @@ function takeCountry(text: string, spec: PostcodeCountrySpec): string | null {
     return text.slice(0, at);
   }
   // A code after a comma ends the address; after a space only when there is a postcode, so that a place is not taken for one.
+  // A country with no code of its own here (India's IN is Indiana's too) is told by its name alone.
+  if (spec.codes.length === 0) return null;
   const separator = spec.postcode.test(text) ? "[,\\s]" : ",";
   spec.postcode.lastIndex = 0;
   const code = new RegExp(`${separator}\\s*(?:${spec.codes.join("|")})\\s*$`, "i").exec(text);
@@ -253,7 +258,12 @@ function validatePostcodeCountry(
       const region = spec.regionOf(zip);
       if (region && address.state && address.state !== region) {
         add(
-          finding("state", "POSTAL_REGION_MISMATCH", `Postcode ${zip} is in ${region}, not ${address.state}`, strict),
+          finding(
+            "state",
+            "POSTAL_REGION_MISMATCH",
+            `Postcode ${zip} is in ${region}, not ${address.state}`,
+            strict && spec.approximateRegion !== true,
+          ),
         );
       }
     }

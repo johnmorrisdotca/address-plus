@@ -326,6 +326,7 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
     ["Private Bag 92014, Auckland 1142", "NZ"],
     ["12 MG Road, Bengaluru, Karnataka 560038", "IN"],
     ["Tiananmen Square, Beijing 100006", "US"],
+    ["123 Main St, Indianapolis, IN 46204", "US"],
     ["서울특별시 중구 세종대로 110", "KR"],
     ["Rua Augusta, 100, São Paulo - SP, 01305-000", "BR"],
     ["123 Main St, Seattle, WA 98101-1234", "US"],
@@ -338,6 +339,26 @@ describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with n
     ["Hauptstraße 12, 10115 Berlin", "DE"],
   ])("reads %s as %s", (input, country) => {
     expect(parseLocation(input, { countries: COUNTRY_MODULES })?.country).toBe(country);
+  });
+
+  it("never reads Indiana's code with no ZIP as India, nor a bare number as a CEP", () => {
+    for (const input of [
+      "123 Main St, Indianapolis, IN",
+      "Springfield, IN",
+      "PO Box 12, Gary, IN",
+      "Hauptstrasse 5, Berlin 10115-123",
+      "Rue de Rivoli 5, Paris 75001-123",
+    ]) {
+      expect(looksIndian(input), input).toBe(false);
+      expect(looksBrazilian(input), input).toBe(false);
+      expect(["IN", "BR"], input).not.toContain(parseLocation(input, { countries: COUNTRY_MODULES })?.country);
+    }
+  });
+
+  it("reads a CEP with its hyphen as Brazilian after CEP or a state's code only", () => {
+    expect(looksBrazilian("Rua Augusta, 100, CEP 01305-000")).toBe(true);
+    expect(looksBrazilian("Rua Augusta, 100, São Paulo, SP 01305-000")).toBe(true);
+    expect(looksBrazilian("Rua Augusta, 100, São Paulo 01305-000")).toBe(false);
   });
 
   it("leaves four digits after a place to the core, as Australia and others write them", () => {

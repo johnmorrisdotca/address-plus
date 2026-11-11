@@ -92,6 +92,13 @@ describe("the validator", () => {
     expect(codes("Via Roma 12, 20121 Milano MI")).toEqual([]);
   });
 
+  it("keeps a province that is not the postcode's a warning even when postal findings are errors", () => {
+    const strict = validateItalianAddress(parsed("Via Roma 12, 20121 Milano RM"), { strictPostalValidation: true });
+
+    expect(strict.errors).toEqual([]);
+    expect(strict.warnings.map((one) => one.code)).toEqual(["POSTAL_REGION_MISMATCH"]);
+  });
+
   it("warns of what is missing", () => {
     expect(codes("Via Roma 12, Milano, Italia")).toEqual(["MISSING_POSTAL_CODE"]);
     expect(codes("Via Roma 12, 20121")).toEqual(["MISSING_CITY"]);

@@ -91,6 +91,12 @@ describe("the validator", () => {
 
   it("warns of a state that is not the PIN's", () => {
     expect(codes("12 MG Road, Bengaluru, Kerala 560038")).toEqual(["POSTAL_REGION_MISMATCH"]);
+    const strict = validateIndianAddress(parsed("12 MG Road, Bengaluru, Kerala 560038"), {
+      strictPostalValidation: true,
+    });
+
+    expect(strict.errors).toEqual([]);
+    expect(strict.warnings.map((one) => one.code)).toEqual(["POSTAL_REGION_MISMATCH"]);
   });
 
   it("warns of what is missing", () => {
@@ -151,6 +157,7 @@ describe("the module", () => {
     expect(looksIndian("12 MG Road, Bengaluru, PIN 560038")).toBe(true);
     expect(looksIndian("12 MG Road, Bengaluru 560038, India")).toBe(true);
     expect(looksIndian("12 MG Road, Bengaluru 560038")).toBe(false);
+    expect(looksIndian("12 MG Road, Bengaluru 560038, IN")).toBe(false);
     expect(looksIndian("Tiananmen Square, Beijing 100006")).toBe(false);
     expect(parseLocation("12 MG Road, Bengaluru, Karnataka 560038", { countries: [india] })?.state).toBe("KA");
   });

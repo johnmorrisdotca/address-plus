@@ -113,8 +113,9 @@ function parseBrazilianAddress(text: string, options: ParseOptions = {}): Parsed
 
 /**
  * Whether an address is surely Brazilian, with no hint: it ends with Brazil, Brasil or `BR`, or with a CEP written with its
- * hyphen (`01310-200`, five digits, a hyphen and three) in the range of a state. No other country writes a postcode that way:
- * a US ZIP+4 has four digits after the hyphen and Portugal's has three before it.
+ * hyphen (`01310-200`, five digits, a hyphen and three) in the range of a state, after the word `CEP` or a Brazilian state's
+ * code (`SP`). A bare number of that shape claims nothing: a US ZIP+4 has four digits after the hyphen and Portugal's has three
+ * before it, but other places may write five and three.
  *
  * @param text - The address as one string.
  * @returns `true` when the address is Brazilian beyond doubt, `false` otherwise.
@@ -178,7 +179,7 @@ function compareBrazilianAddresses(first: ParsedAddress, second: ParsedAddress):
 
 /**
  * Brazil's module, for `parseLocation` and `validateAddress`: pass it in `countries`, and an address that ends with Brazil,
- * Brasil or `BR`, or with a CEP written with its hyphen in the range of a state, is read as Brazilian; `country: "BR"` reads any
+ * Brasil or `BR`, or with a CEP written with its hyphen in the range of a state after `CEP` or a state's code, is read as Brazilian; `country: "BR"` reads any
  * address as one.
  *
  * @example

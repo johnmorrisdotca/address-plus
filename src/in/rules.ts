@@ -147,9 +147,11 @@ const indianSpec: PostcodeCountrySpec = {
   code: "IN",
   name: "India",
   names: ["INDIA", "REPUBLIC OF INDIA", "BHARAT"],
-  codes: ["IN"],
+  // No code: IN is also Indiana's, so an address is Indian by its country's name, a PIN word or a state's name, never by IN.
+  codes: [],
   postcode: POSTCODE,
   placeFirst: true,
+  approximateRegion: true,
   list: "GeoNames' list for India",
   shape: "six digits, the first not nought",
   isValid: indianPostcodes.isValid,

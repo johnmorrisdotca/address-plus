@@ -111,6 +111,14 @@ describe("the validator", () => {
     expect(codes("Rua Augusta, 100, São Paulo - RJ, 01305-000")).toEqual(["POSTAL_REGION_MISMATCH"]);
   });
 
+  it("makes a state that is not the CEP's an error when postal findings are errors, since the ranges are facts", () => {
+    const strict = validateBrazilianAddress(parsed("Rua Augusta, 100, São Paulo - RJ, 01305-000"), {
+      strictPostalValidation: true,
+    });
+
+    expect(strict.errors.map((one) => one.code)).toEqual(["POSTAL_REGION_MISMATCH"]);
+  });
+
   it("warns of what is missing", () => {
     expect(codes("Rua Augusta, 100, São Paulo - SP, Brasil")).toEqual(["MISSING_POSTAL_CODE"]);
     expect(codes("Rua Augusta, 100, 01305-000")).toEqual(["MISSING_CITY"]);
