@@ -4,7 +4,10 @@
 // used: the CC BY sources by name, Ordnance Survey's own statement word for word as NOTICE.md quotes it (read at build,
 // so the two cannot disagree), and the producers of the French data (Licence Ouverte 2.0).
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+
+import { pageCreditsHtml, pageHeaderHtml } from "@johnmorrisdotca/kazoku-ui/page-frame";
+import { build } from "esbuild";
 
 /** Where every credit is written in full. */
 export const NOTICE = "https://github.com/johnmorrisdotca/address-plus/blob/main/NOTICE.md";
@@ -66,3 +69,28 @@ export const EMBED_CREDITS = {
   en: "Postcode data: GeoNames, CBS, ABS, OS, Royal Mail, La Poste and INSEE",
   ja: "郵便番号のデータ：GeoNames、CBS、ABS、OS、Royal Mail、La Poste、INSEE",
 };
+
+/** A page's <!--frame:header--> and <!--frame:credits--> filled with its frame: what it is, a way home, and the credits. */
+export const framed = (html, file) =>
+  html
+    .replace("<!--frame:header-->", pageHeaderHtml(FRAME_TEXTS[file], { meta: true }))
+    .replace("<!--frame:credits-->", pageCreditsHtml(FRAME_CREDITS, { href: NOTICE }));
+
+/** The built embed page's small credit line, in its corner, and the page-frame part it loads, bundled beside the site. */
+export async function frameEmbed(file) {
+  writeFileSync(
+    file,
+    readFileSync(file, "utf8").replace(
+      "<!--frame:credits-->",
+      pageCreditsHtml(EMBED_CREDITS, { href: NOTICE, embed: true }),
+    ),
+  );
+  await build({
+    stdin: { contents: 'import "@johnmorrisdotca/kazoku-ui/page-frame/define";\n', resolveDir: process.cwd() },
+    outfile: "site/kazoku-page-frame.js",
+    bundle: true,
+    format: "esm",
+    minify: true,
+    logLevel: "silent",
+  });
+}

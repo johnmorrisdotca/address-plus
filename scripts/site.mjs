@@ -3,7 +3,7 @@
 // and the API reference made from the source.
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
-import { pageCreditsHtml, pageHeaderHtml, pageTitle } from "@johnmorrisdotca/kazoku-ui/page-frame";
+import { pageTitle } from "@johnmorrisdotca/kazoku-ui/page-frame";
 import { build as esbuild } from "esbuild";
 import { build } from "tsup";
 
@@ -17,14 +17,7 @@ import {
   familyUnreviewed,
 } from "./family-template.mjs";
 import { publishThumbnails, thumbnailHead } from "./family-thumbnail.mjs";
-import {
-  BUILDER_DESCRIPTION,
-  EMBED_CREDITS,
-  FRAME_CREDITS,
-  FRAME_TEXTS,
-  INDEX_DESCRIPTION,
-  NOTICE,
-} from "./page-frame.mjs";
+import { BUILDER_DESCRIPTION, FRAME_TEXTS, framed, frameEmbed, INDEX_DESCRIPTION } from "./page-frame.mjs";
 
 const { id } = MEMBER;
 const ALT = "address-plus: six addresses laid out the way their post offices ask, on labels.";
@@ -313,15 +306,6 @@ const corpusSection = `<section class="fam-panels job wide" id="corpus" aria-lab
         </div>
       </section>`;
 
-// The family's page frame on each page (kazoku-ui's page-frame): one line saying what the page is, with a way home, and the
-// data's credit line above the footer; its words are scripts/page-frame.mjs.
-const FRAME_CREDITS_HTML = pageCreditsHtml(FRAME_CREDITS, { href: NOTICE });
-/** A page's <!--frame:header--> and <!--frame:credits--> filled with its frame. */
-const framed = (html, file) =>
-  html
-    .replace("<!--frame:header-->", pageHeaderHtml(FRAME_TEXTS[file], { meta: true }))
-    .replace("<!--frame:credits-->", FRAME_CREDITS_HTML);
-
 /** The page is demo/index.html; each <!-- family:key --> in it is replaced by the text below. `uses` are the lines of "Using it" with their answers. */
 function page(uses) {
   const parts = {
@@ -507,20 +491,5 @@ writeFileSync(
   ),
 );
 cpSync("demo/embed", "site/embed", { recursive: true });
-// The embed page's small credit line, in its corner, from the same words.
-writeFileSync(
-  "site/embed/index.html",
-  readFileSync("site/embed/index.html", "utf8").replace(
-    "<!--frame:credits-->",
-    pageCreditsHtml(EMBED_CREDITS, { href: NOTICE, embed: true }),
-  ),
-);
-await esbuild({
-  stdin: { contents: 'import "@johnmorrisdotca/kazoku-ui/page-frame/define";\n', resolveDir: process.cwd() },
-  outfile: "site/kazoku-page-frame.js",
-  bundle: true,
-  format: "esm",
-  minify: true,
-  logLevel: "silent",
-});
+await frameEmbed("site/embed/index.html");
 for (const file of ["builder.js", "builder.css"]) cpSync(`demo/${file}`, `site/${file}`);
