@@ -32,6 +32,10 @@ jobs:
   usage:
     name: Every way to use it
     runs-on: ubuntu-latest
+    # In the Playwright image at the lockfile's version, which has the browsers' system libraries: no apt mirror (down on 2026-11-11).
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.0-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -40,6 +44,6 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install chromium
       # A script tag, Vite, webpack, React, Vue, Svelte, Angular, an iframe, TypeScript and Node, from the package as npm packs it.
       - run: pnpm test:usage
