@@ -23,7 +23,12 @@ A code may be syntactically valid, present in stored data, associated with more 
 import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
 import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
 import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+import { parseDutchPostcode } from "@johnmorrisdotca/address-plus/nl";
+import { parseSpanishPostcode } from "@johnmorrisdotca/address-plus/es";
+import { parseItalianPostcode } from "@johnmorrisdotca/address-plus/it";
+import { parseNewZealandPostcode } from "@johnmorrisdotca/address-plus/nz";
 console.log(parseUKPostcode("ec1a1bb"),parseGermanPostcode("10115"),parseFrenchPostcode("75002"));
+console.log(parseDutchPostcode("1015cj"),parseSpanishPostcode("28014"),parseItalianPostcode("00186"),parseNewZealandPostcode("1010"));
 ```
 
 Normalization and known-data checks remain country-specific. Preserve leading zeros in strings; a postal code is not a number. The original [postal reference](../../README.md#zip-code--postal-code-handling) includes format standards, validation fields and lookup tables. Public reference pages state each function’s exact null/undefined behavior.

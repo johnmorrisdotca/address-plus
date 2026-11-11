@@ -4,6 +4,14 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Added
+
+- **Four more countries, each its own entry point with its own postcode table:** `/nl` (the Netherlands), `/es` (Spain), `/it` (Italy) and `/nz` (New Zealand), each with a parser, a validator, a formatter (PostNL, Correos, Poste Italiane, NZ Post), a comparer, postcode lookups, and a module for `countries`. The Netherlands' 4,070 four-digit postcode areas are CBS's (Statistics Netherlands, CC BY 4.0); the 11,150 of Spain, 4,736 of Italy and 1,737 of New Zealand are GeoNames' (CC BY 4.0), because none of the postal services publishes its list as open data. The provinces of Spain and Italy and the regions of New Zealand are kuni's, in English and Japanese. A postcode the list does not have is a warning. Size, minified and gzipped: `/nl` 12.4 KB and 5.1 KB, `/es` 26.8 KB and 9.8 KB, `/it` 25.6 KB and 8.4 KB, `/nz` 13.9 KB and 6.0 KB; the main entry point does not change. `pnpm data:countries` makes the tables (`--only nl,es,it,nz`). `NOTICE.md` credits the sources and ships in the package.
+- `ParsedAddress.country` and the `country` option take `NL`, `ES`, `IT` and `NZ`; `FormattedAddress.format` takes `postnl`, `correos`, `poste-italiane` and `nz-post`. The `PostcodeRegion` and `PostcodeLookup` types are exported.
+- Corpora `test-data/corpus/nl/`, `es/`, `it/` and `nz/` (94 original cases), and the detection suite holds each country's module to the others' corpora and to the US, Canadian and Japanese ones.
+
+### Changed
+
 - The data update script for the country tables is split by country, with the same behaviour. `pnpm check` now runs `scripts/check-max-lines.mjs`, which fails a source file over 500 lines.
 
 ## 1.9.0 - 2026-11-03

@@ -1,4 +1,4 @@
-# Test Coverage: the US, Canadian, Japanese, Australian, French, German and British Address Corpora
+# Test Coverage: the US, Canadian, Japanese, Australian, French, German, British, Dutch, Spanish, Italian and New Zealand Address Corpora
 
 This document says what address shapes the US and Canadian postal authorities define, which of them the
 hand-written tests already exercised, what the corpus under `test-data/corpus/` adds, and, last, what the
@@ -20,7 +20,11 @@ a country module is chosen for an address is in [COUNTRIES.md](COUNTRIES.md).
 | United Kingdom (`test-data/corpus/gb/`, 7 files) | 190 | 182 | 8 | 9 |
 | France (`test-data/corpus/fr/`, 7 files) | 196 | 196 | 0 | 11 |
 | Germany (`test-data/corpus/de/`, 7 files) | 151 | 151 | 0 | 2 |
-| Total | 3,526 | 3,504 | 22 | 479 |
+| Netherlands (`test-data/corpus/nl/`, 1 file) | 22 | 22 | 0 | 0 |
+| Spain (`test-data/corpus/es/`, 1 file) | 28 | 28 | 0 | 0 |
+| Italy (`test-data/corpus/it/`, 1 file) | 24 | 24 | 0 | 0 |
+| New Zealand (`test-data/corpus/nz/`, 1 file) | 20 | 20 | 0 | 0 |
+| Total | 3,620 | 3,598 | 22 | 479 |
 
 Before the corpus, `test-data/` held about 440 address inputs written by hand (the 600 test cases count
 the function tests in TypeScript too). They exercised 34 distinct street types, 13 unit designators and
@@ -1129,6 +1133,28 @@ Nothing in the corpus. What the parser cannot do without a street list, which it
 - **A Bundesland written in the address.** Germans seldom write it, and the module does not read one: `state` is the Land the
   postcode is in.
 - **Austria and Switzerland**, whose streets and numbers look German but whose postcodes are four digits, are not read.
+
+## The Dutch, Spanish, Italian and New Zealand corpora
+
+The four countries that came after Germany with their postcode tables (`/nl`, `/es`, `/it`, `/nz`) have one file each under
+`test-data/corpus/nl/`, `es/`, `it/` and `nz/`, in groups by shape: the street and its number, the flats and floors, the line of
+the postcode, the delivery lines (a box, a care-of line, a building) and the texts that are no address. Every case is original,
+written from each postal service's public addressing guidance as described in our own words; nothing is copied. They are small
+beside Germany's (94 cases for the four, against 151): the shapes are fewer, and each is held by a case. None went wrong when first
+run that was not fixed on the spot (a street that ended in `dam`, which made `Amsterdam` a street; a care-of line `C/-`), and none is left todo.
+
+Each case is read with `parseLocation(input, { country: <code>, countries: [...all eight modules] })`. The core fields of each
+country are in `src/__tests__/corpus/corpus-support.ts`; a field a case does not name must be absent. With no hint, 17 of the 19
+Dutch cases, 24 of the 25 Spanish, all 21 Italian and 4 of the 18 New Zealand ones are told, and the rest are left to the hint: a
+New Zealand address is told only by its country at the end or by a Private Bag or a rural delivery, since four digits after a place
+are written by Australia and others too. No case of any other corpus (the US, Canadian, Japanese, Australian, British, French,
+German, and each other of the four) is claimed by any of the four (`src/__tests__/countries/detection.test.ts`), and the 2,723
+US, Canadian and Japanese cases still give the same result with all eight modules handed in as with none.
+
+What the four do not read: the rest of the Netherlands' postcode (the two letters are not looked up, since CBS's list holds the
+four digits), Dutch addresses with the house number before the street (`123 Keizersgracht`), Spanish addresses in two lines with
+the province on the second, Italian addresses with the province written out, and New Zealand rural addresses with a locality
+name in place of a street. Each is a case for a later corpus.
 
 ## Not done here
 

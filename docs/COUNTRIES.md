@@ -2,7 +2,8 @@
 
 address-plus reads the US, Canada and Japan from its main entry point. Every other country is a module of its own,
 from an entry point of its own, so it costs only the callers who import it. Australia (`/au`) and the United Kingdom
-(`/gb`) are the first two, France (`/fr`) the third and Germany (`/de`) the fourth. This document is the design they share, how an address finds
+(`/gb`) are the first two, France (`/fr`) the third and Germany (`/de`) the fourth; the Netherlands (`/nl`), Spain (`/es`), Italy (`/it`)
+and New Zealand (`/nz`) came after them, with their postcodes and the rules of their addresses and not much more. This document is the design they share, how an address finds
 its country, where each country's data comes from and under what licence, and what to do to add the next one.
 
 ## The design
@@ -73,11 +74,17 @@ Measured by bundling each entry point for the browser, minified, with esbuild:
 | `/gb` | | 19.5 KB | | 8.5 KB |
 | `/fr` | | 27.6 KB | | 9.0 KB |
 | `/de` | | 26.4 KB | | 11.8 KB |
+| `/nl` | | 12.4 KB | | 5.1 KB |
+| `/es` | | 26.8 KB | | 9.8 KB |
+| `/it` | | 25.6 KB | | 8.4 KB |
+| `/nz` | | 13.9 KB | | 6.0 KB |
 
 The main entry point grows by 0.7 KB (the option and the picker); France added nothing to it. `/au`, `/gb`, `/fr` and `/de`
 carry none of the US, Canadian or Japanese tables, nor each other's; `pnpm test:package` proves it on the packed
 package. `/fr`'s 6,328 postcodes are 7.5 KB of text (1.4 KB gzipped) and `/de`'s 10,813 are 12 KB, packed as steps in base 36 and
-unpacked the first time a postcode is looked up.
+unpacked the first time a postcode is looked up. The four later countries are packed the same way: `/nl`'s 4,070 four-digit areas
+are 4.1 KB of text, `/es`'s 11,150 postcodes 11.6 KB, `/it`'s 4,736 postcodes 5.3 KB and `/nz`'s 1,737 postcodes 1.9 KB, each with the runs
+of postcodes that share a province or region beside it (Spain's 52 runs, Italy's 143, New Zealand's 142).
 
 ## How an address finds its country
 
@@ -87,6 +94,10 @@ unpacked the first time a postcode is looked up.
 | United Kingdom | ends with the United Kingdom, a nation, Jersey, Guernsey or the Isle of Man; or holds `BFPO` and a number, or `GIR 0AA`; or holds, in its last two parts, a postcode in Royal Mail's grammar whose area Royal Mail uses | an outward code alone |
 | France | ends with France, an overseas department, Monaco or an overseas collectivity; or holds `CEDEX` beside a five-digit code; or names an arrondissement of Paris, Lyon or Marseille; or its last line is a postcode whose number names a department, a collectivity or Monaco and a commune (`75008 Paris`) while the address has a French type of voie (`rue`, `avenue`, `chemin`) at the start of a street, a `BP`, a `TSA` or a `lieu-dit` | a five-digit code that follows a US state (`NY 10036`); a postcode and commune with no French sign (`10115 Berlin`); a number that names no department (`96000`, `99999`) |
 | Germany | ends with Germany or Deutschland (or `DE`, `BRD`); or its last line is a five-digit postcode and a place (`10115 Berlin`, `D-10115 Berlin`) while the address has a street that ends in a German suffix (`Hauptstraße`, `Kastanienallee`, `Am Markt`, `Platz der Republik`) followed by its house number, or a `Postfach` or a `Packstation` | a five-digit code that follows a US state; a street that begins with its number; a postcode with nothing German beside it (`75002 Paris`); a four-digit code (Austria's and Switzerland's) |
+| Netherlands | ends with the Netherlands, Nederland or Holland (or `NL`); or its last line begins with four digits and two letters, not SA, SD or SS, and a place (`1015 CJ Amsterdam`) | four digits alone; a line with a digit after the place |
+| Spain | ends with Spain or España (or `ES`); or its last line is a five-digit postcode and a place while a part begins with a Spanish street's type (`Calle`, `C/`, `Avenida`, `Paseo`, `Plaza`, `Carrer`, `Rúa`) or is an Apartado de Correos, with no state's code before the postcode | a postcode alone; `Calle Ocho, Miami, FL 33135` |
+| Italy | ends with Italy or Italia (or `IT`); or its last line is a five-digit postcode and a place while a part begins with an Italian street's type (`Via`, `Viale`, `Corso`, `Piazza`, `Largo`) or is a Casella Postale, with no state's code before the postcode | a postcode alone |
+| New Zealand | ends with New Zealand or Aotearoa (or `NZ`); or ends with a place and a postcode the list has beside `Private Bag`, a rural delivery (`RD 2`) or Aotearoa | a place and four digits alone, which is how Australia and others write a postcode |
 | Japan (core) | is in Japanese script, ends with Japan, or names a prefecture beside a Japanese postal code or a romaji designator | an address that only mentions a Japanese place |
 | US and Canada (core) | everything else, by the state or province and the ZIP or postal code | |
 
@@ -141,6 +152,12 @@ states. France's departments, regions and overseas collectivities are not kuni's
 overseas territories as a whole, but not the 101 departments a postcode's first digits name. They come from INSEE's
 Code officiel géographique, so `pnpm data:countries` reads two sources for France where it reads kuni for the other two.
 
+Spain's 52 provinces (the fifty and Ceuta and Melilla, by their ISO 3166-2 codes without `ES-`), Italy's 107 provinces and other second-level
+divisions (by their sigla, Aosta by `AO`, which ISO gives no province) and New Zealand's 17 regions are kuni's too, with their names in
+English and Japanese, copied to `src/constants/es/regions.data.ts`, `it/regions.data.ts` and `nz/regions.data.ts`. Asturias, which
+kuni has no Japanese name for as a province, takes the community's. The Netherlands has no region table: CBS's list says which
+four-digit postcode areas exist and nothing of the province.
+
 ## Data sources and licences
 
 Every table is either generated by `pnpm data:countries` (`scripts/countries/update-country-data.ts`, which downloads
@@ -163,6 +180,19 @@ its inputs) or written by hand from rules described in our own words.
 | France's 101 departments, their regions, and the overseas collectivities with postcodes | INSEE, Code officiel géographique 2026 (`v_departement_2026`, `v_region_2026`, `v_comer_2026`), https://www.insee.fr/fr/information/8740218 | Licence Ouverte 2.0 (Etalab). Attribution, kept in the generated file's header: INSEE | `src/constants/fr/departments.data.ts` (generated) |
 | The layout of a French address: the six lines and what goes on each, and the types of voie La Poste allows abbreviated | La Poste, SP 8855 volume 2, "Adressage des plis" (version 1.9, a public technical specification that follows the norm NF Z10-011) | The layout and the list of abbreviations are facts, written in our own words. The norm NF Z10-011 is AFNOR's and sold by it: it has not been read, and nothing here is taken from it | `src/fr/format.ts`, `src/constants/fr/words.ts` |
 | French types of voie in full, apartment, floor and building words, Roman numerals, overseas names | La Poste's addressing guidance and common usage | Written in our own words | `src/constants/fr/words.ts` |
+
+| Every four-digit postcode area of the Netherlands (4,070) | CBS (Statistics Netherlands), Postcode4 statistics 2023, through PDOK's web feature service, https://service.pdok.nl/cbs/postcode4/2023/wfs/v1_0 | Creative Commons Attribution 4.0, by the service's own statement (`AccessConstraints`). Read 2026-11-11. Attribution, kept in the generated file's header and in `NOTICE.md`: CBS and the dataset's name; the digits only are kept, packed | `src/constants/nl/postcodes.data.ts` (generated) |
+| Every postcode GeoNames lists for Spain (11,150), and the province each is in | GeoNames, postal code data for Spain (`ES.txt`), https://download.geonames.org/export/zip/ | Creative Commons Attribution 4.0, by GeoNames' own statement in its readme. Read 2026-11-11. Attribution, kept in the generated file's header and in `NOTICE.md`: GeoNames. The province is the one most of the places of a postcode's first two digits are in | `src/constants/es/postcodes.data.ts` (generated) |
+| The provinces of Spain, Italy's provinces, New Zealand's regions, English and Japanese names | kuni 1.1.0, from Unicode CLDR and Wikidata | MIT | `src/constants/es/regions.data.ts`, `it/regions.data.ts`, `nz/regions.data.ts` (generated) |
+| Every postcode GeoNames lists for Italy (4,736), and the province each is in | GeoNames, postal code data for Italy (`IT.txt`) | Creative Commons Attribution 4.0, as above. Read 2026-11-11. Nine postcodes have places in more than one province and take the one most are in | `src/constants/it/postcodes.data.ts` (generated) |
+| Every postcode GeoNames lists for New Zealand (1,737), and the region each is in | GeoNames, postal code data for New Zealand (`NZ.txt`) | Creative Commons Attribution 4.0, as above. Read 2026-11-11. 27 postcodes have no region in the file | `src/constants/nz/postcodes.data.ts` (generated) |
+| The layout of a Dutch, Spanish, Italian and New Zealand address: the order of the lines, where the number and the postcode stand, the floor and door words, the types of street | PostNL's, Correos', Poste Italiane's and NZ Post's addressing guidance, and common usage | Rules and word lists, written in our own words; no guidance document is copied | `src/constants/nl/`, `src/nl/rules.ts`, `src/es/rules.ts`, `src/it/rules.ts`, `src/nz/rules.ts` |
+
+The licence text read for the three CC BY rows is Creative Commons Attribution 4.0 International, Section 3(a): keep the creator's name,
+the copyright and licence notices and a link to the material, say that it was modified, and say that it is licensed under the
+licence with a link to it. The package's `NOTICE.md` does all of that for each source, and ships in the npm package. The CC BY licence lets
+the rest of the package stay MIT, since Section 3(a)(4) only asks that the licence applied to adapted material not stop a recipient from
+complying with it.
 
 What is not used, and why:
 
@@ -188,6 +218,14 @@ What is not used, and why:
   only the postcodes and their Länder.
 - **OpenStreetMap, OpenGeoDB and the Bundesamt für Kartographie und Geodäsie's postcode areas.** The first two are ODbL or
   carry ODbL data; the last has its own terms. None is used.
+- **The postal services' own lists for the Netherlands, Spain, Italy and New Zealand.** None is open data. PostNL's postcode
+  file is sold under a licence; Correos owns Spain's postcode database and its reuse (CartoCiudad's, for one) is by agreement, with
+  its own terms; Poste Italiane says the full CAP database cannot be downloaded because it holds the rights, and sells it; NZ Post's
+  Postcode Network File is bought under a licence. GeoNames' lists (CC BY 4.0) are used for Spain, Italy and New Zealand where none
+  of these is open, as for Germany. The Netherlands' list is the open one CBS publishes. The Dutch BAG (the address register, CC0)
+  has every postcode and house number, but at 9 million rows is far too large to ship; nothing of it is used.
+- **GeoNames' place names for the four.** Only the postcodes and the province or region are kept, as for Germany. GeoNames' Dutch
+  file has the first four digits only (and the provinces), Brazil's has the major postcodes only: not used.
 - **La Poste's commune names and its CEDEX codes.** The base lists 39,193 lines, one for each commune and each
   postcode it has, with the commune's name. Only the postcodes are kept here (6,328 of them, 7.5 KB), so the validator
   can say whether a postcode is in use and which department it belongs to but not whether the commune written beside it
@@ -248,6 +286,34 @@ also what La Poste's fifth line holds when it names the commune a box or a hamle
 Germany fills one field of its own beside the shared ones, `careOf` (the `c/o`, `z. Hd.` or `bei` line; France's has the same
 name and meaning). A German address has no type of street apart from the name and puts the house number after the street,
 so `type` is absent and `number` follows `street` in the parser's results.
+
+### The Netherlands, Spain, Italy and New Zealand
+
+These four share their parser, validator and comparer (`src/country/postcode-country.ts`); a country gives its postcode's shape, its lookups
+and the few rules of its own (`src/<code>/rules.ts`), and writes its own formatter. The shared fields keep their meaning:
+
+| Field | Netherlands | Spain | Italy | New Zealand |
+| --- | --- | --- | --- | --- |
+| `number` | the house number: `123` | the number: `42`, `12-14`, `S/N` | the civic number: `12`, `12-14`, `SNC` | the number: `45`, `12A`, `12-14` |
+| `numberExtension` | the addition: `A`, `2`, `III`, `bis`, `hs` | | the letter or sub-number after a slash, `bis`: `A` in `12/A` | |
+| `street` | the name as written: `Keizersgracht` | the name with its type as written: `Calle de Alcalá`, `C/ Mayor` | the name with its type as written: `Via del Corso` | the name with its type: `Dominion Road` |
+| `secUnitType`, `secUnitNum` | `Postbus` and its number | `Puerta` and `B` (the door); `Apartado de Correos`; `Local` | `Interno` and `5`; `Casella Postale` | `Unit` and `3` (from `3/45` too), `Flat`, `Shop`; `PO Box`, `Private Bag`, `RD` |
+| `floorType`, `floor` | | `Piso` and `3` (from `3º`), `Bajo`, `Entresuelo`, `Ático` | `Piano` and `3` | `Level` and `5` |
+| `staircase`, `entrance` | | `Escalera` and `Portal`: `2`, `B` | `Scala`: `B` | |
+| `building` | a name above the street | a name above the street | `Palazzo Rossi`, a name above the street | a name above the street |
+| `locality` | | | the frazione | the suburb |
+| `city` | the place | the place | the place | the city |
+| `county` | | the province written in brackets or after the place | | |
+| `state` | | the province's code from the postcode: `M`, `B`, `SE` | the sigla as written, or from the postcode: `RM` | the region's code from the postcode: `AUK`, `WGN` |
+| `zip` | `1015 CJ` (capitals, one space) | `28014` | `00186` | `1010` |
+| `careOf` | `t.a.v.` | `A/A` | `c/o`, `presso` | `C/-`, `c/o` |
+| `country` | `NL` | `ES` | `IT` | `NZ` |
+
+The validator reports the same codes for each, as Germany's does (`INVALID_POSTAL_FORMAT`, `UNRECOGNIZED_POSTAL_CODE`,
+`MISSING_POSTAL_CODE`, `MISSING_CITY`, `MISSING_STREET_NUMBER`), and `POSTAL_REGION_MISMATCH` where a region is written beside the
+postcode (Italy's sigla). A postcode the list does not have is a warning, and an error with `strictPostalValidation`. A Dutch Postbus
+is not looked up, since its postcode is none of an area's. The two countries that put the number before the street (New Zealand)
+or write the unit as `3/45` read it as the unit's.
 
 ## Adding a country
 

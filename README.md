@@ -48,6 +48,7 @@ For forms, imports and local tools that need structured address fields, known po
 - **US Address Parsing**: Full USPS format support with street types, directionals, and secondary units
 - **Canadian Address Parsing**: Canada Post bilingual support (English/French)
 - **Japanese Address Parsing**: Addresses in Japanese (〒100-0005 東京都千代田区丸の内1丁目2番3号) or romaji (1-2-3 Marunouchi, Chiyoda-ku, Tokyo), with every prefecture and municipality and the prefecture each postal code delivers to
+- **The Netherlands, Spain, Italy and New Zealand**: `/nl`, `/es`, `/it` and `/nz` read `Keizersgracht 123A, 1015 CJ Amsterdam`, `Calle de Alcalá, 42, 3º B, 28014 Madrid`, `Via del Corso, 12/A, 00186 Roma RM` and `3/45 Dominion Road, Auckland 1024` with the postcodes of each country's own open list
 - **Australia, France, Germany and the United Kingdom**: `/au` reads `3/12 Smith St, Parramatta NSW 2150` the Australia Post way, `/fr` reads `12 bis rue de la Paix, 75002 Paris` the La Poste way, `/de` reads `Hauptstraße 12a, 10115 Berlin` the Deutsche Post way, and `/gb` reads `Flat 2, 14 High Street, London NW9 0AA` the Royal Mail way, each with its own validator, formatter and postcode lookups; a country costs only the callers who import it
 - **Facility Detection**: Extracts business/landmark names with various separators
 - **Intersection Parsing**: Handles street intersections with multiple formats, and knows "Newfoundland and Labrador" is a province, not two streets
@@ -857,6 +858,31 @@ The sixteen Länder are kuni's, with their Japanese names. No place name or stre
 The corpora (`test-data/corpus/au/`, 266 cases, `test-data/corpus/de/`, 151, `test-data/corpus/fr/`, 196, and
 `test-data/corpus/gb/`, 190, with libpostal's British, French and German fixtures written again as original addresses) are described in
 [docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md).
+
+#### The Netherlands, Spain, Italy and New Zealand
+
+`/nl`, `/es`, `/it` and `/nz` are modules in the same way, each with its own postcode table, parser, validator, formatter and comparer:
+
+```js
+import { parseLocation, validateAddress } from "@johnmorrisdotca/address-plus";
+import { netherlands } from "@johnmorrisdotca/address-plus/nl";
+import { spain } from "@johnmorrisdotca/address-plus/es";
+import { italy } from "@johnmorrisdotca/address-plus/it";
+import { newZealand } from "@johnmorrisdotca/address-plus/nz";
+
+const countries = [netherlands, spain, italy, newZealand];
+
+parseLocation("Keizersgracht 123A, 1015 CJ Amsterdam", { countries });
+// { number: '123', numberExtension: 'A', street: 'Keizersgracht', city: 'Amsterdam',
+//   zip: '1015 CJ', zipValid: true, country: 'NL' }
+parseLocation("Calle de Alcalá, 42, 3º B, 28014 Madrid", { countries }).state; // 'M'
+validateAddress("Via Roma 12, 20121 Milano RM", { countries }).warnings[0].message;
+// 'Postcode 20121 is in MI, not RM'
+```
+
+The Netherlands' 4,070 four-digit postcode areas are CBS's (CC BY 4.0); Spain's, Italy's and New Zealand's postcodes are GeoNames' (CC BY 4.0,
+credited in [NOTICE.md](NOTICE.md)), since none of their postal services publishes a list as open data. A postcode a list does not have
+is a warning. How each is told with no hint, the fields each fills and the sources are in [docs/COUNTRIES.md](docs/COUNTRIES.md).
 
 ### Batch Processing
 

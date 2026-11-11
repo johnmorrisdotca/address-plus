@@ -23,7 +23,12 @@ console.log(getStatesForAustralianPostcode("2618"));
 import { parseUKPostcode } from "@johnmorrisdotca/address-plus/gb";
 import { parseGermanPostcode } from "@johnmorrisdotca/address-plus/de";
 import { parseFrenchPostcode } from "@johnmorrisdotca/address-plus/fr";
+import { parseDutchPostcode } from "@johnmorrisdotca/address-plus/nl";
+import { parseSpanishPostcode } from "@johnmorrisdotca/address-plus/es";
+import { parseItalianPostcode } from "@johnmorrisdotca/address-plus/it";
+import { parseNewZealandPostcode } from "@johnmorrisdotca/address-plus/nz";
 console.log(parseUKPostcode("ec1a1bb"),parseGermanPostcode("10115"),parseFrenchPostcode("75002"));
+console.log(parseDutchPostcode("1015cj"),parseSpanishPostcode("28014"),parseItalianPostcode("00186"),parseNewZealandPostcode("1010"));
 ```
 
 正規化と収録データの確認は国ごとです。先頭の0を文字列として保ち、郵便番号を数値にしません。元の[郵便の説明](../../../README.md#zip-code--postal-code-handling)には形式、確認の項目、地域の検索があります。個別のAPIのページで、nullとundefinedの正確な意味を読めます。

@@ -2,18 +2,21 @@
 
 This directory contains utility scripts for development, debugging, and maintenance.
 
-## Australian, British, French and German Tables
+## Australian, British, French, German, Dutch, Spanish, Italian and New Zealand Tables
 
 `countries/update-country-data.ts` (`pnpm data:countries`) writes the `*.data.ts` files under `src/constants/au/`,
-`src/constants/gb/`, `src/constants/fr/` and `src/constants/de/`: the Australian states and the British nations copied from kuni (a
+`src/constants/gb/`, `src/constants/fr/`, `src/constants/de/`, `src/constants/nl/`, `src/constants/es/`, `src/constants/it/` and `src/constants/nz/`: the Australian states and the British nations copied from kuni (a
 devDependency), the Australian postcodes that cross a state border from the ABS's Postal Areas allocation file (CC BY
 4.0), the British postcode districts and their nations from Ordnance Survey's Code-Point Open (OGL v3), and France's
 postcodes from La Poste's Base officielle des codes postaux and its departments, regions and overseas collectivities
 from INSEE's Code officiel géographique (both Licence Ouverte 2.0), and Germany's postcodes with their Länder from
-GeoNames' postal code file (CC BY 4.0), the Länder's names from kuni. Without arguments it downloads every input (about
-38 MB); `--only au,gb,fr,de` makes some countries' tables alone (`--only fr` downloads 1.6 MB and needs no `unzip`), and
+GeoNames' postal code file (CC BY 4.0), the Länder's names from kuni. The Netherlands' four-digit postcode areas come from CBS's
+Postcode4 statistics through PDOK (CC BY 4.0, 4,070 rows downloaded a thousand at a time, about two minutes), and the postcodes of Spain, Italy and
+New Zealand from GeoNames' files for them (CC BY 4.0), with their provinces and regions from kuni (`postcode-countries.ts`). Without arguments it downloads every input (about
+38 MB); `--only au,gb,fr,de,nl,es,it,nz` makes some countries' tables alone (`--only fr` downloads 1.6 MB and needs no `unzip`), and
 `--abs <POA_2021_AUST.xlsx>`, `--codepoint <folder>`, `--laposte <hexasmal.csv>` and `--insee <folder with
-v_departement_2026.csv, v_region_2026.csv and v_comer_2026.csv>` and `--geonames <DE.txt>` read copies already on disk.
+v_departement_2026.csv, v_region_2026.csv and v_comer_2026.csv>`, `--geonames <DE.txt>`, `--cbs <a file of the Netherlands' four-digit
+postcodes, one a line>` and `--geonames-es <ES.txt>`, `--geonames-it <IT.txt>` and `--geonames-nz <NZ.txt>` read copies already on disk.
 It needs `unzip` for Australia, Great Britain and Germany. A generated file's header names the day it was made, so run it for a country only when its
 source has changed. `docs/COUNTRIES.md` lists every source and its licence.
 
