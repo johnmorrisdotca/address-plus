@@ -263,9 +263,9 @@ const WORDS_JA = {
     es: "スペインの郵便番号",
     it: "イタリアの郵便番号",
     nz: "ニュージーランドの郵便番号",
-    in: "インドのPINコード",
+    in: "インドの PIN コード",
     kr: "韓国の郵便番号",
-    br: "ブラジルのCEP",
+    br: "ブラジルの CEP",
   },
   clean_title: "表記の整理",
   clean_blurb:
