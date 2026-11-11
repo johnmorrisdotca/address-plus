@@ -8,18 +8,25 @@
 //
 //   "family": { "notApplicable": { "angular": "a data package with no element", "embed": "no view to frame" } }
 //
-// The items: demo, pages, homepage, embed, family-files, docs-site, ja-guides, usage-tested, usage-in-ci, and the README's (or a guide's) usage for script-tag,
+// The items: demo, pages, homepage, embed, embed-panel, page-frame, family-files, docs-site, ja-guides, usage-tested, usage-in-ci, and the README's (or a guide's) usage for script-tag,
 // esm, bundlers, react, vue, svelte, angular, iframe and typescript.
 import console from "node:console";
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 /** The day this file was last changed, in every repository at once. A test in each repository records the file's hash beside it. */
-export const STANDARD_VERSION = "2026-11-02";
+export const STANDARD_VERSION = "2026-11-11";
 
 const OWNER = "johnmorrisdotca";
+
+/**
+ * The SHA-256 of kazoku-ui's templates/data-door.ts (the data door of MODULES-831), line ends as "\n". A package that has src/data-door.ts must hold exactly that file; a kazoku-ui test keeps this
+ * line equal to the template, so changing the template means changing this line, and then every package's copy of both files.
+ */
+export const DATA_DOOR_SHA256 = "b90af1f8e0f2ffc59485d5cc98995e54ee21fd98cd5ae027b90efe8c6673d5fa";
 
 /** The usage every package's README (or a guide it links) shows, each as the words a reader would find it by. */
 export const USAGE = {
@@ -40,11 +47,14 @@ export const ITEMS = {
   pages: "a GitHub Pages workflow, .github/workflows/pages.yml, that deploys it",
   homepage: `package.json's homepage is the demo (https://${OWNER}.github.io/<package>/) and the README links it`,
   embed: "an embed page, demo/embed.html (or demo/embed/index.html)",
+  "embed-panel": "the demo's \"Put it in your page\" is kazoku-ui's <kazoku-embed-panel> (a package that draws nothing gives it the code tabs only)",
+  "page-frame": "every demo page (not an embed or a test page) has kazoku-ui's <kazoku-page-header> (what the page is, a way home, the printable sheets) and <kazoku-page-credits>, and a <title>; an embed page has the credit line",
   "family-files": "the family's files, unedited: scripts/family-template.mjs (listing this package, with the kazoku-ui language picker and theme switch in the header), scripts/family-readme.mjs and demo/family.css",
   "docs-site": "a documentation site: scripts/docs-site.mjs, docs/site.json and at least one guide in docs/guides/",
   "ja-guides": "a Japanese twin in docs/guides/ja/ for every guide, one language to a page",
   "usage-tested": "every example run by a test: a test:usage script in package.json and an examples/ folder",
   "usage-in-ci": "that test run in CI (.github/workflows/ci.yml names test:usage)",
+  "data-door": "src/data-door.ts, when the package has one, is kazoku-ui's templates/data-door.ts unchanged (a package without it takes outside data in no way yet)",
   ...Object.fromEntries(Object.entries(USAGE).map(([id, one]) => [id, `the README or a guide shows ${one.label}`])),
 };
 
@@ -80,6 +90,23 @@ export function standardOf(root = ".") {
   need("homepage", String(pkg.homepage ?? "").replace(/\/?$/, "/") === home && readme.includes(home), `set "homepage": "${home}" in package.json, link it from the README, and set it on the repository: gh repo edit ${OWNER}/${id} --homepage ${home}`);
   need("embed", existsSync(at(root, "demo", "embed.html")) || existsSync(at(root, "demo", "embed", "index.html")), "add demo/embed.html: a page made to sit in an iframe, drawing what its address says");
 
+  const pages_ = existsSync(at(root, "demo")) ? readdirSync(at(root, "demo")).filter((name) => name.endsWith(".html")) : [];
+  need("embed-panel", pages_.some((name) => /<kazoku-embed-panel\b/.test(read(at(root, "demo", name)))), "put kazoku-ui's <kazoku-embed-panel> in the demo (import \"@johnmorrisdotca/kazoku-ui/embed-panel/define\"), filled with the package's own choices and code; docs/embed-panel-survey.md and the kazoku-ui guide \"embed-panel\" say how");
+
+  // Every page of the demo says what it is and credits its data (kazoku-ui's page-frame part). A page a build makes from a source file may hold the placeholders <!--frame:head-->, <!--frame:header-->
+  // and <!--frame:credits--> (the family template's <!--family:head--> counts for the head), which the build replaces with pageHeadHtml, pageHeaderHtml and pageCreditsHtml.
+  const framed = pages_.filter((name) => !/(^|[-_.])(test|check)\./.test(name));
+  const unframed = framed.flatMap((name) => {
+    const html = read(at(root, "demo", name));
+    const embed = /^embed(-3d|-page)?\.html$|-embed\.html$/.test(name);
+    const lacks = [];
+    if (!/<title>[^<]*\S[^<]*<\/title>|<!--(frame|family):head-->/.test(html)) lacks.push("a <title>");
+    if (!embed && !/<kazoku-page-header\b|<!--frame:header-->/.test(html)) lacks.push("<kazoku-page-header>");
+    if (!/<kazoku-page-credits\b|<!--frame:credits-->/.test(html)) lacks.push("<kazoku-page-credits>");
+    return lacks.length > 0 ? [`${name} (${lacks.join(", ")})`] : [];
+  });
+  need("page-frame", unframed.length === 0, `give every demo page the page frame (import "@johnmorrisdotca/kazoku-ui/page-frame/define"; kazoku-ui's guide "page-frame" says how): ${unframed.join("; ")}`);
+
   const template = existsSync(at(root, "scripts", "family-template.mjs")) ? read(at(root, "scripts", "family-template.mjs")) : "";
   need(
     "family-files",
@@ -96,6 +123,9 @@ export function standardOf(root = ".") {
   need("usage-tested", typeof scripts["test:usage"] === "string" && existsSync(at(root, "examples")), 'add an examples/ folder and a "test:usage" script that runs every example (see chikyu-earth\'s scripts/check-usage.ts)');
   const ci = at(root, ".github", "workflows", "ci.yml");
   need("usage-in-ci", existsSync(ci) && /test:usage/.test(read(ci)), "run pnpm test:usage in .github/workflows/ci.yml");
+
+  const door = at(root, "src", "data-door.ts");
+  need("data-door", !existsSync(door) || createHash("sha256").update(read(door)).digest("hex") === DATA_DOOR_SHA256, "src/data-door.ts differs from kazoku-ui's templates/data-door.ts: copy the template again, unchanged (the data door is the same file in every package)");
 
   const words = [readme, ...guides.map((name) => read(at(root, "docs", "guides", name)))].join("\n");
   for (const [item, one] of Object.entries(USAGE)) need(item, one.find.test(words), `show ${one.label} in the README or a guide, as a copy-paste example that a test runs`);

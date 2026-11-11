@@ -3,6 +3,7 @@
 // and the API reference made from the source.
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
+import { pageCreditsHtml, pageHeaderHtml, pageTitle } from "@johnmorrisdotca/kazoku-ui/page-frame";
 import { build as esbuild } from "esbuild";
 import { build } from "tsup";
 
@@ -16,6 +17,14 @@ import {
   familyUnreviewed,
 } from "./family-template.mjs";
 import { publishThumbnails, thumbnailHead } from "./family-thumbnail.mjs";
+import {
+  BUILDER_DESCRIPTION,
+  EMBED_CREDITS,
+  FRAME_CREDITS,
+  FRAME_TEXTS,
+  INDEX_DESCRIPTION,
+  NOTICE,
+} from "./page-frame.mjs";
 
 const { id } = MEMBER;
 const ALT = "address-plus: six addresses laid out the way their post offices ask, on labels.";
@@ -304,14 +313,22 @@ const corpusSection = `<section class="fam-panels job wide" id="corpus" aria-lab
         </div>
       </section>`;
 
+// The family's page frame on each page (kazoku-ui's page-frame): one line saying what the page is, with a way home, and the
+// data's credit line above the footer; its words are scripts/page-frame.mjs.
+const FRAME_CREDITS_HTML = pageCreditsHtml(FRAME_CREDITS, { href: NOTICE });
+/** A page's <!--frame:header--> and <!--frame:credits--> filled with its frame. */
+const framed = (html, file) =>
+  html
+    .replace("<!--frame:header-->", pageHeaderHtml(FRAME_TEXTS[file], { meta: true }))
+    .replace("<!--frame:credits-->", FRAME_CREDITS_HTML);
+
 /** The page is demo/index.html; each <!-- family:key --> in it is replaced by the text below. `uses` are the lines of "Using it" with their answers. */
 function page(uses) {
   const parts = {
     head: familyHead({
       id,
-      title: "address-plus アドレスプラス — US and Canadian address parser",
-      description:
-        "Try address-plus in your browser: a TypeScript address parser for the US, Canada and Japan, with Australia, France, Germany and the UK as modules of their own. Parse an address into its fields, validate it (a ZIP code, postal code or postcode from another state, province or prefecture is caught), write it out the USPS, Canada Post, Japanese, Australia Post, La Poste, Deutsche Post or Royal Mail way, compare two addresses, find the region of a postal code, and clean up a messy one. Free and open source, in English and Japanese.",
+      title: pageTitle(FRAME_TEXTS["index.html"].en),
+      description: INDEX_DESCRIPTION,
       ogTitle: "address-plus アドレスプラス — US and Canadian address parser",
       ogDescription:
         "Parse, validate, format and compare addresses from the US, Canada, Japan, Australia, France, Germany and the UK, including Japanese script, romaji and full-width digits. One small dependency.",
@@ -335,7 +352,10 @@ function page(uses) {
     footer: familyFooter({ id }),
     script: `<script>${FAMILY_SCRIPT}</script>\n    <script type="module" src="kazoku-parts.js"></script>`,
   };
-  return readFileSync("demo/index.html", "utf8").replace(/<!-- family:([A-Za-z]+) -->/g, (_match, key) => parts[key]);
+  return framed(
+    readFileSync("demo/index.html", "utf8").replace(/<!-- ?family:([A-Za-z]+) ?-->/g, (_match, key) => parts[key]),
+    "index.html",
+  );
 }
 
 const api = apiOf();
@@ -385,7 +405,7 @@ writeFileSync("site/index.html", page(uses));
 await esbuild({
   stdin: {
     contents:
-      'import "@johnmorrisdotca/kazoku-ui/language-picker/define";\nimport "@johnmorrisdotca/kazoku-ui/theme-switch/define";\n',
+      'import "@johnmorrisdotca/kazoku-ui/language-picker/define";\nimport "@johnmorrisdotca/kazoku-ui/theme-switch/define";\nimport "@johnmorrisdotca/kazoku-ui/page-frame/define";\n',
     resolveDir: process.cwd(),
   },
   outfile: "site/kazoku-parts.js",
@@ -459,10 +479,10 @@ writeFileSync(
   `export const FAMILY_EMBED_BUILDER_WORDS = ${JSON.stringify(FAMILY_EMBED_BUILDER_WORDS)};\nexport ${familyEmbedBuilder.toString()};\n`,
 );
 const builderParts = {
-  builderHead: familyHead({
+  head: familyHead({
     id,
-    title: "address-plus アドレスプラス — US and Canadian address parser · Build a form field embed",
-    description: "Choose a country and copy a private address input for a form.",
+    title: pageTitle(FRAME_TEXTS["builder.html"].en),
+    description: BUILDER_DESCRIPTION,
   }),
   builderHeader: header({
     id,
@@ -478,7 +498,29 @@ const builderParts = {
 };
 writeFileSync(
   "site/builder.html",
-  readFileSync("demo/builder.html", "utf8").replace(/<!-- family:([A-Za-z]+) -->/g, (_match, key) => builderParts[key]),
+  framed(
+    readFileSync("demo/builder.html", "utf8").replace(
+      /<!-- ?family:([A-Za-z]+) ?-->/g,
+      (_match, key) => builderParts[key],
+    ),
+    "builder.html",
+  ),
 );
 cpSync("demo/embed", "site/embed", { recursive: true });
+// The embed page's small credit line, in its corner, from the same words.
+writeFileSync(
+  "site/embed/index.html",
+  readFileSync("site/embed/index.html", "utf8").replace(
+    "<!--frame:credits-->",
+    pageCreditsHtml(EMBED_CREDITS, { href: NOTICE, embed: true }),
+  ),
+);
+await esbuild({
+  stdin: { contents: 'import "@johnmorrisdotca/kazoku-ui/page-frame/define";\n', resolveDir: process.cwd() },
+  outfile: "site/kazoku-page-frame.js",
+  bundle: true,
+  format: "esm",
+  minify: true,
+  logLevel: "silent",
+});
 for (const file of ["builder.js", "builder.css"]) cpSync(`demo/${file}`, `site/${file}`);

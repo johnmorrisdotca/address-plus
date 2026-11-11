@@ -6,6 +6,10 @@
     <meta name="robots" content="noindex" />
     <meta name="color-scheme" content="light dark" />
     <title>Address Plus · form field</title>
+    <meta
+      name="description"
+      content="An address field from address-plus for another site's form: it reads, checks and tidies an address in the reader's browser, and keeps it there."
+    />
     <style>
       html,
       body {
@@ -21,6 +25,12 @@
         justify-content: center;
         padding: 8px;
         box-sizing: border-box;
+      }
+      kazoku-page-credits {
+        position: fixed;
+        right: 4px;
+        bottom: 2px;
+        max-width: calc(100% - 8px);
       }
     </style>
   </head>
@@ -58,6 +68,10 @@
             parent.postMessage({ type: event.type, detail: JSON.parse(JSON.stringify(event.detail)) }, "*");
         });
       document.body.append(field);
+    </script>
+    <!--frame:credits-->
+    <script type="module">
+      import "../kazoku-page-frame.js";
     </script>
   </body>
 </html>

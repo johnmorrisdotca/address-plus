@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
- * kazoku-ui's check-standard (STANDARD_VERSION 2026-11-11, item embed-panel) asks that a demo page hold
- * <kazoku-embed-panel>; this package still carries an older check, so the item is held here.
+ * kazoku-ui's check-standard (item embed-panel) asks that a demo page hold <kazoku-embed-panel>; this holds the
+ * builder's own: the panel is its code section, defined by its script and bundled by the site's build.
  */
 describe("the embed panel", () => {
   it("is the builder's code section, defined by the builder's script", () => {

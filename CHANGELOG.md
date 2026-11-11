@@ -4,6 +4,10 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Changed
+
+- **Every demo page says what it is and credits its data** (kazoku-ui's page frame, check-standard 2026-11-11). The demo and the form-field builder each have a header line ("address-plus アドレスプラス: form field builder", with a way home) and a credit line above the footer that names every postcode source with what its licence asks for (the CC BY sources, Ordnance Survey's statement, La Poste and INSEE) and links `NOTICE.md`, in English and Japanese, with a title of their own made from the same words; the embed page has a small credit line in its corner.
+
 - CI's browser job runs in the Playwright image and needs no apt mirror (KAZOKU-UI-100). The runner's apt mirror stopped answering on 2026-11-11, so `playwright install --with-deps` failed before a test ran; the usage job now runs in `mcr.microsoft.com/playwright:v1.64.0-noble`, the lockfile's Playwright version, which has the browsers and their system libraries.
 
 ## 1.10.1 - 2026-11-11
