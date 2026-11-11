@@ -172,7 +172,7 @@
     "@angular/platform-browser": "^22.2.4",
     "@eslint/js": "^9.0.0",
     "@johnmorrisdotca/hikidashi": "^1.0.2",
-    "@johnmorrisdotca/kazoku-ui": "^0.10.1",
+    "@johnmorrisdotca/kazoku-ui": "^0.37.0",
     "@johnmorrisdotca/kuni": "1.1.0",
     "@playwright/test": "^1.64.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
