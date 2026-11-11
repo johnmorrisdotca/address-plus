@@ -4,6 +4,8 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+- CI's browser job runs in the Playwright image and needs no apt mirror (KAZOKU-UI-100). The runner's apt mirror stopped answering on 2026-11-11, so `playwright install --with-deps` failed before a test ran; the usage job now runs in `mcr.microsoft.com/playwright:v1.64.0-noble`, the lockfile's Playwright version, which has the browsers and their system libraries.
+
 ## 1.10.0 - 2026-11-11
 
 ### Added
