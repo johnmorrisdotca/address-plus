@@ -1,7 +1,7 @@
 import { FAMILY_EMBED_BUILDER_WORDS, familyEmbedBuilder } from "./family-embed-builder.js";
 // kazoku-ui's embed panel, the code section the builder fills: defined before the builder mounts.
-import "./kazoku-embed-panel.js";
 import { PACKAGE_VERSION } from "./field-version.js";
+import "./kazoku-embed-panel.js";
 import "./lib/element-define.js";
 import {
   ADDRESS_FIELD_COUNTRIES,
@@ -175,7 +175,7 @@ const builder = familyEmbedBuilder({
   groups: { field: { en: "The address field", ja: "住所の入力欄" } },
   credits: ({ lang }) =>
     lang === "ja"
-      ? "郵便番号のデータは GeoNames と CBS（オランダ統計局）のもの（どちらも CC BY 4.0）、地域名は kuni（Unicode CLDR と Wikidata）のものです。全文は NOTICE.md にあります。"
+      ? "郵便番号のデータはGeoNamesとCBS（オランダ統計局）のもの（どちらもCC BY 4.0）、地域名はkuni（Unicode CLDRとWikidata）のものです。全文はNOTICE.mdにあります。"
       : "Postcode data from GeoNames and CBS (Statistics Netherlands), both CC BY 4.0; region names from kuni (Unicode CLDR and Wikidata). NOTICE.md has the full credit.",
   makers: {
     field: {

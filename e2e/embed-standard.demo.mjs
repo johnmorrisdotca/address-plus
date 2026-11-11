@@ -159,7 +159,9 @@ test("builder covers all native choices and formats without putting entered addr
   for (const format of ["element", "iframe", "module", "react", "vue", "svelte", "angular", "html", "url"]) {
     await page.locator(`[data-testid="bld-embed"] button[data-kind="${format}"]`).click();
     await expect(page.locator('[data-testid="bld-embed"] [part="code"]')).not.toHaveText("");
-    expect(await page.locator('[data-testid="bld-embed"] [part="code"]').textContent()).not.toContain(fixtures.countries[0].address);
+    expect(await page.locator('[data-testid="bld-embed"] [part="code"]').textContent()).not.toContain(
+      fixtures.countries[0].address,
+    );
   }
   expect(page.url()).not.toContain(encodeURIComponent(fixtures.countries[0].address));
   expect(errors).toEqual([]);

@@ -53,7 +53,9 @@ test("the code section is the embed panel, with every item it had and the guide,
   await expect(panel(page).locator("[part=note]")).toHaveText("初期値と異なる選択だけがコードに含まれます。");
   await expect(panel(page).getByTestId("bld-link")).toHaveText("この入力欄へのリンクをコピー");
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/ja/guides/form-field-and-embeds.html");
-  await expect(panel(page).locator("[part=credits]")).toContainText("郵便番号のデータは GeoNames");
+  await expect(panel(page).locator("[part=credits]")).toContainText(
+    "郵便番号のデータはGeoNamesとCBS（オランダ統計局）のもの（どちらもCC BY 4.0）、地域名はkuni（Unicode CLDRとWikidata）のものです。全文はNOTICE.mdにあります。",
+  );
   expect(errors).toEqual([]);
 });
 
@@ -70,7 +72,9 @@ test("the panel's tab follows the address, and Start again sets the choices back
   await expect(panel(page).locator("[part=code]")).toContainText("<address-field");
 });
 
-test("a page opened in Japanese gives the panel its Japanese tabs, note, buttons, guide and credit", async ({ page }) => {
+test("a page opened in Japanese gives the panel its Japanese tabs, note, buttons, guide and credit", async ({
+  page,
+}) => {
   await serve(page);
   await page.goto("http://address-plus.test/builder.html?lang=ja");
   await expect(page.locator("#bld-stage address-field input")).toBeVisible();
@@ -78,5 +82,7 @@ test("a page opened in Japanese gives the panel its Japanese tabs, note, buttons
   await expect(panel(page).locator("[part=note]")).toHaveText("初期値と異なる選択だけがコードに含まれます。");
   await expect(panel(page).getByTestId("bld-link")).toHaveText("この入力欄へのリンクをコピー");
   await expect(panel(page).locator("[part=docs]")).toHaveAttribute("href", "docs/ja/guides/form-field-and-embeds.html");
-  await expect(panel(page).locator("[part=credits]")).toContainText("郵便番号のデータは GeoNames");
+  await expect(panel(page).locator("[part=credits]")).toContainText(
+    "郵便番号のデータはGeoNamesとCBS（オランダ統計局）のもの（どちらもCC BY 4.0）、地域名はkuni（Unicode CLDRとWikidata）のものです。全文はNOTICE.mdにあります。",
+  );
 });
