@@ -34,10 +34,10 @@ const USES = {
   useDeImport: `import { germany } from "@johnmorrisdotca/address-plus/de";`,
   useFrImport: `import { france } from "@johnmorrisdotca/address-plus/fr";`,
   useGbImport: `import { unitedKingdom } from "@johnmorrisdotca/address-plus/gb";`,
-  useAu: `parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.secUnitNum`,
-  useFr: `parseLocation("12 bis rue de la Paix, 75002 Paris", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.numberExtension`,
-  useDe: `parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.number`,
-  useGb: `parseLocation("10 Downing St, London SW1A 2AA", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.nation`,
+  useAu: `parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom] })?.secUnitNum`,
+  useFr: `parseLocation("12 bis rue de la Paix, 75002 Paris", { countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom] })?.numberExtension`,
+  useDe: `parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom] })?.number`,
+  useGb: `parseLocation("10 Downing St, London SW1A 2AA", { countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom] })?.nation`,
 };
 
 const escape = (text) =>
@@ -116,6 +116,9 @@ const panels = [
               { say: "parse_es", value: "ES", pressed: false },
               { say: "parse_it", value: "IT", pressed: false },
               { say: "parse_nz", value: "NZ", pressed: false },
+              { say: "parse_in", value: "IN", pressed: false },
+              { say: "parse_kr", value: "KR", pressed: false },
+              { say: "parse_br", value: "BR", pressed: false },
             ]),
           )}`,
     exampleHelp: [
@@ -290,6 +293,9 @@ const corpusSection = `<section class="fam-panels job wide" id="corpus" aria-lab
                 { say: "corpus_es", value: "es", pressed: false },
                 { say: "corpus_it", value: "it", pressed: false },
                 { say: "corpus_nz", value: "nz", pressed: false },
+                { say: "corpus_in", value: "in", pressed: false },
+                { say: "corpus_kr", value: "kr", pressed: false },
+                { say: "corpus_br", value: "br", pressed: false },
               ])}<button type="button" class="fam-button" id="corpus-wrong" data-testid="corpus-wrong" aria-pressed="false" data-say="corpus_wrong" data-say-title="corpus_wrong_tip"></button>${field("corpus-search", "corpus_search", "")}`,
             )}
           </div>
@@ -358,6 +364,9 @@ await build({
     es: "src/es/index.ts",
     it: "src/it/index.ts",
     nz: "src/nz/index.ts",
+    in: "src/in/index.ts",
+    kr: "src/kr/index.ts",
+    br: "src/br/index.ts",
   },
   format: ["esm"],
   platform: "browser",
@@ -390,30 +399,43 @@ publishThumbnails(".", "site");
 // The corpus, for the page's corpus browser: every case with what it is checked on, and nothing else (no sources or
 // descriptions), fetched by the page only when asked for.
 // A case of a country module's folder carries the hint its suite reads it with; the page adds the modules.
-const HINTS = { au: "AU", de: "DE", es: "ES", fr: "FR", gb: "GB", it: "IT", nl: "NL", nz: "NZ" };
-const corpus = ["us", "canada", "japan", "au", "fr", "de", "gb", "nl", "es", "it", "nz"].flatMap((country) =>
-  readdirSync(`test-data/corpus/${country}`)
-    .filter((file) => file.endsWith(".json") && file !== "parity.json")
-    .sort()
-    .flatMap((file) => {
-      const data = JSON.parse(readFileSync(`test-data/corpus/${country}/${file}`, "utf8"));
-      return Object.entries(data.tests).flatMap(([group, cases]) =>
-        cases.map((one) => ({
-          country,
-          file: file.replace(/\.json$/, ""),
-          group,
-          name: one.name,
-          input: one.input,
-          expected: one.expected,
-          ...(one.options || HINTS[country]
-            ? { options: { ...(HINTS[country] ? { country: HINTS[country] } : {}), ...one.options } }
-            : {}),
-          ...(one.partial ? { partial: true } : {}),
-          ...(one.ignoreCase ? { ignoreCase: one.ignoreCase } : {}),
-          ...(one.todo ? { todo: true, todoNote: one.todoNote } : {}),
-        })),
-      );
-    }),
+const HINTS = {
+  au: "AU",
+  de: "DE",
+  es: "ES",
+  fr: "FR",
+  gb: "GB",
+  it: "IT",
+  nl: "NL",
+  nz: "NZ",
+  in: "IN",
+  kr: "KR",
+  br: "BR",
+};
+const corpus = ["us", "canada", "japan", "au", "fr", "de", "gb", "nl", "es", "it", "nz", "in", "kr", "br"].flatMap(
+  (country) =>
+    readdirSync(`test-data/corpus/${country}`)
+      .filter((file) => file.endsWith(".json") && file !== "parity.json")
+      .sort()
+      .flatMap((file) => {
+        const data = JSON.parse(readFileSync(`test-data/corpus/${country}/${file}`, "utf8"));
+        return Object.entries(data.tests).flatMap(([group, cases]) =>
+          cases.map((one) => ({
+            country,
+            file: file.replace(/\.json$/, ""),
+            group,
+            name: one.name,
+            input: one.input,
+            expected: one.expected,
+            ...(one.options || HINTS[country]
+              ? { options: { ...(HINTS[country] ? { country: HINTS[country] } : {}), ...one.options } }
+              : {}),
+            ...(one.partial ? { partial: true } : {}),
+            ...(one.ignoreCase ? { ignoreCase: one.ignoreCase } : {}),
+            ...(one.todo ? { todo: true, todoNote: one.todoNote } : {}),
+          })),
+        );
+      }),
 );
 writeFileSync("site/corpus.json", JSON.stringify(corpus));
 // The API reference, made from the source: every export of every entry point, each function with an example.

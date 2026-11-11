@@ -1,9 +1,11 @@
 // The postal panel: what a ZIP code, a postal code or a postcode says of where it delivers.
 import { getStatesForAustralianPostcode } from "./lib/au.js";
+import { BR_STATES, getStateFromBrazilianPostcode } from "./lib/br.js";
 import { DE_STATES, isKnownGermanPostcode, parseGermanPostcode } from "./lib/de.js";
 import { ES_PROVINCES, isKnownSpanishPostcode, parseSpanishPostcode } from "./lib/es.js";
 import { FR_COLLECTIVITIES, FR_DEPARTMENTS, isKnownFrenchPostcode, parseFrenchPostcode } from "./lib/fr.js";
 import { GB_POSTCODE_AREAS, parseUKPostcode } from "./lib/gb.js";
+import { IN_STATES, parseIndianPostcode } from "./lib/in.js";
 import {
   findPrefecture,
   getPostalPrefixesForPrefecture,
@@ -18,6 +20,7 @@ import {
   US_STATE_EXPANSIONS,
 } from "./lib/index.js";
 import { isKnownItalianPostcode, IT_PROVINCES, parseItalianPostcode } from "./lib/it.js";
+import { isKnownKoreanPostcode, KR_PROVINCES, parseKoreanPostcode } from "./lib/kr.js";
 import { parseDutchPostcode } from "./lib/nl.js";
 import { isKnownNewZealandPostcode, NZ_REGIONS, parseNewZealandPostcode } from "./lib/nz.js";
 import { $, countryName, facts, ja, json, nationName, note, quote, say, show, titleCase } from "./shared.js";
@@ -28,6 +31,8 @@ const CANADIAN_POSTAL = /^[A-Za-z]\d[A-Za-z]( ?\d[A-Za-z]\d)?$/;
 const JAPANESE_POSTAL = /^〒?\s*\d{3}-?\d{4}$/;
 const AUSTRALIAN_POSTCODE = /^\d{4}$/;
 const DUTCH_POSTCODE = /^[1-9]\d{3}\s?[A-Za-z]{2}$/;
+const INDIAN_POSTCODE = /^[1-9]\d{2}\s?\d{3}$/;
+const BRAZILIAN_POSTCODE = /^\d{5}-?\d{3}$/;
 
 /** A region of a country's table as the page writes it: its code and its name in the page's language. */
 const regionOf = (table, code) => {
@@ -89,6 +94,22 @@ function postal() {
       rows.push([say("postal_kind"), kinds.nz], [say("postal_region"), regionOf(NZ_REGIONS, zealand.region)]);
     }
     facts(out, rows);
+  } else if (INDIAN_POSTCODE.test(text)) {
+    const indian = parseIndianPostcode(text);
+    called = `parseIndianPostcode(${quote(text)})  // { postcode: ${quote(indian.postcode)}, region: ${quote(indian.region ?? null)}, known: ${indian.known} }`;
+    answer = indian;
+    facts(out, [
+      [say("postal_kind"), kinds.in],
+      [say("postal_region"), indian.known ? regionOf(IN_STATES, indian.region) : say("postal_unknown")],
+    ]);
+  } else if (BRAZILIAN_POSTCODE.test(text)) {
+    const state = getStateFromBrazilianPostcode(text);
+    called = `getStateFromBrazilianPostcode(${quote(text)})  // ${quote(state ?? null)}`;
+    answer = state ?? null;
+    facts(out, [
+      [say("postal_kind"), kinds.br],
+      [say("postal_region"), state ? regionOf(BR_STATES, state) : say("postal_unknown")],
+    ]);
   } else if (DUTCH_POSTCODE.test(text)) {
     const dutch = parseDutchPostcode(text);
     called = `parseDutchPostcode(${quote(text)})  // { postcode: ${quote(dutch.postcode)}, known: ${dutch.known} }`;
@@ -118,7 +139,8 @@ function postal() {
     const german = five && isKnownGermanPostcode(text) ? parseGermanPostcode(text) : null;
     const spanish = five && isKnownSpanishPostcode(text) ? parseSpanishPostcode(text) : null;
     const italian = five && isKnownItalianPostcode(text) ? parseItalianPostcode(text) : null;
-    if (state || (!french && !german && !spanish && !italian)) {
+    const korean = five && isKnownKoreanPostcode(text) ? parseKoreanPostcode(text) : null;
+    if (state || (!french && !german && !spanish && !italian && !korean)) {
       rows.push(
         [say("postal_kind"), kinds.zip],
         [say("postal_region"), state ? `${state} · ${stateName(state)}` : say("postal_unknown")],
@@ -146,6 +168,7 @@ function postal() {
     for (const [found, name, table, kind, label] of [
       [spanish, "parseSpanishPostcode", ES_PROVINCES, kinds.es, "spain"],
       [italian, "parseItalianPostcode", IT_PROVINCES, kinds.it, "italy"],
+      [korean, "parseKoreanPostcode", KR_PROVINCES, kinds.kr, "korea"],
     ]) {
       if (!found) continue;
       called += `\n${name}(${quote(text)})  // { region: ${quote(found.region ?? null)} }`;

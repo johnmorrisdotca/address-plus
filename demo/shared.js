@@ -2,18 +2,21 @@
 // way every panel reads an address.
 import { BRITISH, COUNTRIES, FRENCH } from "./countries.js";
 import { formatAustraliaPost } from "./lib/au.js";
+import { formatBrazilianPost } from "./lib/br.js";
 import { formatDeutschePost } from "./lib/de.js";
 import { formatCorreos } from "./lib/es.js";
 import { formatLaPoste } from "./lib/fr.js";
 import { formatRoyalMail, GB_NATIONS } from "./lib/gb.js";
+import { formatIndiaPost } from "./lib/in.js";
 import { parseLocation } from "./lib/index.js";
 import { formatPosteItaliane } from "./lib/it.js";
+import { formatKoreaPost } from "./lib/kr.js";
 import { formatPostNL } from "./lib/nl.js";
 import { formatNZPost } from "./lib/nz.js";
 import { WORDS } from "./words.js";
 
 const WITH_MODULES =
-  "{ countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] }";
+  "{ countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom] }";
 
 // The page draws itself again when the language changes; demo.js says how, once it has something to draw.
 let redraw = () => {};
@@ -140,6 +143,9 @@ function moduleFormat(address) {
   if (address?.country === "NL") return { format: formatPostNL(address), call: "formatPostNL" };
   if (address?.country === "ES") return { format: formatCorreos(address), call: "formatCorreos" };
   if (address?.country === "IT") return { format: formatPosteItaliane(address), call: "formatPosteItaliane" };
+  if (address?.country === "IN") return { format: formatIndiaPost(address), call: "formatIndiaPost" };
+  if (address?.country === "KR") return { format: formatKoreaPost(address), call: "formatKoreaPost" };
+  if (address?.country === "BR") return { format: formatBrazilianPost(address), call: "formatBrazilianPost" };
   if (address?.country === "NZ") return { format: formatNZPost(address), call: "formatNZPost" };
   if (BRITISH.has(address?.country)) return { format: formatRoyalMail(address), call: "formatRoyalMail" };
   return null;

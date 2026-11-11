@@ -159,6 +159,51 @@ CORE.it = [
   "zip",
   "country",
 ];
+CORE.in = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "number",
+  "street",
+  "place",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+CORE.kr = [
+  "state",
+  "city",
+  "street",
+  "number",
+  "locality",
+  "building",
+  "floorType",
+  "floor",
+  "secUnitType",
+  "secUnitNum",
+  "zip",
+  "country",
+];
+CORE.br = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "street",
+  "number",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
 CORE.nz = [
   "careOf",
   "building",
@@ -231,7 +276,7 @@ function setUpCorpus(kit) {
     const summary = document.querySelector('[data-testid="corpus-summary"]');
     const rows = document.createElement("div");
     rows.className = "corpus-bars";
-    for (const country of ["us", "canada", "japan", "au", "fr", "de", "gb", "nl", "es", "it", "nz"]) {
+    for (const country of ["us", "canada", "japan", "au", "fr", "de", "gb", "nl", "es", "it", "nz", "in", "kr", "br"]) {
       const cases = corpus.filter((one) => one.country === country);
       const passing = cases.filter((one) => one.passes).length;
       const line = document.createElement("div");

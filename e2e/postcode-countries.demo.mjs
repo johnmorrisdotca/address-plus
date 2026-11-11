@@ -101,3 +101,50 @@ test("the four speak Japanese with the page", async ({ page }, testInfo) => {
   await noSidewaysScroll(page);
   expect(errors).toEqual([]);
 });
+
+test("India, South Korea and Brazil: parse, validate, format, compare, postal and the corpora", async ({
+  page,
+}, testInfo) => {
+  const errors = await open(page);
+  await tap(page, chip(page, "parse", "India, a flat and a state"), testInfo);
+  await expect(answer(page, "parse")).toContainText("IN · India");
+  await expect(answer(page, "parse")).toContainText("MG Road");
+  await expect(answer(page, "parse")).toContainText("560038");
+  await tap(page, chip(page, "parse", "South Korea, in Hangul"), testInfo);
+  await expect(answer(page, "parse")).toContainText("KR · South Korea");
+  await expect(answer(page, "parse")).toContainText("세종대로");
+  await tap(page, chip(page, "parse", "South Korea, in Latin letters"), testInfo);
+  await expect(answer(page, "parse")).toContainText("Sejong-daero");
+  await tap(page, chip(page, "parse", "Brazil, a bairro"), testInfo);
+  await expect(answer(page, "parse")).toContainText("BR · Brazil");
+  await expect(answer(page, "parse")).toContainText("Bela Vista");
+
+  await tap(page, chip(page, "validate", "A state that is not the PIN's"), testInfo);
+  await expect(answer(page, "validate")).toContainText("POSTAL_REGION_MISMATCH");
+  await tap(page, chip(page, "validate", "A state that is not the CEP's"), testInfo);
+  await expect(answer(page, "validate")).toContainText("POSTAL_REGION_MISMATCH");
+
+  await tap(page, chip(page, "format", "India"), testInfo);
+  await expect(answer(page, "format")).toContainText("India Post");
+  await tap(page, chip(page, "format", "South Korea"), testInfo);
+  await expect(answer(page, "format")).toContainText("서울특별시 중구 세종대로 110, 3층 (태평로1가)");
+  await tap(page, chip(page, "format", "Brazil"), testInfo);
+  await expect(answer(page, "format")).toContainText("01310-200 São Paulo SP");
+
+  await tap(page, chip(page, "compare", "Av. and Avenida, and a CEP with no hyphen"), testInfo);
+  await expect(answer(page, "compare").locator(".fam-badge")).toHaveText("Yes");
+
+  await tap(page, chip(page, "postal", "560038"), testInfo);
+  await expect(answer(page, "postal")).toContainText("Indian PIN code");
+  await expect(answer(page, "postal")).toContainText("KA · Karnataka");
+  await tap(page, chip(page, "postal", "01310-200"), testInfo);
+  await expect(answer(page, "postal")).toContainText("Brazilian CEP");
+  await expect(answer(page, "postal")).toContainText("SP · São Paulo");
+
+  await tap(page, at("corpus-load"), testInfo);
+  await expect(page.locator(at("corpus-bar-in"))).toContainText("22 of 22 pass");
+  await expect(page.locator(at("corpus-bar-kr"))).toContainText("25 of 25 pass");
+  await expect(page.locator(at("corpus-bar-br"))).toContainText("22 of 22 pass");
+  await noSidewaysScroll(page);
+  expect(errors).toEqual([]);
+});

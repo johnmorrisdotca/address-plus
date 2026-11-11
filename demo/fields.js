@@ -194,14 +194,67 @@ const FIELDS_NZ = [
   "country",
 ];
 
+// India's fields, in the order an Indian address is written: the flat and the building, the house and the street, a landmark, the area,
+// the city, the state and the PIN code.
+const FIELDS_IN = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "number",
+  "street",
+  "place",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+// South Korea's fields, from the province down as a Korean address is written.
+const FIELDS_KR = [
+  "state",
+  "city",
+  "street",
+  "number",
+  "locality",
+  "building",
+  "floorType",
+  "floor",
+  "secUnitType",
+  "secUnitNum",
+  "zip",
+  "country",
+];
+// Brazil's fields: the street and its number, the complement, the bairro, the city, the state and the CEP.
+const FIELDS_BR = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "street",
+  "number",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+
 export {
   FIELDS_AU,
+  FIELDS_BR,
   FIELDS_DE,
   FIELDS_ES,
   FIELDS_FR,
   FIELDS_GB,
+  FIELDS_IN,
   FIELDS_IT,
   FIELDS_JAPAN,
+  FIELDS_KR,
   FIELDS_NL,
   FIELDS_NZ,
   FIELDS_WEST,

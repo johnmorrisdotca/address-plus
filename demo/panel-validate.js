@@ -27,7 +27,7 @@ function validate() {
   const first = result.errors[0] ?? result.warnings[0];
   show(
     "validate-call",
-    `validateAddress(${quote(text)}, { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom]${strict ? ", strictPostalValidation: true" : ""} })  // { isValid: ${result.isValid}${first ? `, ${result.errors.length > 0 ? "errors" : "warnings"}: [${quote(first.code)}${result.errors.length + result.warnings.length > 1 ? ", …" : ""}]` : ""} }`,
+    `validateAddress(${quote(text)}, { countries: [australia, brazil, france, germany, india, italy, netherlands, newZealand, southKorea, spain, unitedKingdom]${strict ? ", strictPostalValidation: true" : ""} })  // { isValid: ${result.isValid}${first ? `, ${result.errors.length > 0 ? "errors" : "warnings"}: [${quote(first.code)}${result.errors.length + result.warnings.length > 1 ? ", …" : ""}]` : ""} }`,
   );
 }
 
