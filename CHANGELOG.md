@@ -4,6 +4,10 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Changed
+
+- The must-have check is kazoku-ui's check-standard 2026-11-11b (`scripts/check-standard.mjs`, copied unchanged, its new hash recorded in `src/standard.test.js`). Its new item, `playwright-image`, holds CI's Playwright image to the version `pnpm-lock.yaml` pins for `@playwright/test`; here both are 1.64.0.
+
 ## 1.10.2 - 2026-11-11
 
 ### Changed
