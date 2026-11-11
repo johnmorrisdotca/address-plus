@@ -1,9 +1,23 @@
 // The parse panel: an address read into its fields.
 import { BRITISH, FRENCH } from "./countries.js";
-import { FIELDS_AU, FIELDS_DE, FIELDS_FR, FIELDS_GB, FIELDS_JAPAN, FIELDS_WEST } from "./fields.js";
+import {
+  FIELDS_AU,
+  FIELDS_DE,
+  FIELDS_ES,
+  FIELDS_FR,
+  FIELDS_GB,
+  FIELDS_IT,
+  FIELDS_JAPAN,
+  FIELDS_NL,
+  FIELDS_NZ,
+  FIELDS_WEST,
+} from "./fields.js";
 import { $, countryName, facts, fine, json, nationName, note, quote, read, say, show } from "./shared.js";
 
 // ----- parse ------------------------------------------------------------------------------------------------
+
+// The countries that come with a postcode table and the rules of their addresses.
+const FIELDS_BY_COUNTRY = { ES: FIELDS_ES, IT: FIELDS_IT, NL: FIELDS_NL, NZ: FIELDS_NZ };
 
 /** The fields of a parsed address as rows of the field table. */
 function fieldRows(address) {
@@ -18,7 +32,7 @@ function fieldRows(address) {
             ? FIELDS_DE
             : BRITISH.has(address.country)
               ? FIELDS_GB
-              : FIELDS_WEST;
+              : (FIELDS_BY_COUNTRY[address.country] ?? FIELDS_WEST);
   const labels = FRENCH.has(address.country)
     ? { ...say("fields"), ...say("fieldsFrance") }
     : address.country === "DE"
@@ -52,7 +66,7 @@ function parse() {
     address?.country === "JP" ? (address.block ?? address.prefecture) : (address?.street ?? address?.street1);
   show(
     "parse-call",
-    `parseLocation(${quote(text)}, { ${country === "auto" ? "" : `country: ${quote(country)}, `}countries: [australia, france, germany, unitedKingdom] })  // ${address === null ? "null" : `{ country: ${quote(address.country)}${lead ? `, … ${quote(lead)}` : ""} }`}`,
+    `parseLocation(${quote(text)}, { ${country === "auto" ? "" : `country: ${quote(country)}, `}countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })  // ${address === null ? "null" : `{ country: ${quote(address.country)}${lead ? `, … ${quote(lead)}` : ""} }`}`,
   );
 }
 

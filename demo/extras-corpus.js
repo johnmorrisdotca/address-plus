@@ -112,6 +112,68 @@ const CORE = {
   ],
 };
 CORE.canada = CORE.us;
+CORE.nl = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "street",
+  "number",
+  "numberExtension",
+  "city",
+  "zip",
+  "country",
+];
+CORE.es = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "staircase",
+  "entrance",
+  "street",
+  "number",
+  "locality",
+  "city",
+  "county",
+  "state",
+  "zip",
+  "country",
+];
+CORE.it = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "staircase",
+  "street",
+  "number",
+  "numberExtension",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+CORE.nz = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "number",
+  "street",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
 
 /** Set up the corpus tool. `kit` is what demo.js shares: words, helpers and the page's state. */
 function setUpCorpus(kit) {
@@ -169,7 +231,7 @@ function setUpCorpus(kit) {
     const summary = document.querySelector('[data-testid="corpus-summary"]');
     const rows = document.createElement("div");
     rows.className = "corpus-bars";
-    for (const country of ["us", "canada", "japan", "au", "fr", "de", "gb"]) {
+    for (const country of ["us", "canada", "japan", "au", "fr", "de", "gb", "nl", "es", "it", "nz"]) {
       const cases = corpus.filter((one) => one.country === country);
       const passing = cases.filter((one) => one.passes).length;
       const line = document.createElement("div");

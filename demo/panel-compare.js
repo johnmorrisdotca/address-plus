@@ -2,9 +2,13 @@
 import { BRITISH, FRENCH } from "./countries.js";
 import { compareAustralianAddresses } from "./lib/au.js";
 import { compareGermanAddresses } from "./lib/de.js";
+import { compareSpanishAddresses } from "./lib/es.js";
 import { compareFrenchAddresses } from "./lib/fr.js";
 import { compareUKAddresses } from "./lib/gb.js";
 import { compareAddresses, isSameAddress } from "./lib/index.js";
+import { compareItalianAddresses } from "./lib/it.js";
+import { compareDutchAddresses } from "./lib/nl.js";
+import { compareNewZealandAddresses } from "./lib/nz.js";
 import { $, badge, facts, json, note, percent, quote, read, say, show, WITH_MODULES } from "./shared.js";
 
 // ----- compare ----------------------------------------------------------------------------------------------
@@ -24,8 +28,8 @@ function compare() {
   }
   // Two Australian, French, German or British addresses are compared by their own module, which knows their forms.
   const both =
-    one.country === "AU" && two.country === "AU"
-      ? "AU"
+    one.country === two.country && ["AU", "ES", "IT", "NL", "NZ"].includes(one.country)
+      ? one.country
       : FRENCH.has(one.country) && FRENCH.has(two.country)
         ? "FR"
         : one.country === "DE" && two.country === "DE"
@@ -39,12 +43,20 @@ function compare() {
       DE: "compareGermanAddresses",
       FR: "compareFrenchAddresses",
       GB: "compareUKAddresses",
+      ES: "compareSpanishAddresses",
+      IT: "compareItalianAddresses",
+      NL: "compareDutchAddresses",
+      NZ: "compareNewZealandAddresses",
     }[both];
     const compareWith = {
       AU: compareAustralianAddresses,
       DE: compareGermanAddresses,
       FR: compareFrenchAddresses,
       GB: compareUKAddresses,
+      ES: compareSpanishAddresses,
+      IT: compareItalianAddresses,
+      NL: compareDutchAddresses,
+      NZ: compareNewZealandAddresses,
     }[both];
     const result = compareWith(one, two);
     const pairs = [[say("compare_same"), badge(result.isSame), "isSame"]];

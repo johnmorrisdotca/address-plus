@@ -127,4 +127,82 @@ const FIELDS_JAPAN = [
   "country",
 ];
 
-export { FIELDS_AU, FIELDS_DE, FIELDS_FR, FIELDS_GB, FIELDS_JAPAN, FIELDS_WEST };
+// The Netherlands' fields, in the order a Dutch address is written: the street, its number and addition, the postcode, the place.
+const FIELDS_NL = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "street",
+  "number",
+  "numberExtension",
+  "city",
+  "zip",
+  "country",
+];
+// Spain's fields: the street and its number, the staircase, the floor and the door, the place, the province and the postcode.
+const FIELDS_ES = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "staircase",
+  "entrance",
+  "street",
+  "number",
+  "locality",
+  "city",
+  "county",
+  "state",
+  "zip",
+  "country",
+];
+// Italy's fields: the street and its civic number, the staircase, the floor and the flat, the place, the province's sigla and the postcode.
+const FIELDS_IT = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "staircase",
+  "street",
+  "number",
+  "numberExtension",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+// New Zealand's fields: the unit and the level, the number and the street, the suburb, the city, the region and the postcode.
+const FIELDS_NZ = [
+  "careOf",
+  "building",
+  "secUnitType",
+  "secUnitNum",
+  "floorType",
+  "floor",
+  "number",
+  "street",
+  "locality",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+
+export {
+  FIELDS_AU,
+  FIELDS_DE,
+  FIELDS_ES,
+  FIELDS_FR,
+  FIELDS_GB,
+  FIELDS_IT,
+  FIELDS_JAPAN,
+  FIELDS_NL,
+  FIELDS_NZ,
+  FIELDS_WEST,
+};

@@ -1,6 +1,7 @@
 // The postal panel: what a ZIP code, a postal code or a postcode says of where it delivers.
 import { getStatesForAustralianPostcode } from "./lib/au.js";
 import { DE_STATES, isKnownGermanPostcode, parseGermanPostcode } from "./lib/de.js";
+import { ES_PROVINCES, isKnownSpanishPostcode, parseSpanishPostcode } from "./lib/es.js";
 import { FR_COLLECTIVITIES, FR_DEPARTMENTS, isKnownFrenchPostcode, parseFrenchPostcode } from "./lib/fr.js";
 import { GB_POSTCODE_AREAS, parseUKPostcode } from "./lib/gb.js";
 import {
@@ -16,6 +17,9 @@ import {
   PROVINCE_EXPANSIONS_EN,
   US_STATE_EXPANSIONS,
 } from "./lib/index.js";
+import { isKnownItalianPostcode, IT_PROVINCES, parseItalianPostcode } from "./lib/it.js";
+import { parseDutchPostcode } from "./lib/nl.js";
+import { isKnownNewZealandPostcode, NZ_REGIONS, parseNewZealandPostcode } from "./lib/nz.js";
 import { $, countryName, facts, ja, json, nationName, note, quote, say, show, titleCase } from "./shared.js";
 
 // The shapes the postal panel reads, after full-width characters are made half-width.
@@ -23,6 +27,13 @@ const US_ZIP = /^\d{5}(-\d{4})?$/;
 const CANADIAN_POSTAL = /^[A-Za-z]\d[A-Za-z]( ?\d[A-Za-z]\d)?$/;
 const JAPANESE_POSTAL = /^〒?\s*\d{3}-?\d{4}$/;
 const AUSTRALIAN_POSTCODE = /^\d{4}$/;
+const DUTCH_POSTCODE = /^[1-9]\d{3}\s?[A-Za-z]{2}$/;
+
+/** A region of a country's table as the page writes it: its code and its name in the page's language. */
+const regionOf = (table, code) => {
+  const region = table.find((one) => one.code === code);
+  return region ? `${region.code} · ${ja() ? region.nameJa : region.name}` : say("postal_unknown");
+};
 
 // ----- postal -----------------------------------------------------------------------------------------------
 
@@ -66,9 +77,25 @@ function postal() {
     const states = getStatesForAustralianPostcode(text);
     called = `getStatesForAustralianPostcode(${quote(text)})  // ${JSON.stringify(states)}`;
     answer = states;
-    facts(out, [
+    const rows = [
       [say("postal_kind"), kinds.au],
       [say("postal_region"), states.length > 0 ? states.join(" · ") : say("postal_unknown")],
+    ];
+    // Four digits that GeoNames' list for New Zealand has are a New Zealand postcode too.
+    if (isKnownNewZealandPostcode(text)) {
+      const zealand = parseNewZealandPostcode(text);
+      called += `\nparseNewZealandPostcode(${quote(text)})  // { region: ${quote(zealand.region ?? null)} }`;
+      answer = { states, newZealand: zealand };
+      rows.push([say("postal_kind"), kinds.nz], [say("postal_region"), regionOf(NZ_REGIONS, zealand.region)]);
+    }
+    facts(out, rows);
+  } else if (DUTCH_POSTCODE.test(text)) {
+    const dutch = parseDutchPostcode(text);
+    called = `parseDutchPostcode(${quote(text)})  // { postcode: ${quote(dutch.postcode)}, known: ${dutch.known} }`;
+    answer = dutch;
+    facts(out, [
+      [say("postal_kind"), kinds.nl],
+      [say("postal_region"), dutch.known ? dutch.postcode : say("postal_unknown")],
     ]);
   } else if (british) {
     called = `parseUKPostcode(${quote(text)})  // { postcode: ${quote(british.postcode)}, country: ${quote(british.country)}${british.nation ? `, nation: ${quote(british.nation)}` : ""} }`;
@@ -89,7 +116,9 @@ function postal() {
     const five = /^\d{5}$/.test(text);
     const french = five && isKnownFrenchPostcode(text) ? parseFrenchPostcode(text) : null;
     const german = five && isKnownGermanPostcode(text) ? parseGermanPostcode(text) : null;
-    if (state || (!french && !german)) {
+    const spanish = five && isKnownSpanishPostcode(text) ? parseSpanishPostcode(text) : null;
+    const italian = five && isKnownItalianPostcode(text) ? parseItalianPostcode(text) : null;
+    if (state || (!french && !german && !spanish && !italian)) {
       rows.push(
         [say("postal_kind"), kinds.zip],
         [say("postal_region"), state ? `${state} · ${stateName(state)}` : say("postal_unknown")],
@@ -113,6 +142,18 @@ function postal() {
         [say("postal_kind"), kinds.de],
         [say("postal_land"), land ? `${land.code} · ${ja() ? land.nameJa : land.name}` : say("postal_unknown")],
       );
+    }
+    for (const [found, name, table, kind, label] of [
+      [spanish, "parseSpanishPostcode", ES_PROVINCES, kinds.es, "spain"],
+      [italian, "parseItalianPostcode", IT_PROVINCES, kinds.it, "italy"],
+    ]) {
+      if (!found) continue;
+      called += `\n${name}(${quote(text)})  // { region: ${quote(found.region ?? null)} }`;
+      answer =
+        answer !== null && typeof answer === "object"
+          ? { ...answer, [label]: found }
+          : { ...(state ? { state } : {}), [label]: found };
+      rows.push([say("postal_kind"), kind], [say("postal_region"), regionOf(table, found.region)]);
     }
     facts(out, rows);
   } else if (CANADIAN_POSTAL.test(text)) {

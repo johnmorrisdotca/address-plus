@@ -5,6 +5,7 @@ import { cell } from "./dom.js";
 import { toMarkdown, toSql } from "./downloads.js";
 import { formatAustraliaPost } from "./lib/au.js";
 import { formatDeutschePost } from "./lib/de.js";
+import { formatCorreos } from "./lib/es.js";
 import { formatLaPoste } from "./lib/fr.js";
 import { formatRoyalMail } from "./lib/gb.js";
 import {
@@ -15,6 +16,9 @@ import {
   validateAddress,
   validateJapaneseAddress,
 } from "./lib/index.js";
+import { formatPosteItaliane } from "./lib/it.js";
+import { formatPostNL } from "./lib/nl.js";
+import { formatNZPost } from "./lib/nz.js";
 
 // The most lines the list reads at once, so a paste of a whole file cannot stall the page.
 const BULK_LIMIT = 500;
@@ -62,6 +66,10 @@ function setUpBulk(kit) {
     let formatted;
     if (parsed.country === "AU") formatted = formatAustraliaPost(parsed).lines.join(", ");
     else if (parsed.country === "DE") formatted = formatDeutschePost(parsed).lines.join(", ");
+    else if (parsed.country === "NL") formatted = formatPostNL(parsed).lines.join(", ");
+    else if (parsed.country === "ES") formatted = formatCorreos(parsed).lines.join(", ");
+    else if (parsed.country === "IT") formatted = formatPosteItaliane(parsed).lines.join(", ");
+    else if (parsed.country === "NZ") formatted = formatNZPost(parsed).lines.join(", ");
     else if (FRENCH.has(parsed.country)) formatted = formatLaPoste(parsed).lines.join(", ");
     else if (BRITISH.has(parsed.country)) formatted = formatRoyalMail(parsed).lines.join(", ");
     else if (parsed.country === "JP") formatted = formatJapanese(parsed, { multiline: false });
@@ -127,7 +135,7 @@ function setUpBulk(kit) {
     }
     // The summary: how many were read, by country, and how many hold together, with a bar for the shares.
     // A line read without a country (a street alone) is read, but counted apart from those a country was found for.
-    const counts = { US: 0, CA: 0, JP: 0, AU: 0, FR: 0, DE: 0, GB: 0, other: 0, none: 0 };
+    const counts = { US: 0, CA: 0, JP: 0, AU: 0, FR: 0, DE: 0, GB: 0, NL: 0, ES: 0, IT: 0, NZ: 0, other: 0, none: 0 };
     let clean = 0;
     for (const row of bulkRows) {
       const country = row.parsed?.country;
@@ -191,7 +199,7 @@ function setUpBulk(kit) {
     table.replaceChildren(head, body);
     show(
       "bulk-call",
-      `lines.map((line) => parseLocation(line, { countries: [australia, france, germany, unitedKingdom] })?.country ?? null)\n  // ${JSON.stringify(bulkRows.map((row) => row.parsed?.country ?? null))}`,
+      `lines.map((line) => parseLocation(line, { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.country ?? null)\n  // ${JSON.stringify(bulkRows.map((row) => row.parsed?.country ?? null))}`,
     );
     setDownloads(true);
   }

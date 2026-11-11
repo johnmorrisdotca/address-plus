@@ -34,10 +34,10 @@ const USES = {
   useDeImport: `import { germany } from "@johnmorrisdotca/address-plus/de";`,
   useFrImport: `import { france } from "@johnmorrisdotca/address-plus/fr";`,
   useGbImport: `import { unitedKingdom } from "@johnmorrisdotca/address-plus/gb";`,
-  useAu: `parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia, france, germany, unitedKingdom] })?.secUnitNum`,
-  useFr: `parseLocation("12 bis rue de la Paix, 75002 Paris", { countries: [australia, france, germany, unitedKingdom] })?.numberExtension`,
-  useDe: `parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [australia, france, germany, unitedKingdom] })?.number`,
-  useGb: `parseLocation("10 Downing St, London SW1A 2AA", { countries: [australia, france, germany, unitedKingdom] })?.nation`,
+  useAu: `parseLocation("3/12 Smith St, Parramatta NSW 2150", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.secUnitNum`,
+  useFr: `parseLocation("12 bis rue de la Paix, 75002 Paris", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.numberExtension`,
+  useDe: `parseLocation("Hauptstraße 12a, 10115 Berlin", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.number`,
+  useGb: `parseLocation("10 Downing St, London SW1A 2AA", { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] })?.nation`,
 };
 
 const escape = (text) =>
@@ -112,6 +112,10 @@ const panels = [
               { say: "parse_fr", value: "FR", pressed: false },
               { say: "parse_de", value: "DE", pressed: false },
               { say: "parse_gb", value: "GB", pressed: false },
+              { say: "parse_nl", value: "NL", pressed: false },
+              { say: "parse_es", value: "ES", pressed: false },
+              { say: "parse_it", value: "IT", pressed: false },
+              { say: "parse_nz", value: "NZ", pressed: false },
             ]),
           )}`,
     exampleHelp: [
@@ -282,6 +286,10 @@ const corpusSection = `<section class="fam-panels job wide" id="corpus" aria-lab
                 { say: "corpus_fr", value: "fr", pressed: false },
                 { say: "corpus_de", value: "de", pressed: false },
                 { say: "corpus_gb", value: "gb", pressed: false },
+                { say: "corpus_nl", value: "nl", pressed: false },
+                { say: "corpus_es", value: "es", pressed: false },
+                { say: "corpus_it", value: "it", pressed: false },
+                { say: "corpus_nz", value: "nz", pressed: false },
               ])}<button type="button" class="fam-button" id="corpus-wrong" data-testid="corpus-wrong" aria-pressed="false" data-say="corpus_wrong" data-say-title="corpus_wrong_tip"></button>${field("corpus-search", "corpus_search", "")}`,
             )}
           </div>
@@ -346,6 +354,10 @@ await build({
     de: "src/de/index.ts",
     fr: "src/fr/index.ts",
     gb: "src/gb/index.ts",
+    nl: "src/nl/index.ts",
+    es: "src/es/index.ts",
+    it: "src/it/index.ts",
+    nz: "src/nz/index.ts",
   },
   format: ["esm"],
   platform: "browser",
@@ -378,8 +390,8 @@ publishThumbnails(".", "site");
 // The corpus, for the page's corpus browser: every case with what it is checked on, and nothing else (no sources or
 // descriptions), fetched by the page only when asked for.
 // A case of a country module's folder carries the hint its suite reads it with; the page adds the modules.
-const HINTS = { au: "AU", de: "DE", fr: "FR", gb: "GB" };
-const corpus = ["us", "canada", "japan", "au", "fr", "de", "gb"].flatMap((country) =>
+const HINTS = { au: "AU", de: "DE", es: "ES", fr: "FR", gb: "GB", it: "IT", nl: "NL", nz: "NZ" };
+const corpus = ["us", "canada", "japan", "au", "fr", "de", "gb", "nl", "es", "it", "nz"].flatMap((country) =>
   readdirSync(`test-data/corpus/${country}`)
     .filter((file) => file.endsWith(".json") && file !== "parity.json")
     .sort()
