@@ -44,7 +44,7 @@ test("validate, format, compare and postal read the four", async ({ page }, test
   const errors = await open(page);
   await tap(page, chip(page, "validate", "A Dutch postcode CBS does not list"), testInfo);
   await expect(answer(page, "validate")).toContainText("UNRECOGNIZED_POSTAL_CODE");
-  await tap(page, chip(page, "validate", "A province that is not the postcode's"), testInfo);
+  await tap(page, chip(page, "validate", "An Italian province that is not the postcode's"), testInfo);
   await expect(answer(page, "validate")).toContainText("POSTAL_REGION_MISMATCH");
 
   await tap(page, chip(page, "format", "Netherlands"), testInfo);
@@ -131,7 +131,7 @@ test("India, South Korea and Brazil: parse, validate, format, compare, postal an
   await tap(page, chip(page, "format", "Brazil"), testInfo);
   await expect(answer(page, "format")).toContainText("01310-200 São Paulo SP");
 
-  await tap(page, chip(page, "compare", "Av. and Avenida, and a CEP with no hyphen"), testInfo);
+  await tap(page, chip(page, "compare", "Av. and Avenida"), testInfo);
   await expect(answer(page, "compare").locator(".fam-badge")).toHaveText("Yes");
 
   await tap(page, chip(page, "postal", "560038"), testInfo);

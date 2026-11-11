@@ -42,10 +42,10 @@ const WORDS_EN_CHIPS = {
     jersey: "Jersey",
     netherlands: "A Dutch postcode CBS does not list",
     spain: "A Spanish postcode GeoNames does not list",
-    italy: "A province that is not the postcode's",
+    italy: "An Italian province that is not the postcode's",
     newzealand: "A New Zealand postcode GeoNames does not list",
     india: "A state that is not the PIN's",
-    korea: "A province that is not the postcode's",
+    korea: "A Korean province that is not the postcode's",
     brazil: "A state that is not the CEP's",
   },
   format: {
@@ -81,7 +81,7 @@ const WORDS_EN_CHIPS = {
     newzealand: "Road and Rd",
     india: "Road and Rd, and a space in the PIN",
     korea: "A road with and without its hyphen",
-    brazil: "Av. and Avenida, and a CEP with no hyphen",
+    brazil: "Av. and Avenida",
     different: "Different",
   },
   clean: {

@@ -81,7 +81,7 @@ const WORDS_JA_CHIPS = {
     newzealand: "「Road」と「Rd」",
     india: "「Road」と「Rd」、PINコードの空白の有無",
     korea: "道路名のハイフンの有無",
-    brazil: "「Av.」と「Avenida」、ハイフンのないCEP",
+    brazil: "「Av.」と「Avenida」",
     different: "別の住所",
   },
   clean: {
