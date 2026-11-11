@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { STANDARD_VERSION, standardProblems } from "../scripts/check-standard.mjs";
 
-const RECORDED = { version: "2026-11-11", sha256: "2a622312731ddab4f6a926ddcaa255459417416e94f46df32eabca71e3e05a94" };
+const RECORDED = { version: "2026-11-11b", sha256: "ecf0627e155de2b2c148e89d0722cac3b55f7d4a76e1fbfe1b52a008e50896bb" };
 
 describe("the family's must-have list", () => {
   it("is kazoku-ui's check, byte for byte", () => {
