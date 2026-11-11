@@ -10,7 +10,7 @@ import { serve } from "./demo.mjs";
 
 /** Each page, and what says it has finished drawing its map. */
 const PAGES = [
-  { path: "index.html", ready: "kazoku-page-header" },
+  { path: "index.html", ready: 'main[data-ready="true"]' },
   { path: "builder.html", ready: "#bld-stage address-field input" },
 ];
 const EMBEDS = ["embed/"];
@@ -38,14 +38,19 @@ for (const lang of ["en", "ja"]) {
       const credits = page.locator("kazoku-page-credits");
       await expect(credits).toBeVisible();
       for (const source of [
-        "GeoNames",
-        "Contains OS data © Crown copyright and database right 2026",
-        "La Poste",
-        "INSEE",
+        "Contains OS data © Crown copyright and database right 2026.",
+        "Contains Royal Mail data © Royal Mail copyright and database right 2026.",
+        "Contains National Statistics data © Crown copyright and database right 2026.",
+        "La Poste, Base officielle des codes postaux, last updated on 2026-10-08",
+        "INSEE, Code officiel géographique 2026",
+        "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+        "Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)",
+        "Licence Ouverte 2.0 (https://www.etalab.gouv.fr/licence-ouverte-open-licence/)",
+        "Changed: only the four-digit postcode numbers are kept",
       ])
         await expect(credits).toContainText(source);
       await expect(credits.getByRole("link")).toHaveAttribute("href", NOTICE);
-      // once the map has drawn, nothing runs off the side of the page
+      // once the page has drawn, nothing runs off the side of it
       await expect
         .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
         .toBe(true);
@@ -60,7 +65,17 @@ for (const path of EMBEDS) {
     const credits = page.locator("kazoku-page-credits");
     await expect(credits).toBeVisible();
     await expect(credits).toHaveAttribute("embed", "");
-    await expect(credits).toContainText("GeoNames");
+    for (const source of [
+      "GeoNames",
+      "Australian Bureau of Statistics",
+      "CC BY 4.0",
+      "Ordnance Survey",
+      "Open Government Licence v3.0",
+      "La Poste",
+      "INSEE",
+      "Licence Ouverte 2.0",
+    ])
+      await expect(credits).toContainText(source);
     await expect(credits.getByRole("link")).toHaveAttribute("href", NOTICE);
     await expect(credits.getByRole("link")).toHaveAttribute("target", "_blank");
   });

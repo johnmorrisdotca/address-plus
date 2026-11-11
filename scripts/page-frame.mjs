@@ -1,8 +1,7 @@
 // The words of the family's page frame on address-plus's demo pages (kazoku-ui's page-frame), in one place: what each
 // page is, in English and Japanese, and the data's credit line with the link to NOTICE.md. scripts/site.mjs writes them
 // into the pages; the tests read the same table. The credit line carries what each licence asks for where the data is
-// used: the CC BY sources by name, Ordnance Survey's own statement word for word as NOTICE.md quotes it (read at build,
-// so the two cannot disagree), and the producers of the French data (Licence Ouverte 2.0).
+// used, word for word as NOTICE.md's "The credit lines" gives it (read at build, so the two cannot disagree).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -42,32 +41,36 @@ export const FRAME_TEXTS = {
   },
 };
 
-/** Ordnance Survey's attribution statement for Code-Point Open, word for word as NOTICE.md quotes it. */
-const OS_STATEMENT = (() => {
+/**
+ * The credit lines NOTICE.md gives under "The credit lines", word for word, one for each source: what each licence asks
+ * for (the CC BY sources with the licence's address and the change; Ordnance Survey's statement with the Open Government
+ * Licence's address; La Poste and INSEE with the day of their data and the Licence Ouverte's address).
+ */
+export const CREDIT_LINES = (() => {
   const notice = readFileSync(new URL("../NOTICE.md", import.meta.url), "utf8");
-  const quote = [...notice.matchAll(/((?:^[ \t]*> .*\n)+)/gm)]
-    .map((match) =>
-      match[1]
-        .trim()
-        .split("\n")
-        .map((line) => line.trim().replace(/^> /, ""))
-        .join(" "),
-    )
-    .find((text) => text.startsWith("Contains OS data"));
-  if (quote === undefined) throw new Error("NOTICE.md quotes no Ordnance Survey statement");
-  return quote;
+  const start = notice.indexOf("## The credit lines");
+  const section = notice.slice(start, notice.indexOf("\n## ", start + 1));
+  const lines = [...section.matchAll(/((?:^[ \t]*> .*\n)+)/gm)].map((match) =>
+    match[1]
+      .trim()
+      .split("\n")
+      .map((line) => line.trim().replace(/^> /, ""))
+      .join(" "),
+  );
+  if (start < 0 || lines.length < 6) throw new Error('NOTICE.md\'s "The credit lines" has fewer than the six sources');
+  return lines;
 })();
 
-/** The data's credit line on every page, with what each licence asks for. */
+/** The data's credit line on every page: each source's credit, word for word, and the region names. */
 export const FRAME_CREDITS = {
-  en: `Postcode data: GeoNames, CBS (Statistics Netherlands) and the Australian Bureau of Statistics (CC BY 4.0); Ordnance Survey and Royal Mail (Open Government Licence v3.0): ${OS_STATEMENT} La Poste and INSEE (Licence Ouverte 2.0). Region names from kuni.`,
-  ja: `郵便番号のデータは、GeoNames、CBS（オランダ統計局）、オーストラリア統計局（ABS）のもの（CC BY 4.0）、Ordnance SurveyとRoyal Mailのもの（Open Government Licence v3.0。原文のまま：${OS_STATEMENT}）、La PosteとINSEEのもの（Licence Ouverte 2.0）です。地域名はkuniのものです。`,
+  en: `Postcode data: ${CREDIT_LINES.join(" ")} Region names from kuni.`,
+  ja: `郵便番号のデータの出典（原文のまま）：${CREDIT_LINES.join(" ")} 地域名はkuniのものです。`,
 };
 
-/** The small credit line in the corner of the embed page, linking the full credit. */
+/** The small credit line in the corner of the embed page: each source by name with its licence, and the link to the rest. */
 export const EMBED_CREDITS = {
-  en: "Postcode data: GeoNames, CBS, ABS, OS, Royal Mail, La Poste and INSEE",
-  ja: "郵便番号のデータ：GeoNames、CBS、ABS、OS、Royal Mail、La Poste、INSEE",
+  en: "Postcode data: GeoNames, CBS and the Australian Bureau of Statistics (CC BY 4.0); Ordnance Survey and Royal Mail (Open Government Licence v3.0); La Poste and INSEE (Licence Ouverte 2.0)",
+  ja: "郵便番号のデータ：GeoNames、CBS、オーストラリア統計局（CC BY 4.0）、Ordnance SurveyとRoyal Mail（Open Government Licence v3.0）、La PosteとINSEE（Licence Ouverte 2.0）",
 };
 
 /** A page's <!--frame:header--> and <!--frame:credits--> filled with its frame: what it is, a way home, and the credits. */

@@ -5,6 +5,33 @@ as the licences ask: GeoNames and CBS (CC BY 4.0), the Australian Bureau of Stat
 (Open Government Licence v3.0), and La Poste and INSEE (Licence Ouverte 2.0). The generated files under `src/constants/` carry the same credits in their headers, and
 [docs/COUNTRIES.md](docs/COUNTRIES.md) has the full list of sources, the licence of each, and what is not used and why.
 
+## The credit lines
+
+Each source's credit as a line, the form the demo pages show word for word (they read it from here) and the form to copy
+when you take the data from this package. The sections below give each in full.
+
+> GeoNames, postal code data, https://www.geonames.org/, licensed under CC BY 4.0
+> (https://creativecommons.org/licenses/by/4.0/). Changed: only the postcodes and one province or region for each are
+> kept, sorted and packed.
+
+> CBS (Statistics Netherlands), Postcode4 statistics 2023, https://service.pdok.nl/cbs/postcode4/2023/wfs/v1_0, licensed
+> under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changed: only the four-digit postcode numbers are kept,
+> sorted and packed.
+
+> Source: Australian Bureau of Statistics, ASGS Edition 3, Postal Areas, CC BY 4.0
+> (https://creativecommons.org/licenses/by/4.0/). Changed: only the postcodes that cross a state border, and the external
+> territories', are kept.
+
+> Contains OS data © Crown copyright and database right 2026. Contains Royal Mail data © Royal Mail copyright and
+> database right 2026. Contains National Statistics data © Crown copyright and database right 2026. Licensed under the
+> Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+
+> La Poste, Base officielle des codes postaux, last updated on 2026-10-08, under the Licence Ouverte 2.0
+> (https://www.etalab.gouv.fr/licence-ouverte-open-licence/).
+
+> INSEE, Code officiel géographique 2026 (the state on 2026-01-01), under the Licence Ouverte 2.0
+> (https://www.etalab.gouv.fr/licence-ouverte-open-licence/).
+
 ## Postcodes of the Netherlands, Spain, Italy, New Zealand, India, South Korea and Brazil
 
 The licence text was read on 2026-11-11: Creative Commons Attribution 4.0 International
