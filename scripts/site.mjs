@@ -394,6 +394,15 @@ await esbuild({
   minify: true,
   logLevel: "silent",
 });
+// kazoku-ui's embed panel, for the builder's code section only.
+await esbuild({
+  stdin: { contents: 'import "@johnmorrisdotca/kazoku-ui/embed-panel/define";\n', resolveDir: process.cwd() },
+  outfile: "site/kazoku-embed-panel.js",
+  bundle: true,
+  format: "esm",
+  minify: true,
+  logLevel: "silent",
+});
 // The family's card, dark card and icon, at <site>/thumbnail.png, thumbnail-dark.png and icon.png.
 publishThumbnails(".", "site");
 // The corpus, for the page's corpus browser: every case with what it is checked on, and nothing else (no sources or

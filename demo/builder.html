@@ -15,17 +15,6 @@
             <div class="family-bld-stage" id="bld-stage" data-testid="bld-stage"></div>
             <p class="fam-hint" id="bld-note" data-testid="bld-note" aria-live="polite"></p>
           </section>
-          <div class="fam-actions">
-            <button class="fam-button" id="bld-link" type="button" data-say="copyLink" data-testid="bld-link"></button>
-            <button
-              class="fam-button"
-              id="bld-reset"
-              type="button"
-              data-say="startAgain"
-              data-testid="bld-reset"
-            ></button>
-          </div>
-          <p class="fam-fine" id="bld-copied" data-testid="bld-copied" aria-live="polite"></p>
         </div>
 
         <div class="family-bld-controls">
@@ -42,21 +31,11 @@
       <section class="more family-bld-code" aria-labelledby="bld-code-title">
         <h2 id="bld-code-title" data-say="codeTitle"></h2>
         <p data-say="codeText"></p>
-        <div class="fam-tabs" role="tablist" id="bld-formats" data-testid="bld-formats"></div>
-        <div id="bld-panel" role="tabpanel" data-testid="bld-panel">
-          <pre><code id="bld-code" data-testid="bld-code"></code></pre>
-          <div class="fam-actions">
-            <button
-              class="fam-button"
-              data-primary="true"
-              id="bld-copy"
-              type="button"
-              data-say="copy"
-              data-testid="bld-copy"
-            ></button>
-          </div>
-          <p class="fam-fine" id="bld-code-copied" data-testid="bld-code-copied" aria-live="polite"></p>
-        </div>
+        <kazoku-embed-panel id="bld-embed" data-testid="bld-embed">
+          <button class="fam-button" slot="actions" id="bld-link" type="button" data-say="copyLink" data-testid="bld-link"></button>
+          <button class="fam-button" slot="actions" id="bld-reset" type="button" data-say="startAgain" data-testid="bld-reset"></button>
+        </kazoku-embed-panel>
+        <p class="fam-fine" id="bld-copied" data-testid="bld-copied" aria-live="polite"></p>
       </section>
       <!-- family:unreviewed -->
       <!-- family:footer -->

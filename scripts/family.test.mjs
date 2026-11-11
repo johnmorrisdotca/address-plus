@@ -6,8 +6,8 @@ import { FAMILY, FAMILY_GROUPS, FAMILY_TEMPLATE_VERSION, familyFooter } from "./
 const sha = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 describe("the shared family list", () => {
   it("pins the shared template and README writer", () => {
-    expect(FAMILY_TEMPLATE_VERSION).toBe("2026-11-09");
-    expect(sha("scripts/family-template.mjs")).toBe("75ca7e7da99092f360e5a539e34b109b14c92e9c04e7ad98f9e4b1e715c9240e");
+    expect(FAMILY_TEMPLATE_VERSION).toBe("2026-11-11");
+    expect(sha("scripts/family-template.mjs")).toBe("3683ae7db0afb26ce3bfe2a48eec421d999c06eadef8f4148c0de96292094edc");
     expect(sha("scripts/family-readme.mjs")).toBe("dfd4c27b70fe5d7d5f82724180cc739812f0dd13d209c41c053dbdc61bf90188");
   });
   it("lists every member once, grouped and alphabetical", () => {

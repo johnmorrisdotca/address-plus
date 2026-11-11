@@ -4,6 +4,10 @@ All notable changes to this project are written here, in the style of [Keep a Ch
 
 ## Unreleased
 
+### Changed
+
+- **The builder's code is in the family's embed panel** (kazoku-ui 0.38, family template 2026-11-11). The nine tabs, Copy, "Copy a link to this field" and "Start again" are all kept, and the panel adds a link that opens the embed page with the choices, the form-field guide in the page's language, and the credit for the postcode data (GeoNames and CBS, CC BY 4.0) and the region names (kuni). The tab chosen stays in the address.
+
 ## 1.10.0 - 2026-11-11
 
 ### Added

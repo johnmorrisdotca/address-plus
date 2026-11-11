@@ -46,7 +46,7 @@
 const OWNER = "johnmorrisdotca";
 
 /** The day this file was last changed, in every repository at once. A test records the file's hash beside it. */
-export const FAMILY_TEMPLATE_VERSION = "2026-11-09";
+export const FAMILY_TEMPLATE_VERSION = "2026-11-11";
 
 /** The packages, in the order the footer lists them. `kana` is the name as it is written in Japanese. */
 export const FAMILY = [
@@ -440,6 +440,15 @@ function familyLanguage(options) {
  * The shared embed builder. A package supplies its option list, groups, makers,
  * version and words; rendering a live preview remains the package's job.
  * This function is self-contained so a site can emit it as a browser module.
+ *
+ * The code section. A builder page that holds the family's embed panel, <kazoku-embed-panel id="bld-embed">
+ * (kazoku-ui's embed-panel, defined by the page), gets it filled: one tab for each of the maker's formats with
+ * the builder's own names, the code of the choices that differ from the defaults, Copy, "Open the embed page"
+ * (the maker's embed page with the choices), the note that only differing choices are in the code, and from
+ * the config `docsHref` and `credits` (a text, or a function of { maker, settings, lang }). The panel shows no
+ * picture and no size of its own: the builder's preview and its choices (a size among them) are the package's. The builder's
+ * "Copy a link to this setup" and "Start again" go in the panel's actions slot. A page without the panel keeps
+ * its own code section (#bld-formats, #bld-panel, #bld-code, #bld-copy), so a package moves when it is ready.
  */
 export const FAMILY_EMBED_BUILDER_WORDS = {
   "en": {
@@ -678,6 +687,8 @@ export function familyEmbedBuilder(config) {
     let preview = null;
     let previewKey = "";
     let typing = 0;
+    /** Typed text is waiting for its next key: the code shown is not yet up to date. */
+    let pending = false;
 
     const page = language({ id: config.id, words: WORDS, onChange: () => draw() });
     const say = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), WORDS[page.lang]?.[key] ?? page.word(key) ?? key);
@@ -702,9 +713,56 @@ export function familyEmbedBuilder(config) {
       preview = renderPreview({ stage, maker, settings, call: state.call, attrs: state.attrs, note, say });
     }
 
+    /** The family's embed panel, when the page has one (`<kazoku-embed-panel id="bld-embed">`): it draws the tabs, the code, Copy, the embed page, the docs and the credit. Without it the page's own code section is used. */
+    const panel = $("bld-embed");
+    let panelKinds = "";
+    let panelLang = "";
+
+    function drawPanel() {
+      const formats = spec().formats;
+      // the tabs, their names and the language are set only when they change, so a choice re-renders the panel once
+      if (panelKinds !== formats.join(" ")) {
+        panelKinds = formats.join(" ");
+        panel.kinds = formats;
+        panelLang = "";
+      }
+      if (panelLang !== page.lang) {
+        panelLang = page.lang;
+        panel.labels = Object.fromEntries(formats.map((name) => [name, formatList[name].label[page.lang]]));
+        panel.setAttribute("lang", page.lang);
+      }
+      if (panel.kind !== format) panel.kind = format;
+      // links as attributes and update only once the tag is defined: the page may define the panel after the builder mounts, and the panel reads all of it when it comes up
+      panel.setAttribute("open-href", api.embedAddress(optionList, settings, maker) ?? "");
+      panel.update?.();
+    }
+
+    /** The reader chose a tab in the panel: the builder's format and the address follow. */
+    const panelKind = (event) => {
+      if (event.detail.reason !== "kind" || event.detail.kind === format) return;
+      format = event.detail.kind;
+      keepAddress();
+    };
+    /** A press inside the panel (Copy above all) while typed text still waits for its next key: the code is brought up to date first. */
+    const panelPress = () => {
+      if (pending) changed();
+    };
+    if (panel) {
+      // the builder's preview and its own choices (a size among them) are the package's, so the panel shows neither
+      panel.toggleAttribute("no-preview", true);
+      panel.toggleAttribute("no-size", true);
+      if (config.docsHref) panel.setAttribute("docs-href", config.docsHref);
+      panel.generate = ({ kind }) => codeFor(maker, kind, optionList, settings) ?? "";
+      panel.note = () => say("onlyDifferent");
+      if (config.credits !== undefined) panel.credits = typeof config.credits === "function" ? () => config.credits({ maker, settings, lang: page.lang }) : config.credits;
+      panel.addEventListener("kazoku-embedchange", panelKind);
+      panel.addEventListener("click", panelPress, true);
+    }
+
     function drawCode() {
       const formats = spec().formats;
       if (!formats.includes(format)) format = formats[0];
+      if (panel) return drawPanel();
       const tabs = $("bld-formats");
       tabs.replaceChildren(
         ...formats.map((name) => {
@@ -741,6 +799,7 @@ export function familyEmbedBuilder(config) {
     }
 
     function refreshCode() {
+      if (panel) return drawPanel();
       $("bld-panel").setAttribute("aria-labelledby", `bld-tab-${format}`);
       $("bld-code").textContent = codeFor(maker, format, optionList, settings) ?? "";
       $("bld-copy").disabled = $("bld-code").textContent === "";
@@ -755,11 +814,13 @@ export function familyEmbedBuilder(config) {
     /** Something was chosen: the preview, the code and the address follow. Text being typed waits a moment for the next key. */
     function changed(slowly = false) {
       const now = () => {
+        pending = false;
         drawPreview();
         drawCode();
         keepAddress();
       };
       globalThis.clearTimeout(typing);
+      pending = slowly;
       if (slowly) typing = globalThis.setTimeout(now, 200);
       else now();
     }
@@ -1007,14 +1068,24 @@ export function familyEmbedBuilder(config) {
         into.textContent = "";
       }
     };
-    $("bld-copy").addEventListener("click", () => { changed(); if ($("bld-code").textContent !== "") void copy($("bld-code").textContent, $("bld-code-copied"), "copied"); });
+    $("bld-copy")?.addEventListener("click", () => { changed(); if ($("bld-code").textContent !== "") void copy($("bld-code").textContent, $("bld-code-copied"), "copied"); });
     $("bld-link").addEventListener("click", () => { keepAddress(); void copy(globalThis.location.href, $("bld-copied"), "linkCopied"); });
 
     draw();
     globalThis.document.documentElement.dataset.ready = "true";
 
     return { get maker() { return maker; }, get settings() { return { ...settings }; },
-      draw, refreshCode, destroy() { globalThis.clearTimeout(typing); preview?.destroy?.(); },
+      draw, refreshCode, destroy() {
+        globalThis.clearTimeout(typing);
+        preview?.destroy?.();
+        if (panel) {
+          panel.removeEventListener("kazoku-embedchange", panelKind);
+          panel.removeEventListener("click", panelPress, true);
+          panel.generate = undefined;
+          panel.note = "";
+          panel.credits = "";
+        }
+      },
     };
 
   }

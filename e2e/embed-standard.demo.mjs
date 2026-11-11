@@ -157,9 +157,9 @@ test("builder covers all native choices and formats without putting entered addr
   await page.locator('#bld-makers [data-maker="field"]').click();
   await page.locator("#bld-stage address-field input").fill(fixtures.countries[0].address);
   for (const format of ["element", "iframe", "module", "react", "vue", "svelte", "angular", "html", "url"]) {
-    await page.locator(`#bld-formats [data-format="${format}"]`).click();
-    await expect(page.locator("#bld-code")).not.toHaveText("");
-    expect(await page.locator("#bld-code").textContent()).not.toContain(fixtures.countries[0].address);
+    await page.locator(`[data-testid="bld-embed"] button[data-kind="${format}"]`).click();
+    await expect(page.locator('[data-testid="bld-embed"] [part="code"]')).not.toHaveText("");
+    expect(await page.locator('[data-testid="bld-embed"] [part="code"]').textContent()).not.toContain(fixtures.countries[0].address);
   }
   expect(page.url()).not.toContain(encodeURIComponent(fixtures.countries[0].address));
   expect(errors).toEqual([]);
@@ -169,8 +169,8 @@ test("copied iframe forwards only counts, ignores value and stores nothing", asy
   await serve(page);
   await page.goto("http://address-plus.test/builder.html?lang=en");
   await expect(page.locator("#bld-stage address-field input")).toBeVisible();
-  await page.locator('#bld-formats [data-format="iframe"]').click();
-  const code = (await page.locator("#bld-code").textContent())
+  await page.locator('[data-testid="bld-embed"] button[data-kind="iframe"]').click();
+  const code = (await page.locator('[data-testid="bld-embed"] [part="code"]').textContent())
     .replaceAll("https://johnmorrisdotca.github.io/address-plus/", "http://address-plus.test/")
     .replace('loading="lazy"', "");
   await page.route("http://article.test/", (route) =>
