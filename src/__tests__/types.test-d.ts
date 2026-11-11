@@ -33,6 +33,10 @@ expectType<
   | "PF"
   | "PM"
   | "WF"
+  | "NL"
+  | "ES"
+  | "IT"
+  | "NZ"
   | undefined
 >(address.country);
 
@@ -66,6 +70,10 @@ expectType<
   | "GF"
   | "RE"
   | "YT"
+  | "NL"
+  | "ES"
+  | "IT"
+  | "NZ"
   | "auto"
   | undefined
 >(options.country);

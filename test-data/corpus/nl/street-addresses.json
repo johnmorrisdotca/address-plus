@@ -1,0 +1,293 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "Dutch Street Addresses",
+  "description": "The street and its house number with the addition (a letter, a floor, a roman numeral, a word), the postcode with and without its space, in lower case and after NL-, the place after it, the country at the end, a Postbus, a care-of line and a street with no number. Original cases written for this corpus from PostNL's addressing guidance, described in our own words; the postcode areas are CBS's (CC BY 4.0).",
+  "tests": {
+    "houseNumbers": [
+      {
+        "name": "plain",
+        "description": "A street, its number, the postcode and the place",
+        "input": "Keizersgracht 123, 1015 CJ Amsterdam",
+        "expected": {
+          "street": "Keizersgracht",
+          "number": "123",
+          "city": "Amsterdam",
+          "zip": "1015 CJ",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "letter",
+        "description": "A house letter written close to the number",
+        "input": "Keizersgracht 123A, 1015 CJ Amsterdam",
+        "expected": {
+          "street": "Keizersgracht",
+          "number": "123",
+          "numberExtension": "A",
+          "city": "Amsterdam",
+          "zip": "1015 CJ",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "letter after a space",
+        "description": "A house letter after a space",
+        "input": "Keizersgracht 123 B, 1015 CJ Amsterdam",
+        "expected": {
+          "street": "Keizersgracht",
+          "number": "123",
+          "numberExtension": "B",
+          "city": "Amsterdam",
+          "zip": "1015 CJ",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "floor after a hyphen",
+        "description": "A flat's floor as the addition",
+        "input": "Keizersgracht 123-2, 1015 CJ Amsterdam",
+        "expected": {
+          "street": "Keizersgracht",
+          "number": "123",
+          "numberExtension": "2",
+          "city": "Amsterdam",
+          "zip": "1015 CJ",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "roman numeral",
+        "description": "A floor as a roman numeral",
+        "input": "Keizersgracht 123-III, 1015 CJ Amsterdam",
+        "expected": {
+          "street": "Keizersgracht",
+          "number": "123",
+          "numberExtension": "III",
+          "city": "Amsterdam",
+          "zip": "1015 CJ",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "bis",
+        "description": "The addition bis",
+        "input": "Damstraat 1 bis, 1012 JL Amsterdam",
+        "expected": {
+          "street": "Damstraat",
+          "number": "1",
+          "numberExtension": "bis",
+          "city": "Amsterdam",
+          "zip": "1012 JL",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "huis",
+        "description": "The addition hs, for a ground-floor house",
+        "input": "Damstraat 1 hs, 1012 JL Amsterdam",
+        "expected": {
+          "street": "Damstraat",
+          "number": "1",
+          "numberExtension": "hs",
+          "city": "Amsterdam",
+          "zip": "1012 JL",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "numbered street",
+        "description": "A street whose name begins with an ordinal",
+        "input": "2e Constantijn Huygensstraat 20, 1054 BW Amsterdam",
+        "expected": {
+          "street": "2e Constantijn Huygensstraat",
+          "number": "20",
+          "city": "Amsterdam",
+          "zip": "1054 BW",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "street alone",
+        "description": "A street with no number",
+        "input": "Hoofdstraat, 9711 LM Groningen",
+        "expected": {
+          "street": "Hoofdstraat",
+          "city": "Groningen",
+          "zip": "9711 LM",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      }
+    ],
+    "postcodeLine": [
+      {
+        "name": "no space, lower case",
+        "description": "The postcode written close and in lower case",
+        "input": "Museumstraat 1, 1071xx Amsterdam",
+        "expected": {
+          "street": "Museumstraat",
+          "number": "1",
+          "city": "Amsterdam",
+          "zip": "1071 XX",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "NL before the postcode",
+        "description": "The country's code hyphenated to the postcode",
+        "input": "Stationsplein 9, NL-3818 LE Amersfoort",
+        "expected": {
+          "street": "Stationsplein",
+          "number": "9",
+          "city": "Amersfoort",
+          "zip": "3818 LE",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "on lines of their own",
+        "description": "The street and the postcode on two lines",
+        "input": "Stationsplein 9\n3818 LE Amersfoort",
+        "expected": {
+          "street": "Stationsplein",
+          "number": "9",
+          "city": "Amersfoort",
+          "zip": "3818 LE",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "Nederland",
+        "description": "The country in Dutch at the end",
+        "input": "Binnenhof 1A, 2513 AA Den Haag, Nederland",
+        "expected": {
+          "street": "Binnenhof",
+          "number": "1",
+          "numberExtension": "A",
+          "city": "Den Haag",
+          "zip": "2513 AA",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "The Netherlands",
+        "description": "The country in English at the end",
+        "input": "Binnenhof 1A, 2513 AA Den Haag, The Netherlands",
+        "expected": {
+          "street": "Binnenhof",
+          "number": "1",
+          "numberExtension": "A",
+          "city": "Den Haag",
+          "zip": "2513 AA",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "place with an apostrophe",
+        "description": "A place whose name begins with an apostrophe",
+        "input": "Binnenhof 1, 2513 AA 's-Gravenhage",
+        "expected": {
+          "street": "Binnenhof",
+          "number": "1",
+          "city": "'s-Gravenhage",
+          "zip": "2513 AA",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a postcode that does not exist",
+        "description": "The shape is right (digits and two letters) but the first digit is nought",
+        "input": "Keizersgracht 123, 0123 AB Amsterdam",
+        "expected": {
+          "street": "Keizersgracht",
+          "number": "123",
+          "city": "Amsterdam",
+          "zip": "0123 AB",
+          "zipValid": false,
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      }
+    ],
+    "deliveryLines": [
+      {
+        "name": "Postbus",
+        "description": "A box and the postcode of the post office",
+        "input": "Postbus 1234, 3500 GE Utrecht",
+        "expected": {
+          "secUnitType": "Postbus",
+          "secUnitNum": "1234",
+          "city": "Utrecht",
+          "zip": "3500 GE",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "care of",
+        "description": "Who the address is for, on a line above",
+        "input": "t.a.v. De Vries, Damstraat 1, 1012 PK Amsterdam",
+        "expected": {
+          "careOf": "De Vries",
+          "street": "Damstraat",
+          "number": "1",
+          "city": "Amsterdam",
+          "zip": "1012 PK",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a name above the street",
+        "description": "A building's name before the street",
+        "input": "Hotel Krasnapolsky, Damrak 93, 1012 LP Amsterdam",
+        "expected": {
+          "building": "Hotel Krasnapolsky",
+          "street": "Damrak",
+          "number": "93",
+          "city": "Amsterdam",
+          "zip": "1012 LP",
+          "country": "NL"
+        },
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "hello",
+        "expected": null,
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a place alone",
+        "description": "A place with no postcode and no country",
+        "input": "Amsterdam",
+        "expected": null,
+        "source": "Original case written for this corpus; PostNL's addressing guidance (the street and its house number with the addition, the postcode of four digits and two letters, then the place), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

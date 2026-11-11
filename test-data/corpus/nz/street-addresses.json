@@ -1,0 +1,294 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "New Zealand Street Addresses",
+  "description": "The street's number and name, a unit before the number after a slash or written out, a level, the suburb on its own line, the city before the postcode, the country at the end, a PO Box, a Private Bag and a rural delivery, and a city and a postcode alone. Original cases written for this corpus from NZ Post's addressing guidance, described in our own words; the postcodes and their regions are GeoNames' (CC BY 4.0).",
+  "tests": {
+    "streetAndNumber": [
+      {
+        "name": "plain",
+        "description": "The number, the street, the city and the postcode",
+        "input": "1 Queen Street, Auckland 1010",
+        "expected": {
+          "number": "1",
+          "street": "Queen Street",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1010",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "number with a letter",
+        "description": "A number with its letter",
+        "input": "12A High Street, Dunedin 9016",
+        "expected": {
+          "number": "12A",
+          "street": "High Street",
+          "city": "Dunedin",
+          "state": "OTA",
+          "zip": "9016",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "a range",
+        "description": "Two numbers of one building",
+        "input": "12-14 Lambton Quay, Wellington 6011",
+        "expected": {
+          "number": "12-14",
+          "street": "Lambton Quay",
+          "city": "Wellington",
+          "state": "WGN",
+          "zip": "6011",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "highway",
+        "description": "A road that is a state highway",
+        "input": "123 State Highway 1, Hamilton 3282",
+        "expected": {
+          "number": "123",
+          "street": "State Highway 1",
+          "city": "Hamilton",
+          "state": "WKO",
+          "zip": "3282",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "street alone",
+        "description": "A street with no number",
+        "input": "Queen Street, Auckland 1010",
+        "expected": {
+          "street": "Queen Street",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1010",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      }
+    ],
+    "unitsAndLevels": [
+      {
+        "name": "unit after a slash",
+        "description": "The unit's number before the street's, after a slash",
+        "input": "3/45 Dominion Road, Auckland 1024",
+        "expected": {
+          "secUnitType": "Unit",
+          "secUnitNum": "3",
+          "number": "45",
+          "street": "Dominion Road",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1024",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "unit written out",
+        "description": "A unit on a line of its own",
+        "input": "Unit 3, 12A High St, Dunedin 9016",
+        "expected": {
+          "secUnitType": "Unit",
+          "secUnitNum": "3",
+          "number": "12A",
+          "street": "High St",
+          "city": "Dunedin",
+          "state": "OTA",
+          "zip": "9016",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "flat",
+        "description": "A flat",
+        "input": "Flat 2, 10 Lambton Quay, Wellington 6011",
+        "expected": {
+          "secUnitType": "Flat",
+          "secUnitNum": "2",
+          "number": "10",
+          "street": "Lambton Quay",
+          "city": "Wellington",
+          "state": "WGN",
+          "zip": "6011",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "level",
+        "description": "A level of a building",
+        "input": "Level 5, 100 Willis Street, Wellington 6011",
+        "expected": {
+          "floorType": "Level",
+          "floor": "5",
+          "number": "100",
+          "street": "Willis Street",
+          "city": "Wellington",
+          "state": "WGN",
+          "zip": "6011",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      }
+    ],
+    "suburbAndCity": [
+      {
+        "name": "suburb",
+        "description": "The suburb on a line of its own, then the city",
+        "input": "3/45 Dominion Road, Mount Eden, Auckland 1024",
+        "expected": {
+          "secUnitType": "Unit",
+          "secUnitNum": "3",
+          "number": "45",
+          "street": "Dominion Road",
+          "locality": "Mount Eden",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1024",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "New Zealand",
+        "description": "The country at the end",
+        "input": "1 Queen Street, Auckland 1010, New Zealand",
+        "expected": {
+          "number": "1",
+          "street": "Queen Street",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1010",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "NZ on a line of its own",
+        "description": "The country's code on the last line",
+        "input": "12 Beach Road\nPaihia 0200\nNZ",
+        "expected": {
+          "number": "12",
+          "street": "Beach Road",
+          "city": "Paihia",
+          "state": "NTL",
+          "zip": "0200",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "city and postcode alone",
+        "description": "Only the city and the postcode",
+        "input": "Auckland 1010",
+        "expected": {
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1010",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "a postcode that is not listed",
+        "description": "Four digits that the list does not have",
+        "input": "1 Queen Street, Auckland 9999",
+        "expected": {
+          "number": "1",
+          "street": "Queen Street",
+          "city": "Auckland",
+          "zip": "9999",
+          "zipValid": true,
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      }
+    ],
+    "deliveryLines": [
+      {
+        "name": "PO Box",
+        "description": "A box and the city",
+        "input": "PO Box 123, Christchurch 8140",
+        "expected": {
+          "secUnitType": "PO Box",
+          "secUnitNum": "123",
+          "city": "Christchurch",
+          "state": "CAN",
+          "zip": "8140",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "Private Bag",
+        "description": "A bag",
+        "input": "Private Bag 92014, Auckland 1142",
+        "expected": {
+          "secUnitType": "Private Bag",
+          "secUnitNum": "92014",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1142",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "rural delivery",
+        "description": "A rural delivery after the street",
+        "input": "123 State Highway 1, RD 2, Hamilton 3282",
+        "expected": {
+          "number": "123",
+          "street": "State Highway 1",
+          "secUnitType": "RD",
+          "secUnitNum": "2",
+          "city": "Hamilton",
+          "state": "WKO",
+          "zip": "3282",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "care of",
+        "description": "Who the address is for, on a line above",
+        "input": "C/- Smith, 1 Queen Street, Auckland 1010",
+        "expected": {
+          "careOf": "Smith",
+          "number": "1",
+          "street": "Queen Street",
+          "city": "Auckland",
+          "state": "AUK",
+          "zip": "1010",
+          "country": "NZ"
+        },
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "kia ora",
+        "expected": null,
+        "source": "Original case written for this corpus; NZ Post's addressing guidance (the unit and the street number before the street's name, the suburb, then the city and the postcode of four digits), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

@@ -97,7 +97,11 @@ interface FormattedAddress {
     | "australia-post"
     | "royal-mail"
     | "la-poste"
-    | "deutsche-post"; // Formatting standard used
+    | "deutsche-post"
+    | "postnl"
+    | "correos"
+    | "poste-italiane"
+    | "nz-post"; // Formatting standard used
 }
 
 /**

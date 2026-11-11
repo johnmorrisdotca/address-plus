@@ -163,7 +163,7 @@ export async function exampleScope() {
   const library = await import(pathToFileURL(join(root, "dist", "index.js")).href);
   const { default: parser, ...named } = library;
   // The country entry points' exports join the scope, so an example may hand australia to parseLocation.
-  const countryEntries = ["jp", "au", "gb", "fr", "de"];
+  const countryEntries = ["jp", "au", "gb", "fr", "de", "nl", "es", "it", "nz"];
   const countries = await Promise.all(
     countryEntries.map((entry) => import(pathToFileURL(join(root, "dist", entry, "index.js")).href)),
   );

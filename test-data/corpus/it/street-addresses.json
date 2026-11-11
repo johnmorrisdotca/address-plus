@@ -1,0 +1,341 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "Italian Street Addresses",
+  "description": "The street's type and name, the civic number with its letter after a slash, bis, a range and snc, the staircase, the flat and the floor, the postcode before the place and the province's sigla after it with and without brackets, the country at the end, a Casella Postale, a care-of line, a frazione and a street with no number. Original cases written for this corpus from Poste Italiane's addressing guidance, described in our own words; the postcodes and their provinces are GeoNames' (CC BY 4.0).",
+  "tests": {
+    "streetAndNumber": [
+      {
+        "name": "with a comma",
+        "description": "The number after a comma, the sigla after the place",
+        "input": "Via del Corso, 12, 00186 Roma RM",
+        "expected": {
+          "street": "Via del Corso",
+          "number": "12",
+          "city": "Roma",
+          "state": "RM",
+          "zip": "00186",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "without a comma",
+        "description": "The number straight after the name",
+        "input": "Via Roma 12, 20121 Milano MI",
+        "expected": {
+          "street": "Via Roma",
+          "number": "12",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20121",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "letter after a slash",
+        "description": "The number with the letter of its sub-division",
+        "input": "Via del Corso, 12/A, 00186 Roma RM",
+        "expected": {
+          "street": "Via del Corso",
+          "number": "12",
+          "numberExtension": "A",
+          "city": "Roma",
+          "state": "RM",
+          "zip": "00186",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "bis",
+        "description": "The number repeated, bis",
+        "input": "Corso Vittorio Emanuele II, 25 bis, 10121 Torino",
+        "expected": {
+          "street": "Corso Vittorio Emanuele II",
+          "number": "25",
+          "numberExtension": "bis",
+          "city": "Torino",
+          "state": "TO",
+          "zip": "10121",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "snc",
+        "description": "No civic number, senza numero civico",
+        "input": "Via Roma snc, 80132 Napoli NA",
+        "expected": {
+          "street": "Via Roma",
+          "number": "SNC",
+          "city": "Napoli",
+          "state": "NA",
+          "zip": "80132",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "a range",
+        "description": "Two numbers of one building",
+        "input": "Via Garibaldi 12-14, 50123 Firenze",
+        "expected": {
+          "street": "Via Garibaldi",
+          "number": "12-14",
+          "city": "Firenze",
+          "state": "FI",
+          "zip": "50123",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "Piazza",
+        "description": "A square with an article in its name",
+        "input": "Piazza del Duomo, 1, 20122 Milano",
+        "expected": {
+          "street": "Piazza del Duomo",
+          "number": "1",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20122",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "abbreviated type",
+        "description": "A viale written V.le",
+        "input": "V.le Monza 12, 20127 Milano",
+        "expected": {
+          "street": "V.le Monza",
+          "number": "12",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20127",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "street alone",
+        "description": "A street with no number",
+        "input": "Via dei Fori Imperiali, 00186 Roma",
+        "expected": {
+          "street": "Via dei Fori Imperiali",
+          "city": "Roma",
+          "state": "RM",
+          "zip": "00186",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      }
+    ],
+    "flatsAndFloors": [
+      {
+        "name": "staircase and flat",
+        "description": "A staircase and a flat on the street's line",
+        "input": "V.le Monza 12/A, Scala B, Int. 5, 20127 Milano",
+        "expected": {
+          "street": "V.le Monza",
+          "number": "12",
+          "numberExtension": "A",
+          "staircase": "B",
+          "secUnitType": "Interno",
+          "secUnitNum": "5",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20127",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "floor",
+        "description": "A floor given as an ordinal",
+        "input": "Via Garibaldi 5, 3° piano, 50123 Firenze",
+        "expected": {
+          "street": "Via Garibaldi",
+          "number": "5",
+          "floorType": "Piano",
+          "floor": "3",
+          "city": "Firenze",
+          "state": "FI",
+          "zip": "50123",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "a building",
+        "description": "A palazzo's name above the street",
+        "input": "Palazzo Rossi, Via Garibaldi 5, 50123 Firenze",
+        "expected": {
+          "building": "Palazzo Rossi",
+          "street": "Via Garibaldi",
+          "number": "5",
+          "city": "Firenze",
+          "state": "FI",
+          "zip": "50123",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      }
+    ],
+    "postcodeLine": [
+      {
+        "name": "sigla in brackets",
+        "description": "The province's sigla in brackets",
+        "input": "Piazza del Duomo 1, 20122 Milano (MI)",
+        "expected": {
+          "street": "Piazza del Duomo",
+          "number": "1",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20122",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "sigla after a hyphen",
+        "description": "The sigla after a hyphen, with a two-word place",
+        "input": "Via Roma 12, 42121 Reggio Emilia - RE",
+        "expected": {
+          "street": "Via Roma",
+          "number": "12",
+          "city": "Reggio Emilia",
+          "state": "RE",
+          "zip": "42121",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "Italia",
+        "description": "The country in Italian at the end",
+        "input": "Via Roma snc, 80132 Napoli NA, Italia",
+        "expected": {
+          "street": "Via Roma",
+          "number": "SNC",
+          "city": "Napoli",
+          "state": "NA",
+          "zip": "80132",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "on lines of their own",
+        "description": "The street and the postcode on two lines",
+        "input": "Via Roma 12\n20121 Milano MI",
+        "expected": {
+          "street": "Via Roma",
+          "number": "12",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20121",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "no sigla",
+        "description": "The sigla left out, the province taken from the postcode",
+        "input": "Via Roma 12, 20121 Milano",
+        "expected": {
+          "street": "Via Roma",
+          "number": "12",
+          "city": "Milano",
+          "state": "MI",
+          "zip": "20121",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "a sigla that disagrees",
+        "description": "The postcode is Milan's, the sigla Rome's; the parser keeps what is written and the validator says so",
+        "input": "Via Roma 12, 20121 Milano RM",
+        "expected": {
+          "street": "Via Roma",
+          "number": "12",
+          "city": "Milano",
+          "state": "RM",
+          "zip": "20121",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      }
+    ],
+    "deliveryLines": [
+      {
+        "name": "Casella Postale",
+        "description": "A box with the post office's postcode",
+        "input": "Casella Postale 123, 00100 Roma",
+        "expected": {
+          "secUnitType": "Casella Postale",
+          "secUnitNum": "123",
+          "city": "Roma",
+          "zip": "00100",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "care of",
+        "description": "Who the address is for, on a line above",
+        "input": "c/o Rossi, Via Garibaldi 5, 50123 Firenze FI",
+        "expected": {
+          "careOf": "Rossi",
+          "street": "Via Garibaldi",
+          "number": "5",
+          "city": "Firenze",
+          "state": "FI",
+          "zip": "50123",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "a frazione",
+        "description": "A hamlet on a line of its own",
+        "input": "Località Sant'Anna, Via dei Mille 3, 55100 Lucca",
+        "expected": {
+          "locality": "Sant'Anna",
+          "street": "Via dei Mille",
+          "number": "3",
+          "city": "Lucca",
+          "state": "LU",
+          "zip": "55100",
+          "country": "IT"
+        },
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "ciao",
+        "expected": null,
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      },
+      {
+        "name": "a place alone",
+        "description": "A place with no postcode and no country",
+        "input": "Roma",
+        "expected": null,
+        "source": "Original case written for this corpus; Poste Italiane's addressing guidance (the street's type and name, the civic number, the postcode (CAP), the place and the province's sigla), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

@@ -24,7 +24,8 @@ import type { UKAddressFields } from "./united-kingdom";
 interface ParsedAddress extends JapaneseAddressFields, AustralianAddressFields, FrenchAddressFields, UKAddressFields {
   city?: string; // City name, or the municipality in Japan; APO, FPO or DPO in a military address
   compartment?: string; // Compartment on a Canadian rural route (the 10 in "SITE 6 COMP 10 RR 8")
-  country?: "CA" | "US" | "JP" | "AU" | "GB" | "GY" | "IM" | "JE" | FrenchPostalCountry | "DE"; // Detected country; AU, GB (with Jersey, Guernsey and the Isle of Man), FR (with Monaco and the overseas collectivities) and DE only from their modules
+  country?:
+    "CA" | "US" | "JP" | "AU" | "GB" | "GY" | "IM" | "JE" | FrenchPostalCountry | "DE" | "NL" | "ES" | "IT" | "NZ"; // Detected country; AU, GB (with Jersey, Guernsey and the Isle of Man), FR (with Monaco and the overseas collectivities) and DE only from their modules
   fraction?: string; // Fractional address number (e.g., 1/2 in "123 1/2 Main St")
   generalDelivery?: boolean; // General delivery indicator
   highwayContract?: string; // Highway contract route number (the 68 in "HC 68 BOX 23A"); ruralRoute holds "HC 68"

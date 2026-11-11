@@ -1,0 +1,408 @@
+{
+  "$schema": "../../../schemas/test-file.json",
+  "name": "Spanish Street Addresses",
+  "description": "The street's type and name, the number after a comma or not, the floor and the door as 3º B, izquierda and derecha, the ground floor, the staircase, a street with no number (s/n), the postcode before the place with E- or the country, the province in brackets, an Apartado de Correos, a care-of line, and streets in Catalan, Galician and Basque. Original cases written for this corpus from Correos' addressing guidance, described in our own words; the postcodes and their provinces are GeoNames' (CC BY 4.0).",
+  "tests": {
+    "streetAndNumber": [
+      {
+        "name": "with a comma",
+        "description": "The number after a comma",
+        "input": "Calle de Alcalá, 42, 28014 Madrid",
+        "expected": {
+          "street": "Calle de Alcalá",
+          "number": "42",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28014",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "without a comma",
+        "description": "The number straight after the name",
+        "input": "Calle de Alcalá 42, 28014 Madrid",
+        "expected": {
+          "street": "Calle de Alcalá",
+          "number": "42",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28014",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "C/",
+        "description": "The type written C/",
+        "input": "C/ Mayor, 5, 28013 Madrid",
+        "expected": {
+          "street": "C/ Mayor",
+          "number": "5",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "Avda.",
+        "description": "The type abbreviated",
+        "input": "Avda. Diagonal, 405, 08008 Barcelona",
+        "expected": {
+          "street": "Avda. Diagonal",
+          "number": "405",
+          "city": "Barcelona",
+          "state": "B",
+          "zip": "08008",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "Paseo and the country",
+        "description": "A long name and the country at the end",
+        "input": "Paseo de la Castellana 100, 28046 Madrid, España",
+        "expected": {
+          "street": "Paseo de la Castellana",
+          "number": "100",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28046",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "Gran Vía",
+        "description": "A name that begins with a word that is no type",
+        "input": "Gran Vía 1, 28013 Madrid",
+        "expected": {
+          "street": "Gran Vía",
+          "number": "1",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "s/n",
+        "description": "A street with no number, sin número",
+        "input": "Plaza Mayor s/n, 28012 Madrid",
+        "expected": {
+          "street": "Plaza Mayor",
+          "number": "S/N",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28012",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a range",
+        "description": "Two numbers of one building",
+        "input": "Calle Mayor 12-14, 46001 Valencia",
+        "expected": {
+          "street": "Calle Mayor",
+          "number": "12-14",
+          "city": "Valencia",
+          "state": "V",
+          "zip": "46001",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "street alone",
+        "description": "A street with no number",
+        "input": "Camino de Santiago, 08001 Barcelona",
+        "expected": {
+          "street": "Camino de Santiago",
+          "city": "Barcelona",
+          "state": "B",
+          "zip": "08001",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "Catalan",
+        "description": "A street in Catalan",
+        "input": "Carrer de Balmes, 10, 08007 Barcelona",
+        "expected": {
+          "street": "Carrer de Balmes",
+          "number": "10",
+          "city": "Barcelona",
+          "state": "B",
+          "zip": "08007",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "Galician",
+        "description": "A street in Galician",
+        "input": "Rúa do Vilar 5, 15705 Santiago de Compostela",
+        "expected": {
+          "street": "Rúa do Vilar",
+          "number": "5",
+          "city": "Santiago de Compostela",
+          "state": "C",
+          "zip": "15705",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "islands",
+        "description": "A postcode of the Canary Islands",
+        "input": "Calle Triana 20, 35002 Las Palmas de Gran Canaria",
+        "expected": {
+          "street": "Calle Triana",
+          "number": "20",
+          "city": "Las Palmas de Gran Canaria",
+          "state": "GC",
+          "zip": "35002",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      }
+    ],
+    "floorAndDoor": [
+      {
+        "name": "floor and door",
+        "description": "The floor with the ordinal sign and the door's letter",
+        "input": "Calle de Alcalá, 42, 3º B, 28014 Madrid",
+        "expected": {
+          "street": "Calle de Alcalá",
+          "number": "42",
+          "floorType": "Piso",
+          "floor": "3",
+          "secUnitType": "Puerta",
+          "secUnitNum": "B",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28014",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "izquierda",
+        "description": "The door on the left",
+        "input": "c/ Mayor 5, 3º izda, 28013 Madrid",
+        "expected": {
+          "street": "c/ Mayor",
+          "number": "5",
+          "floorType": "Piso",
+          "floor": "3",
+          "secUnitType": "Puerta",
+          "secUnitNum": "izda",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "floor alone",
+        "description": "A floor with no door",
+        "input": "Calle Mayor 5, 2º, 28013 Madrid",
+        "expected": {
+          "street": "Calle Mayor",
+          "number": "5",
+          "floorType": "Piso",
+          "floor": "2",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "bajo",
+        "description": "The ground floor",
+        "input": "Calle Mayor, 12, Bajo, 46001 Valencia",
+        "expected": {
+          "street": "Calle Mayor",
+          "number": "12",
+          "floorType": "Bajo",
+          "city": "Valencia",
+          "state": "V",
+          "zip": "46001",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "staircase and flat",
+        "description": "A staircase, then a floor and a door written as numbers",
+        "input": "C/ Sierpes 10, Escalera 2, 2º 1ª, 41004 Sevilla",
+        "expected": {
+          "street": "C/ Sierpes",
+          "number": "10",
+          "staircase": "2",
+          "floorType": "Piso",
+          "floor": "2",
+          "secUnitType": "Puerta",
+          "secUnitNum": "1",
+          "city": "Sevilla",
+          "state": "SE",
+          "zip": "41004",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      }
+    ],
+    "postcodeLine": [
+      {
+        "name": "E- before the postcode",
+        "description": "The country's letter hyphenated to the postcode",
+        "input": "Calle Mayor 12, E-28013 Madrid",
+        "expected": {
+          "street": "Calle Mayor",
+          "number": "12",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "on lines of their own",
+        "description": "The street and the postcode on two lines",
+        "input": "Calle Mayor 12\n28013 Madrid",
+        "expected": {
+          "street": "Calle Mayor",
+          "number": "12",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "province in brackets",
+        "description": "The province after the place, in brackets",
+        "input": "Calle Real 3, 28801 Alcalá de Henares (Madrid)",
+        "expected": {
+          "street": "Calle Real",
+          "number": "3",
+          "city": "Alcalá de Henares",
+          "county": "Madrid",
+          "state": "M",
+          "zip": "28801",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "province after a comma",
+        "description": "The province after the place, after a comma",
+        "input": "Calle Real 3, 28801 Alcalá de Henares, Madrid",
+        "expected": {
+          "street": "Calle Real",
+          "number": "3",
+          "city": "Alcalá de Henares",
+          "county": "Madrid",
+          "state": "M",
+          "zip": "28801",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a code with no province",
+        "description": "The first two digits name no province",
+        "input": "Calle Mayor 12, 99999 Madrid",
+        "expected": {
+          "street": "Calle Mayor",
+          "number": "12",
+          "city": "Madrid",
+          "zip": "99999",
+          "zipValid": false,
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      }
+    ],
+    "deliveryLines": [
+      {
+        "name": "Apartado de Correos",
+        "description": "A post office box with the post office's postcode",
+        "input": "Apartado de Correos 123, 41080 Sevilla",
+        "expected": {
+          "secUnitType": "Apartado de Correos",
+          "secUnitNum": "123",
+          "city": "Sevilla",
+          "state": "SE",
+          "zip": "41080",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "care of",
+        "description": "Who the address is for, on a line above",
+        "input": "A/A Sr. García, Calle Mayor 12, 28013 Madrid",
+        "expected": {
+          "careOf": "Sr. García",
+          "street": "Calle Mayor",
+          "number": "12",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a building above the street",
+        "description": "A shop's name before the street",
+        "input": "Local 4, Calle Mayor 12, 28013 Madrid",
+        "expected": {
+          "secUnitType": "Local",
+          "secUnitNum": "4",
+          "street": "Calle Mayor",
+          "number": "12",
+          "city": "Madrid",
+          "state": "M",
+          "zip": "28013",
+          "country": "ES"
+        },
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      }
+    ],
+    "notAddresses": [
+      {
+        "name": "empty",
+        "description": "Nothing",
+        "input": "",
+        "expected": null,
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a word",
+        "description": "A word that is no address",
+        "input": "hola",
+        "expected": null,
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      },
+      {
+        "name": "a place alone",
+        "description": "A place with no postcode and no country",
+        "input": "Madrid",
+        "expected": null,
+        "source": "Original case written for this corpus; Correos' addressing guidance (the street's type and name, the number, the floor and the door, the postcode of five digits and the place), described in our own words; nothing copied"
+      }
+    ]
+  }
+}

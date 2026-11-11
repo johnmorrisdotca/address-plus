@@ -106,4 +106,45 @@ function unpackPostcodes(packed: string, length: number): Set<string> {
   return found;
 }
 
-export { comparable, compareFields, finding, partsOf, snakeCased, tidyAddressText, unpackPostcodes };
+// Regions' runs of postcodes written as one short string: each run is the step from the last run's first postcode in base
+// 36 (lower case), then the region's code in capitals (a hyphen where the postcode has no region).
+// scripts/countries/postcode-countries.ts writes them; this reads them.
+function unpackRuns(packed: string): { start: number; code: string }[] {
+  const runs: { start: number; code: string }[] = [];
+  let start = 0;
+  for (const run of packed.matchAll(/([0-9a-z]+)([A-Z-]+)/g)) {
+    start += [...run[1]].reduce((sum, digit) => sum * 36 + BASE36.indexOf(digit), 0);
+    runs.push({ start, code: run[2] });
+  }
+
+  return runs;
+}
+
+// The code of the last run that begins at or before a postcode's number, or undefined before the first run or in a run
+// that has no region.
+function codeOfRuns(runs: readonly { start: number; code: string }[], postcode: number): string | undefined {
+  let low = 0;
+  let high = runs.length - 1;
+  let found: string | undefined;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if (runs[middle].start <= postcode) {
+      found = runs[middle].code;
+      low = middle + 1;
+    } else high = middle - 1;
+  }
+
+  return found === "-" ? undefined : found;
+}
+
+export {
+  codeOfRuns,
+  comparable,
+  compareFields,
+  finding,
+  partsOf,
+  snakeCased,
+  tidyAddressText,
+  unpackPostcodes,
+  unpackRuns,
+};

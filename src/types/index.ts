@@ -37,6 +37,7 @@ export type { JapaneseAddressFields, JapaneseMunicipality, JapanesePrefecture } 
 export type { ParseOptions } from "./parse-options";
 export type { ParsedAddress } from "./parsed-address";
 export type { ParsedIntersection } from "./parsed-intersection";
+export type { PostcodeLookup, PostcodeRegion } from "./postcode-country";
 export type { UKAddressFields, UKNation, UKNationCode, UKPostcode } from "./united-kingdom";
 
 export type { Region } from "./region";

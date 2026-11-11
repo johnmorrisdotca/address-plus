@@ -37,6 +37,26 @@
       "import": "./dist/fr/index.js",
       "require": "./dist/fr/index.cjs"
     },
+    "./nl": {
+      "types": "./dist/nl/index.d.ts",
+      "import": "./dist/nl/index.js",
+      "require": "./dist/nl/index.cjs"
+    },
+    "./es": {
+      "types": "./dist/es/index.d.ts",
+      "import": "./dist/es/index.js",
+      "require": "./dist/es/index.cjs"
+    },
+    "./it": {
+      "types": "./dist/it/index.d.ts",
+      "import": "./dist/it/index.js",
+      "require": "./dist/it/index.cjs"
+    },
+    "./nz": {
+      "types": "./dist/nz/index.d.ts",
+      "import": "./dist/nz/index.js",
+      "require": "./dist/nz/index.cjs"
+    },
     "./element": {
       "types": "./dist/element.d.ts",
       "import": "./dist/element.js",
@@ -53,7 +73,8 @@
     "./dist/element-define.cjs"
   ],
   "files": [
-    "dist"
+    "dist",
+    "NOTICE.md"
   ],
   "scripts": {
     "build": "tsup",

@@ -3,10 +3,10 @@
  *
  * It packs the package, installs the tarball into a temporary project, and checks that
  *   - require() and import of the main entry both work and expose parseLocation;
- *   - the ./jp, ./au, ./gb, ./fr and ./de entries work from both and expose their parsers;
+ *   - the ./jp, ./au, ./gb, ./fr, ./de, ./nl, ./es, ./it and ./nz entries work from both and expose their parsers;
  *   - the types of every entry resolve under the Node16 and bundler module resolutions;
  *   - the ./jp bundle, and every chunk it loads, carries none of the US street-type tables, so a Japan-only user does
- *     not ship them; and the ./au, ./gb, ./fr and ./de bundles carry none of the US, Canadian or Japanese tables, nor each other's.
+ *     not ship them; and every country bundle (./au, ./gb, ./fr, ./de, ./nl, ./es, ./it, ./nz) carries none of the US, Canadian or Japanese tables, nor each other's.
  *
  * It prints what it proved and exits non-zero on the first failure.
  */
@@ -30,41 +30,35 @@ const TABLE_WORDS = {
   britain: "Galashiels",
   france: "Haute-Garonne",
   germany: "Mecklenburg-Vorpommern",
+  netherlands: "antwoordnummer",
+  spain: "Pontevedra",
+  italy: "Campobasso",
+  newZealand: "Manawatu-Wanganui",
 };
-const FORBIDDEN = {
-  au: [
-    TABLE_WORDS.us,
-    TABLE_WORDS.subRegions,
-    TABLE_WORDS.japan,
-    TABLE_WORDS.britain,
-    TABLE_WORDS.france,
-    TABLE_WORDS.germany,
-  ],
-  gb: [
-    TABLE_WORDS.us,
-    TABLE_WORDS.subRegions,
-    TABLE_WORDS.japan,
-    TABLE_WORDS.australia,
-    TABLE_WORDS.france,
-    TABLE_WORDS.germany,
-  ],
-  fr: [
-    TABLE_WORDS.us,
-    TABLE_WORDS.subRegions,
-    TABLE_WORDS.japan,
-    TABLE_WORDS.australia,
-    TABLE_WORDS.britain,
-    TABLE_WORDS.germany,
-  ],
-  de: [
-    TABLE_WORDS.us,
-    TABLE_WORDS.subRegions,
-    TABLE_WORDS.japan,
-    TABLE_WORDS.australia,
-    TABLE_WORDS.britain,
-    TABLE_WORDS.france,
-  ],
+const COUNTRY_WORDS = {
+  au: TABLE_WORDS.australia,
+  gb: TABLE_WORDS.britain,
+  fr: TABLE_WORDS.france,
+  de: TABLE_WORDS.germany,
+  nl: TABLE_WORDS.netherlands,
+  es: TABLE_WORDS.spain,
+  it: TABLE_WORDS.italy,
+  nz: TABLE_WORDS.newZealand,
 };
+// Every country entry carries none of the US, Canadian or Japanese tables, nor any other country's.
+const FORBIDDEN = Object.fromEntries(
+  Object.keys(COUNTRY_WORDS).map((country) => [
+    country,
+    [
+      TABLE_WORDS.us,
+      TABLE_WORDS.subRegions,
+      TABLE_WORDS.japan,
+      ...Object.entries(COUNTRY_WORDS)
+        .filter(([other]) => other !== country)
+        .map(([, word]) => word),
+    ],
+  ]),
+);
 
 const proved = [];
 
@@ -138,6 +132,10 @@ function checkTypes(project) {
       `import { parseUKAddress, unitedKingdom } from "${PACKAGE_NAME}/gb";`,
       `import { france, parseFrenchAddress } from "${PACKAGE_NAME}/fr";`,
       `import { germany, parseGermanAddress } from "${PACKAGE_NAME}/de";`,
+      `import { netherlands, parseDutchAddress } from "${PACKAGE_NAME}/nl";`,
+      `import { parseSpanishAddress, spain } from "${PACKAGE_NAME}/es";`,
+      `import { italy, parseItalianAddress } from "${PACKAGE_NAME}/it";`,
+      `import { newZealand, parseNewZealandAddress } from "${PACKAGE_NAME}/nz";`,
       `import { AddressField, defineField, type AddressFieldOptions } from "${PACKAGE_NAME}/element";`,
       "const fieldOptions: AddressFieldOptions = { parse: { strict: true } };",
       "console.log(typeof AddressField, typeof defineField, fieldOptions.parse?.strict);",
@@ -148,8 +146,12 @@ function checkTypes(project) {
       "const gb: ParsedAddress | null = parseUKAddress('10 Downing Street, London SW1A 2AA');",
       "const fr: ParsedAddress | null = parseFrenchAddress('12 rue de la Paix, 75002 Paris');",
       "const de: ParsedAddress | null = parseGermanAddress('Hauptstraße 12, 10115 Berlin');",
-      "const either = parseLocation('10 Downing Street, London SW1A 2AA', { countries: [australia, france, germany, unitedKingdom] });",
-      "console.log(us, jp, au, gb, fr, de, either?.country);",
+      "const nl: ParsedAddress | null = parseDutchAddress('Keizersgracht 123, 1015 CJ Amsterdam');",
+      "const es: ParsedAddress | null = parseSpanishAddress('Calle de Alcalá 42, 28014 Madrid');",
+      "const it: ParsedAddress | null = parseItalianAddress('Via del Corso 1, 00186 Roma');",
+      "const nz: ParsedAddress | null = parseNewZealandAddress('1 Queen Street, Auckland 1010');",
+      "const either = parseLocation('10 Downing Street, London SW1A 2AA', { countries: [australia, france, germany, italy, netherlands, newZealand, spain, unitedKingdom] });",
+      "console.log(us, jp, au, gb, fr, de, nl, es, it, nz, either?.country);",
       "",
     ].join("\n"),
   );
@@ -229,6 +231,11 @@ function main() {
     "dist/de/index.js",
     "dist/de/index.cjs",
     "dist/de/index.d.ts",
+    ...["nl", "es", "it", "nz"].flatMap((entry) => [
+      `dist/${entry}/index.js`,
+      `dist/${entry}/index.cjs`,
+      `dist/${entry}/index.d.ts`,
+    ]),
   ]) {
     if (!existsSync(join(root, file))) fail(`${file} does not exist; run pnpm build first`);
   }
@@ -257,6 +264,10 @@ function main() {
     checkEntry(project, "./gb", "parseUKAddress");
     checkEntry(project, "./fr", "parseFrenchAddress");
     checkEntry(project, "./de", "parseGermanAddress");
+    checkEntry(project, "./nl", "parseDutchAddress");
+    checkEntry(project, "./es", "parseSpanishAddress");
+    checkEntry(project, "./it", "parseItalianAddress");
+    checkEntry(project, "./nz", "parseNewZealandAddress");
     checkEntry(project, "./element", "defineField");
     checkEntry(project, "./element/define", "defineField");
     checkTypes(project);

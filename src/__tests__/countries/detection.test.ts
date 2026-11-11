@@ -7,8 +7,12 @@ import { describe, expect, it } from "vitest";
 
 import { australia, looksAustralian } from "../../au";
 import { looksGerman } from "../../de";
+import { looksSpanish } from "../../es";
 import { france, looksFrench } from "../../fr";
 import { looksBritish, unitedKingdom } from "../../gb";
+import { looksItalian } from "../../it";
+import { looksDutch } from "../../nl";
+import { looksNewZealand } from "../../nz";
 import { parseLocation } from "../../parser";
 import { validateAddress } from "../../utils/comprehensive-validation";
 import { allCases, COUNTRY_MODULES, parseCase } from "../corpus/corpus-support";
@@ -231,5 +235,97 @@ describe("validateAddress with the country modules", () => {
     const withModules = validateAddress("123 Main St, Seattle, NY 98101", { countries: [australia, unitedKingdom] });
 
     expect(withModules).toEqual(validateAddress("123 Main St, Seattle, NY 98101"));
+  });
+});
+
+describe("telling Dutch, Spanish, Italian and New Zealand addresses apart with no hint", () => {
+  const detectors: Readonly<Record<string, (text: string) => boolean>> = {
+    nl: looksDutch,
+    es: looksSpanish,
+    it: looksItalian,
+    nz: looksNewZealand,
+    au: looksAustralian,
+    gb: looksBritish,
+    fr: looksFrench,
+    de: looksGerman,
+  };
+  const inputsOf = (country: string): string[] =>
+    allCases(country)
+      .filter((testCase) => testCase.expected !== null)
+      .map((testCase) => testCase.input);
+  const nuts = { nl: "NL", es: "ES", it: "IT", nz: "NZ" } as const;
+
+  it.each(Object.entries(nuts))("reads every %s case that its module claims as %s", (folder, code) => {
+    const misread = inputsOf(folder)
+      .filter((input) => detectors[folder](input))
+      .filter((input) => parseLocation(input, { countries: COUNTRY_MODULES })?.country !== code);
+
+    expect(misread).toEqual([]);
+  });
+
+  it("detects most of the Dutch, Spanish and Italian corpora without a hint", () => {
+    const share = (folder: string): number =>
+      inputsOf(folder).filter(detectors[folder]).length / inputsOf(folder).length;
+
+    expect(share("nl")).toBeGreaterThan(0.85);
+    expect(share("es")).toBeGreaterThan(0.8);
+    expect(share("it")).toBeGreaterThan(0.8);
+  });
+
+  it("claims no case of any other country's corpus", () => {
+    const claimed: string[] = [];
+    for (const [claimer, detect] of Object.entries(detectors)) {
+      if (!(claimer in nuts)) continue;
+      for (const folder of ["us", "canada", "japan", "au", "gb", "fr", "de", "nl", "es", "it", "nz"]) {
+        if (folder === claimer) continue;
+        for (const input of inputsOf(folder)) if (detect(input)) claimed.push(`${claimer} claims ${folder}: ${input}`);
+      }
+    }
+
+    expect(claimed).toEqual([]);
+  });
+
+  it("is not claimed by Australia or Britain for a case of the four", () => {
+    const claimed = ["nl", "es", "it", "nz"]
+      .flatMap(inputsOf)
+      .filter((input) => looksAustralian(input) || looksBritish(input));
+
+    expect(claimed).toEqual([]);
+  });
+
+  it.each([
+    ["Keizersgracht 123, 1015 CJ Amsterdam", "NL"],
+    ["1015 CJ Amsterdam", "NL"],
+    ["Calle de Alcalá, 42, 28014 Madrid", "ES"],
+    ["Paseo de la Castellana 100, 28046 Madrid, España", "ES"],
+    ["Apartado de Correos 123, 41080 Sevilla", "ES"],
+    ["Via del Corso, 12, 00186 Roma", "IT"],
+    ["Piazza del Duomo 1, 20122 Milano MI", "IT"],
+    ["1 Queen Street, Auckland 1010, New Zealand", "NZ"],
+    ["Private Bag 92014, Auckland 1142", "NZ"],
+    ["Calle Ocho, Miami, FL 33135", "US"],
+    ["Via Appia Way, Brooklyn, NY 11201", "US"],
+    ["4059 Mt Lee Dr Hollywood CA 90068", "US"],
+    ["12 Smith St, Parramatta NSW 2150", "AU"],
+    ["12 rue de la Paix, 75002 Paris", "FR"],
+    ["Hauptstraße 12, 10115 Berlin", "DE"],
+  ])("reads %s as %s", (input, country) => {
+    expect(parseLocation(input, { countries: COUNTRY_MODULES })?.country).toBe(country);
+  });
+
+  it("leaves four digits after a place to the core, as Australia and others write them", () => {
+    const input = "1 Queen Street, Auckland 1010";
+
+    expect(parseLocation(input, { countries: COUNTRY_MODULES })).toEqual(parseLocation(input));
+  });
+
+  it("reads an address as Dutch, Spanish, Italian or from New Zealand when told to", () => {
+    const countries = COUNTRY_MODULES;
+
+    expect(parseLocation("Damstraat 1, Amsterdam", { country: "NL", countries })?.country).toBe("NL");
+    expect(parseLocation("Calle Mayor 1, Madrid", { country: "ES", countries })?.country).toBe("ES");
+    expect(parseLocation("Via Roma 1, Milano", { country: "IT", countries })?.country).toBe("IT");
+    expect(parseLocation("1 Queen Street, Auckland", { country: "NZ", countries })?.country).toBe("NZ");
+    expect(() => parseLocation("Damstraat 1, 1012 JL Amsterdam", { country: "NL" })).toThrow(/countries/);
   });
 });

@@ -12,6 +12,9 @@ const TABLE_ENTRIES: Readonly<Record<string, string>> = {
   GB_POSTCODE_DISTRICTS: "gb",
   GB_NATIONS: "gb",
   DE_STATES: "de",
+  ES_PROVINCES: "es",
+  IT_PROVINCES: "it",
+  NZ_REGIONS: "nz",
   FR_COLLECTIVITIES: "fr",
   FR_DEPARTMENTS: "fr",
 };
