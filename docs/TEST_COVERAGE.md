@@ -1,4 +1,4 @@
-# Test Coverage: the US, Canadian, Japanese, Australian, French, German, British, Dutch, Spanish, Italian and New Zealand Address Corpora
+# Test Coverage: the US, Canadian, Japanese, Australian, French, German, British, Dutch, Spanish, Italian, New Zealand, Indian, Korean and Brazilian Address Corpora
 
 This document says what address shapes the US and Canadian postal authorities define, which of them the
 hand-written tests already exercised, what the corpus under `test-data/corpus/` adds, and, last, what the
@@ -24,7 +24,10 @@ a country module is chosen for an address is in [COUNTRIES.md](COUNTRIES.md).
 | Spain (`test-data/corpus/es/`, 1 file) | 28 | 28 | 0 | 0 |
 | Italy (`test-data/corpus/it/`, 1 file) | 24 | 24 | 0 | 0 |
 | New Zealand (`test-data/corpus/nz/`, 1 file) | 20 | 20 | 0 | 0 |
-| Total | 3,620 | 3,598 | 22 | 479 |
+| India (`test-data/corpus/in/`, 1 file) | 22 | 22 | 0 | 0 |
+| South Korea (`test-data/corpus/kr/`, 1 file) | 25 | 25 | 0 | 0 |
+| Brazil (`test-data/corpus/br/`, 1 file) | 22 | 22 | 0 | 0 |
+| Total | 3,689 | 3,667 | 22 | 479 |
 
 Before the corpus, `test-data/` held about 440 address inputs written by hand (the 600 test cases count
 the function tests in TypeScript too). They exercised 34 distinct street types, 13 unit designators and
@@ -1134,7 +1137,7 @@ Nothing in the corpus. What the parser cannot do without a street list, which it
   postcode is in.
 - **Austria and Switzerland**, whose streets and numbers look German but whose postcodes are four digits, are not read.
 
-## The Dutch, Spanish, Italian and New Zealand corpora
+## The Dutch, Spanish, Italian, New Zealand, Indian, Korean and Brazilian corpora
 
 The four countries that came after Germany with their postcode tables (`/nl`, `/es`, `/it`, `/nz`) have one file each under
 `test-data/corpus/nl/`, `es/`, `it/` and `nz/`, in groups by shape: the street and its number, the flats and floors, the line of
@@ -1150,6 +1153,13 @@ New Zealand address is told only by its country at the end or by a Private Bag o
 are written by Australia and others too. No case of any other corpus (the US, Canadian, Japanese, Australian, British, French,
 German, and each other of the four) is claimed by any of the four (`src/__tests__/countries/detection.test.ts`), and the 2,723
 US, Canadian and Japanese cases still give the same result with all eight modules handed in as with none.
+
+The Indian, Korean and Brazilian corpora (22, 25 and 22 cases, one file each under `test-data/corpus/in/`, `kr/` and `br/`) are written the same
+way, and each is read with its own module and hint. Korea's has Hangul and Latin cases in groups (road addresses, floors and units, the older
+lot-number form, the postcode first or last, Latin letters); with no hint the Hangul cases and the Latin ones with a road, a province and a listed
+postcode are told. Brazil's states are told from the CEP's range, checked against the 5,525 CEPs GeoNames lists. Two parsing faults were fixed
+while writing them (a number on its own read as the city when the CEP stood alone; a state's name before the PIN read as the street's neighbour),
+and none is left todo. No case of another corpus is claimed by any of the seven.
 
 What the four do not read: the rest of the Netherlands' postcode (the two letters are not looked up, since CBS's list holds the
 four digits), Dutch addresses with the house number before the street (`123 Keizersgracht`), Spanish addresses in two lines with

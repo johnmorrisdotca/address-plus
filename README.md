@@ -859,9 +859,9 @@ The corpora (`test-data/corpus/au/`, 266 cases, `test-data/corpus/de/`, 151, `te
 `test-data/corpus/gb/`, 190, with libpostal's British, French and German fixtures written again as original addresses) are described in
 [docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md).
 
-#### The Netherlands, Spain, Italy and New Zealand
+#### The Netherlands, Spain, Italy, New Zealand, India, South Korea and Brazil
 
-`/nl`, `/es`, `/it` and `/nz` are modules in the same way, each with its own postcode table, parser, validator, formatter and comparer:
+`/nl`, `/es`, `/it`, `/nz`, `/in`, `/kr` and `/br` are modules in the same way, each with its own postcode table (Brazil's is state ranges), parser, validator, formatter and comparer. Korean addresses are read in Hangul and in Latin letters:
 
 ```js
 import { parseLocation, validateAddress } from "@johnmorrisdotca/address-plus";
@@ -880,7 +880,7 @@ validateAddress("Via Roma 12, 20121 Milano RM", { countries }).warnings[0].messa
 // 'Postcode 20121 is in MI, not RM'
 ```
 
-The Netherlands' 4,070 four-digit postcode areas are CBS's (CC BY 4.0); Spain's, Italy's and New Zealand's postcodes are GeoNames' (CC BY 4.0,
+The Netherlands' 4,070 four-digit postcode areas are CBS's (CC BY 4.0); those of Spain, Italy, New Zealand, India and South Korea are GeoNames' (CC BY 4.0,
 credited in [NOTICE.md](NOTICE.md)), since none of their postal services publishes a list as open data. A postcode a list does not have
 is a warning. How each is told with no hint, the fields each fills and the sources are in [docs/COUNTRIES.md](docs/COUNTRIES.md).
 

@@ -74,17 +74,21 @@ Measured by bundling each entry point for the browser, minified, with esbuild:
 | `/gb` | | 19.5 KB | | 8.5 KB |
 | `/fr` | | 27.6 KB | | 9.0 KB |
 | `/de` | | 26.4 KB | | 11.8 KB |
-| `/nl` | | 12.4 KB | | 5.1 KB |
-| `/es` | | 26.8 KB | | 9.8 KB |
-| `/it` | | 25.6 KB | | 8.4 KB |
-| `/nz` | | 13.9 KB | | 6.0 KB |
+| `/nl` | | 12.8 KB | | 5.3 KB |
+| `/es` | | 27.2 KB | | 9.9 KB |
+| `/it` | | 26.0 KB | | 8.6 KB |
+| `/nz` | | 14.3 KB | | 6.2 KB |
+| `/in` | | 38.7 KB | | 14.6 KB |
+| `/kr` | | 49.4 KB | | 7.9 KB |
+| `/br` | | 12.7 KB | | 5.3 KB |
 
 The main entry point grows by 0.7 KB (the option and the picker); France added nothing to it. `/au`, `/gb`, `/fr` and `/de`
 carry none of the US, Canadian or Japanese tables, nor each other's; `pnpm test:package` proves it on the packed
 package. `/fr`'s 6,328 postcodes are 7.5 KB of text (1.4 KB gzipped) and `/de`'s 10,813 are 12 KB, packed as steps in base 36 and
 unpacked the first time a postcode is looked up. The four later countries are packed the same way: `/nl`'s 4,070 four-digit areas
-are 4.1 KB of text, `/es`'s 11,150 postcodes 11.6 KB, `/it`'s 4,736 postcodes 5.3 KB and `/nz`'s 1,737 postcodes 1.9 KB, each with the runs
-of postcodes that share a province or region beside it (Spain's 52 runs, Italy's 143, New Zealand's 142).
+are 4.1 KB of text, `/es`'s 11,150 postcodes 11.6 KB, `/it`'s 4,736 postcodes 5.3 KB and `/nz`'s 1,737 postcodes 1.9 KB, `/in`'s 19,238 PIN codes 24 KB and `/kr`'s 34,249 postcodes 35 KB, each with the runs
+of postcodes that share a province, region or state beside it (Spain's 52 runs, Italy's 143, New Zealand's 142, India's 93, Korea's 17). Brazil has no
+table of postcodes: 27 states' ranges of the first five digits, written by hand, are 1 KB.
 
 ## How an address finds its country
 
@@ -98,6 +102,9 @@ of postcodes that share a province or region beside it (Spain's 52 runs, Italy's
 | Spain | ends with Spain or España (or `ES`); or its last line is a five-digit postcode and a place while a part begins with a Spanish street's type (`Calle`, `C/`, `Avenida`, `Paseo`, `Plaza`, `Carrer`, `Rúa`) or is an Apartado de Correos, with no state's code before the postcode | a postcode alone; `Calle Ocho, Miami, FL 33135` |
 | Italy | ends with Italy or Italia (or `IT`); or its last line is a five-digit postcode and a place while a part begins with an Italian street's type (`Via`, `Viale`, `Corso`, `Piazza`, `Largo`) or is a Casella Postale, with no state's code before the postcode | a postcode alone |
 | New Zealand | ends with New Zealand or Aotearoa (or `NZ`); or ends with a place and a postcode the list has beside `Private Bag`, a rural delivery (`RD 2`) or Aotearoa | a place and four digits alone, which is how Australia and others write a postcode |
+| India | ends with India (or `IN`); or ends with a PIN code after the word `PIN`; or after the name of a state or union territory with a PIN code the list has | six digits alone, which China, Russia and others write too |
+| South Korea | ends with South Korea, Korea or 대한민국; or is in Hangul with a province's name, or a road and its number; or is in Latin letters with a road (`-ro`, `-daero`, `-gil`), a province's name and a listed postcode before the end | a five-digit postcode alone |
+| Brazil | ends with Brazil or Brasil (or `BR`); or ends with a CEP written with its hyphen (`01310-200`) in a state's range | eight digits with no hyphen; a ZIP+4 (four digits after the hyphen) |
 | Japan (core) | is in Japanese script, ends with Japan, or names a prefecture beside a Japanese postal code or a romaji designator | an address that only mentions a Japanese place |
 | US and Canada (core) | everything else, by the state or province and the ZIP or postal code | |
 
@@ -156,7 +163,9 @@ Spain's 52 provinces (the fifty and Ceuta and Melilla, by their ISO 3166-2 codes
 divisions (by their sigla, Aosta by `AO`, which ISO gives no province) and New Zealand's 17 regions are kuni's too, with their names in
 English and Japanese, copied to `src/constants/es/regions.data.ts`, `it/regions.data.ts` and `nz/regions.data.ts`. Asturias, which
 kuni has no Japanese name for as a province, takes the community's. The Netherlands has no region table: CBS's list says which
-four-digit postcode areas exist and nothing of the province.
+four-digit postcode areas exist and nothing of the province. India's 36 states and union territories, South Korea's 17 provinces and
+metropolitan cities and Brazil's 27 states are kuni's too (`in/regions.data.ts`, `kr/regions.data.ts`, `br/regions.data.ts`). The names
+Korean addresses write for them (`서울특별시`, `서울`, `경기도`) are facts, written by hand in `src/constants/kr/names.ts`.
 
 ## Data sources and licences
 
@@ -194,6 +203,12 @@ licence with a link to it. The package's `NOTICE.md` does all of that for each s
 the rest of the package stay MIT, since Section 3(a)(4) only asks that the licence applied to adapted material not stop a recipient from
 complying with it.
 
+| Every PIN code GeoNames lists for India (19,238), and the state each is in | GeoNames, postal code data for India (`IN.txt`) | Creative Commons Attribution 4.0, as above. Read 2026-11-11. GeoNames' states are those of its last update, so Ladakh's PIN codes are in Jammu and Kashmir's | `src/constants/in/postcodes.data.ts` (generated) |
+| Every postcode GeoNames lists for South Korea (34,249), and the province of each | GeoNames, postal code data for South Korea (`KR.txt`); provinces from kuni | Creative Commons Attribution 4.0, as above. Read 2026-11-11 | `src/constants/kr/postcodes.data.ts` (generated) |
+| The range of CEPs of each Brazilian state | The Correios' division of the country by the first five digits of the CEP, written by hand | A fact. Checked on 2026-11-11 against the 5,525 CEPs GeoNames lists, none of which is kept: the generator fails when one falls outside the range of its state (a first check found Rondônia's second range, 78900 to 78999) | `src/constants/br/ranges.ts` |
+| The names of the provinces in Korean | Official names and common short forms | Facts, written by hand | `src/constants/kr/names.ts` |
+| The layout of an Indian, Korean and Brazilian address | India Post's, Korea Post's and the Correios' addressing guidance, and common usage | Rules and word lists written in our own words; nothing copied | `src/in/rules.ts`, `src/kr/rules.ts`, `src/br/rules.ts` |
+
 What is not used, and why:
 
 - **G-NAF** (the Geocoded National Address File), Australia's open address list: its end-user licence forbids using it
@@ -224,6 +239,10 @@ What is not used, and why:
   Postcode Network File is bought under a licence. GeoNames' lists (CC BY 4.0) are used for Spain, Italy and New Zealand where none
   of these is open, as for Germany. The Netherlands' list is the open one CBS publishes. The Dutch BAG (the address register, CC0)
   has every postcode and house number, but at 9 million rows is far too large to ship; nothing of it is used.
+- **India Post's file and data.gov.in's All India Pincode Directory.** The directory is published under India's Government Open
+  Data Licence, but data.gov.in could not be reached on 2026-11-11 (the connection was refused), so its licence text was not read and
+  none of it is used. GeoNames' list, whose licence text was read, is used instead. Korea Post's postal-code file (the open
+  data portal's) and the Correios' CEP file (sold) are not used for the same reason of terms not read or not open.
 - **GeoNames' place names for the four.** Only the postcodes and the province or region are kept, as for Germany. GeoNames' Dutch
   file has the first four digits only (and the provinces), Brazil's has the major postcodes only: not used.
 - **La Poste's commune names and its CEDEX codes.** The base lists 39,193 lines, one for each commune and each
@@ -287,32 +306,42 @@ Germany fills one field of its own beside the shared ones, `careOf` (the `c/o`, 
 name and meaning). A German address has no type of street apart from the name and puts the house number after the street,
 so `type` is absent and `number` follows `street` in the parser's results.
 
-### The Netherlands, Spain, Italy and New Zealand
+### The Netherlands, Spain, Italy, New Zealand, India and Brazil
 
-These four share their parser, validator and comparer (`src/country/postcode-country.ts`); a country gives its postcode's shape, its lookups
+(South Korea reads its addresses with a parser of its own, in Hangul and in Latin letters; see below.) These six share their parser, validator and comparer (`src/country/postcode-country.ts`); a country gives its postcode's shape, its lookups
 and the few rules of its own (`src/<code>/rules.ts`), and writes its own formatter. The shared fields keep their meaning:
 
-| Field | Netherlands | Spain | Italy | New Zealand |
-| --- | --- | --- | --- | --- |
-| `number` | the house number: `123` | the number: `42`, `12-14`, `S/N` | the civic number: `12`, `12-14`, `SNC` | the number: `45`, `12A`, `12-14` |
-| `numberExtension` | the addition: `A`, `2`, `III`, `bis`, `hs` | | the letter or sub-number after a slash, `bis`: `A` in `12/A` | |
-| `street` | the name as written: `Keizersgracht` | the name with its type as written: `Calle de Alcalá`, `C/ Mayor` | the name with its type as written: `Via del Corso` | the name with its type: `Dominion Road` |
-| `secUnitType`, `secUnitNum` | `Postbus` and its number | `Puerta` and `B` (the door); `Apartado de Correos`; `Local` | `Interno` and `5`; `Casella Postale` | `Unit` and `3` (from `3/45` too), `Flat`, `Shop`; `PO Box`, `Private Bag`, `RD` |
-| `floorType`, `floor` | | `Piso` and `3` (from `3º`), `Bajo`, `Entresuelo`, `Ático` | `Piano` and `3` | `Level` and `5` |
-| `staircase`, `entrance` | | `Escalera` and `Portal`: `2`, `B` | `Scala`: `B` | |
-| `building` | a name above the street | a name above the street | `Palazzo Rossi`, a name above the street | a name above the street |
-| `locality` | | | the frazione | the suburb |
-| `city` | the place | the place | the place | the city |
-| `county` | | the province written in brackets or after the place | | |
-| `state` | | the province's code from the postcode: `M`, `B`, `SE` | the sigla as written, or from the postcode: `RM` | the region's code from the postcode: `AUK`, `WGN` |
-| `zip` | `1015 CJ` (capitals, one space) | `28014` | `00186` | `1010` |
-| `careOf` | `t.a.v.` | `A/A` | `c/o`, `presso` | `C/-`, `c/o` |
-| `country` | `NL` | `ES` | `IT` | `NZ` |
+| Field | Netherlands | Spain | Italy | New Zealand | India | Brazil |
+| --- | --- | --- | --- | --- | --- | --- |
+| `number` | the house number: `123` | the number: `42`, `12-14`, `S/N` | the civic number: `12`, `12-14`, `SNC` | the number: `45`, `12A`, `12-14` | the house number: `12`, `45/3` | the number: `1578`, `S/N` |
+| `numberExtension` | the addition: `A`, `2`, `III`, `bis`, `hs` | | the letter or sub-number after a slash, `bis`: `A` in `12/A` | |  |  |
+| `street` | the name as written: `Keizersgracht` | the name with its type as written: `Calle de Alcalá`, `C/ Mayor` | the name with its type as written: `Via del Corso` | the name with its type: `Dominion Road` | the name as written: `MG Road` | the name with its type: `Avenida Paulista` |
+| `secUnitType`, `secUnitNum` | `Postbus` and its number | `Puerta` and `B` (the door); `Apartado de Correos`; `Local` | `Interno` and `5`; `Casella Postale` | `Unit` and `3` (from `3/45` too), `Flat`, `Shop`; `PO Box`, `Private Bag`, `RD` | `Flat 4B`, `Shop`, `Plot 7`; `Post Box` | `Apto 45`, `Sala 12`, `Casa`; `Caixa Postal` |
+| `floorType`, `floor` | | `Piso` and `3` (from `3º`), `Bajo`, `Entresuelo`, `Ático` | `Piano` and `3` | `Level` and `5` | `Floor` and `3` | `Andar` and `5` |
+| `staircase`, `entrance` | | `Escalera` and `Portal`: `2`, `B` | `Scala`: `B` | |  |  |
+| `building` | a name above the street | a name above the street | `Palazzo Rossi`, a name above the street | a name above the street | a name above the street | `Bloco B`, a torre |
+| `locality` | | | the frazione | the suburb | the area: `Indiranagar` | the bairro: `Bela Vista` |
+| `city` | the place | the place | the place | the city | the city | the city |
+| `county` | | the province written in brackets or after the place | | |  |  |
+| `state` | | the province's code from the postcode: `M`, `B`, `SE` | the sigla as written, or from the postcode: `RM` | the region's code from the postcode: `AUK`, `WGN` | the state's code as written, or from the PIN: `KA` | the state's code as written, or from the CEP: `SP` |
+| `zip` | `1015 CJ` (capitals, one space) | `28014` | `00186` | `1010` | `560038` (no space) | `01310-200` (with its hyphen) |
+| `careOf` | `t.a.v.` | `A/A` | `c/o`, `presso` | `C/-`, `c/o` | `C/o`, `S/o`, `D/o` | `A/C` |
+| `country` | `NL` | `ES` | `IT` | `NZ` | `IN` | `BR` |
 
 The validator reports the same codes for each, as Germany's does (`INVALID_POSTAL_FORMAT`, `UNRECOGNIZED_POSTAL_CODE`,
 `MISSING_POSTAL_CODE`, `MISSING_CITY`, `MISSING_STREET_NUMBER`), and `POSTAL_REGION_MISMATCH` where a region is written beside the
 postcode (Italy's sigla). A postcode the list does not have is a warning, and an error with `strictPostalValidation`. A Dutch Postbus
-is not looked up, since its postcode is none of an area's. The two countries that put the number before the street (New Zealand)
+is not looked up, since its postcode is none of an area's. India also fills `place`, a landmark (`Near City Mall`), and Brazil's "known" means a
+state's range holds the CEP, since there is no list.
+
+### South Korea
+
+Korea reads Hangul from the province down (`서울특별시 중구 세종대로 110, 3층 (태평로1가)`) and Latin letters from the number up (`110 Sejong-daero,
+Jung-gu, Seoul 04524`), with the postcode first, in brackets, or last. The fields mean the same in both: `state` the province's code from kuni
+(`11` for Seoul), `city` the district (`중구`, or `수원시 영통구`, large to small in both scripts), `street` the road as written, `number` the building
+number on the road (or the lot number of an older address), `locality` the dong, ri or eup, `building` a building's name or block, `floorType` and
+`floor` (`층` or `Floor`), `secUnitType` and `secUnitNum` (`호` or `Unit`) and `zip`. The formatter writes Hangul from the province down on one
+line with the postcode on its own, and Latin letters from the unit up, each district on a line of its own. The two countries that put the number before the street (New Zealand)
 or write the unit as `3/45` read it as the unit's.
 
 ## Adding a country
